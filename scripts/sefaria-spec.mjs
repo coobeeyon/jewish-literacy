@@ -244,10 +244,10 @@ export const cards = {
   "weekday/shacharit/aleinu-and-closing-psalms": {
     ashkenaz: [
       part("Aleinu", s(KO, KCON, { from: 30, until: 35 })),
-      part("Daily and seasonal psalms", s(KO, KW + "The Daily Psalm", { until: 27 }), ["Daily and seasonal psalms — one psalm for each day; Barekhi Nafshi on Rosh Chodesh; Psalm 27 in Elul", "מזמורי היום והעונה — שיר של יום; ברכי נפשי בראש חודש; לדוד ה׳ אורי באלול"]),
+      part("Daily and seasonal psalms", s(KO, KW + "The Daily Psalm", { until: 27 }), ["Daily and seasonal psalms — one psalm for each day; Barekhi Nafshi on Rosh Chodesh; Psalm 27 from Elul through Sukkot", "מזמורי היום והעונה — שיר של יום; ברכי נפשי בראש חודש; לדוד ה׳ אורי מאלול עד סוכות"]),
     ],
     sefard: [
-      part("Daily and seasonal psalms", [s(MW, SWM + "Psalm of the Day", { from: 105 }), s(MW, SWM + "Psalm from Rosh Chodesh Elul")], ["Daily and seasonal psalms — one psalm for each day; Psalm 27 in Elul", "מזמורי היום והעונה — שיר של יום; לדוד ה׳ אורי באלול"]),
+      part("Daily and seasonal psalms", [s(MW, SWM + "Psalm of the Day", { from: 105 }), s(MW, SWM + "Psalm from Rosh Chodesh Elul")], ["Daily and seasonal psalms — one psalm for each day; Psalm 27 from Elul through Sukkot", "מזמורי היום והעונה — שיר של יום; לדוד ה׳ אורי מאלול עד סוכות"]),
       part("Aleinu", s(MW, SWM + "Aleinu", { from: 147 })),
     ],
   },
