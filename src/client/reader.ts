@@ -2,9 +2,9 @@
 // on text has it already; anything opened later comes from the prayer's small text file, fetched on
 // the first open or, usually, prefetched for the whole map once the page is idle, and then shown at
 // once. A loading line, failure, retry and the Sefaria link remain for a slow or failed fetch.
-import { calendarIntro, calendarUrl, parseCalendar, partAnchor, textNusach, type Reading } from "../sefaria";
+import { partAnchor, textNusach } from "../sefaria";
 import type { TextFile } from "../texts";
-import type { CalendarKind, Localized, Nusach } from "../types";
+import type { Localized, Nusach } from "../types";
 import { bi, h } from "./dom";
 
 /** What a prayer card or landmark carries in its data-reader attribute (see readerData in src/view/map.tsx). */
@@ -40,7 +40,6 @@ function cached<T>(cache: Map<string, Promise<T>>, url: string, load: () => Prom
 const files = new Map<string, Promise<TextFile>>();
 /** Text files that have arrived, for showing at once. */
 const arrived = new Map<string, TextFile>();
-const readings = new Map<string, Promise<Reading>>();
 
 const loadText = (url: string, priority?: "low") => cached(files, url, () => getJson(url, 15000, priority).then(data => {
   const file = data as TextFile;
@@ -188,31 +187,4 @@ export function showCredit(details: HTMLElement, info: ReaderInfo, nusach: Nusac
 export function hideCredit(details: HTMLElement) {
   release(details);
   details.querySelector(":scope > [data-credit]")?.remove();
-}
-
-// ───────────── This week's Torah reading, from Sefaria's calendar ─────────────
-
-const loadReading = (kind: CalendarKind, date: string) => {
-  const [y, m, d] = date.split("-").map(Number);
-  const url = calendarUrl(kind, new Date(y, m - 1, d, 12));
-  return cached(readings, url, () => getJson(url, 15000).then(data => parseCalendar(data as Parameters<typeof parseCalendar>[0])));
-};
-
-/** The week's Torah reading for the date being prayed (YYYY-MM-DD), from Sefaria's calendar. */
-export function showCalendar(el: HTMLElement, date: string) {
-  const kind = el.dataset.calendar as CalendarKind;
-  const live = claim(el);
-  el.replaceChildren(h("p", { role: "status" }, bi({ en: "Loading this week’s Torah reading…", he: "קריאת התורה של השבוע נטענת…" })));
-  loadReading(kind, date).then(reading => {
-    if (!live()) return;
-    const intro = calendarIntro[kind];
-    const haftarah = kind === "shabbat" && reading.haftarah;
-    el.replaceChildren(
-      h("p", { "data-lang": "en", lang: "en" }, intro.en, " ", h("a", { href: reading.url }, reading.name.en), " (", reading.ref, ")", haftarah && [". Haftarah: ", h("a", { href: haftarah.url }, haftarah.ref)], "."),
-      h("p", { class: "he", "data-lang": "he", lang: "he", dir: "rtl" }, intro.he, " ", h("a", { href: reading.url }, reading.name.he), haftarah && [". הפטרה: ", h("a", { href: haftarah.url, dir: "ltr" }, haftarah.ref)], "."),
-    );
-  }).catch(() => {
-    if (!live()) return;
-    el.replaceChildren(h("p", {}, bi({ en: "This week’s reading could not be loaded.", he: "לא ניתן לטעון את קריאת השבוע." }), " ", h("a", { href: "https://www.sefaria.org/calendars" }, bi({ en: "See Sefaria’s calendar", he: "ללוח של ספריא" }))));
-  });
 }

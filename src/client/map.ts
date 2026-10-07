@@ -13,10 +13,10 @@
 //   a group toggle has data-group and data-sections (the slugs of the sections it holds);
 // - a multi-prayer movement lists its members in data-members; a prayer with text has data-reader;
 //   text the page arrived with (a deep link's) is marked data-filled, and is kept as it is.
-import { selectedDate, showDate, withDate } from "./date";
+import { showDate, withDate } from "./date";
 import { nusach } from "./preferences";
 import { HEICHA } from "../paths";
-import { hideCredit, prefetchTexts, release, showCalendar, showCredit, showPrayer, showSection, textsIn, type ReaderInfo } from "./reader";
+import { hideCredit, prefetchTexts, release, showCredit, showPrayer, showSection, textsIn, type ReaderInfo } from "./reader";
 
 /** A history entry's state; `y` is where the page was scrolled when a switch left it for another map. */
 export type NavState = { sections?: string[]; closed?: string; closedSection?: string; switched?: boolean; y?: number };
@@ -159,9 +159,6 @@ export function initMap(main: HTMLElement, arrival: Navigation = "initial"): Map
     const fill = (el: HTMLElement, show: () => void) => { adopt(el); if (filled.get(el) !== now) { filled.set(el, now); show(); } };
     for (const section of main.querySelectorAll<HTMLElement>("section[data-prayer]")) fill(section, () => showPrayer(section, infoFor(section), now));
     for (const box of main.querySelectorAll<HTMLElement>(".section-text:not([hidden])")) fill(box, () => showSection(box, infoFor(box), Number(box.dataset.part), now, box.dataset.heading ? JSON.parse(box.dataset.heading) : undefined));
-    // The week's Torah reading depends on the date, not the nusach: fetched once per element and date.
-    const date = selectedDate();
-    for (const calendar of main.querySelectorAll<HTMLElement>(".reader-calendar")) if (filled.get(calendar) !== date) { filled.set(calendar, date); showCalendar(calendar, date); }
   }
 
   /** Bring the right thing into view and focus, as the React app did after each navigation. */
@@ -305,8 +302,6 @@ export function initMap(main: HTMLElement, arrival: Navigation = "initial"): Map
     }
     sync();
   }, { signal: listening.signal });
-  // A new date: the notes are reworded by showDate; the week's Torah reading follows.
-  document.addEventListener("datechange", fillReaders, { signal: listening.signal });
 
   // The HTML holds both nusachs' versions of whatever is open and differs by nusach; keep the saved one.
   for (const version of main.querySelectorAll<HTMLElement>("[data-nusach-only]")) {

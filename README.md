@@ -36,19 +36,21 @@ for a second, the browser prefetches every prayer on its map, so an open shows t
 
 ## Date notes
 
-Notes such as "Today: not said — Rosh Chodesh" or "Tonight: count day 23 of the Omer" sit inside opened
-items (Tachanun, the weekday Torah reading, the psalms after Shacharit, the Omer, Tzidkatcha, and the
-Kaddish after Tachanun and after Tzidkatcha). Each shows what its rule means for the date being prayed,
-then the rule itself. The date is today, or one dialled in on the line under the service heading, which
-puts it in the URL (`?date=2026-10-21`) so a link reproduces it. Shacharit and Mincha read that day;
-Maariv reads its evening, which belongs to the next Hebrew day; the Shabbat maps read the coming (or
-current) Shabbat. The rules follow standard Ashkenaz practice outside Israel; their sources are in
-`scripts/calendar.mjs`.
+Notes such as "Today: none—Rosh Chodesh" or "Tonight: Omer day 23" sit inside opened items (Tachanun,
+the weekday Torah reading, the psalms after Shacharit, the Omer, Tzidkatcha, and the Kaddish after
+Tachanun and after Tzidkatcha). Each shows the rule in plain words, then one short line for the date
+being prayed. The date is today, or one dialled in on the line under the service heading, which puts
+it in the URL (`?date=2026-10-21`) so a link reproduces it; the notes then name that date ("12 Oct:").
+Shacharit and Mincha read that day; Maariv reads its evening, which belongs to the next Hebrew day;
+the Shabbat maps read the coming (or current) Shabbat. The Torah cards show the week's portion (and on
+Shabbat morning the haftarah) for the same date, with links to Sefaria. The rules follow standard
+Ashkenaz practice outside Israel; their sources are in `scripts/calendar.mjs`.
 
 The browser looks the date up in a small table, `src/calendar.generated.json`, which
-`npm run calendar` computes with [@hebcal/core](https://github.com/hebcal/hebcal-es6). That package is
-GPL-licensed and is a build-time devDependency only: it runs in that script, and nothing of it ships to
-the browser or runs in `npm run build`.
+`npm run calendar` computes with [@hebcal/core](https://github.com/hebcal/hebcal-es6) (GPL-2.0) and
+[@hebcal/leyning](https://github.com/hebcal/hebcal-leyning) (BSD-2-Clause, the readings). Both are
+build-time devDependencies only: they run in that script, and nothing of them ships to the browser or
+runs in `npm run build`. Nothing asks Sefaria anything at run time.
 
 **The table covers 1 September 2026 to 31 October 2028.** Run `npm run calendar` (after moving its
 range forward in `scripts/calendar.mjs`) and rebuild before then: dates past the table show only the

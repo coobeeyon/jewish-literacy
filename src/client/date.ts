@@ -5,7 +5,7 @@
 // the date and its Hebrew date, steps a day back or forward, opens the browser's date picker, and
 // returns to today.
 import table from "../calendar.generated.json";
-import { addDays, civilDate, covered, dateFromSearch, fillNotes, hebrewDate, localToday, type CalendarTable } from "../today";
+import { addDays, civilDate, covered, dateFromSearch, fillNotes, hebrewDate, localToday, readingFor, sefariaUrl, showRef, type CalendarTable, type ReadingKind } from "../today";
 import { bi, h } from "./dom";
 
 const calendar = table as unknown as CalendarTable;
@@ -19,10 +19,30 @@ export function withDate(path: string): string {
   return date ? `${path}?date=${date}` : path;
 }
 
-/** Word the notes under `root`, and the date line, for the date being prayed. */
+/** The week's Torah reading on each Torah card under `root`, for the date: the portion with a link to it on Sefaria, and on Shabbat morning the haftarah. */
+function showReadings(root: ParentNode, date: string) {
+  for (const el of root.querySelectorAll<HTMLElement>(".reader-calendar [data-reading]")) {
+    if (el.dataset.for === date) continue;
+    el.dataset.for = date;
+    const reading = readingFor(calendar, el.closest<HTMLElement>("[data-calendar]")!.dataset.calendar as ReadingKind, date);
+    if (!reading) { el.replaceChildren(h("span", { "data-lang": "en" }, "Not in the calendar"), h("span", { "data-lang": "en" }, "\u00a0"), h("span", { class: "he", "data-lang": "he" }, "אינו בלוח")); continue; }
+    const link = (name: string, lang: string) => h("a", { href: sefariaUrl(reading.torah), lang }, name);
+    const haftarah = reading.haftarah;
+    el.replaceChildren(
+      h("span", { "data-lang": "en" }, link(reading.name.en, "en")),
+      h("span", { "data-lang": "en" }, showRef(reading.torah)),
+      haftarah ? h("span", { "data-lang": "en" }, "Haftarah: ", h("a", { href: sefariaUrl(haftarah) }, showRef(haftarah))) : "",
+      h("span", { class: "he", "data-lang": "he" }, link(reading.name.he, "he")),
+      haftarah ? h("span", { class: "he", "data-lang": "he" }, "הפטרה: ", h("a", { href: sefariaUrl(haftarah), dir: "ltr" }, showRef(haftarah))) : "",
+    );
+  }
+}
+
+/** Word the notes and Torah readings under `root`, and the date line, for the date being prayed. */
 export function showDate(root: ParentNode) {
   const date = selectedDate(), today = localToday();
   fillNotes(calendar, root, date, today);
+  showReadings(root, date);
   // The date line, once initDateLine has built it.
   const line = root.querySelector<HTMLElement>(".date-line");
   if (!line?.firstChild) return;
@@ -48,7 +68,6 @@ function choose(date: string | undefined, main: HTMLElement) {
   else url.searchParams.set("date", date);
   history.replaceState(history.state, "", url);
   showDate(main);
-  document.dispatchEvent(new CustomEvent("datechange"));
 }
 
 /** The date line's controls, for a map brought into play (the page keeps an empty line of fixed height for them). */

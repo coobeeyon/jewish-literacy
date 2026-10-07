@@ -52,18 +52,6 @@ for (const source of Object.values(sources)) {
   if (extra.length) drift.push(`${source.id}: snapshot has refs no longer pinned: ${extra.join(", ")}`);
 }
 
-// The Torah cards also read Sefaria's calendar.
-for (const [label, date] of [["today", new Date()], ["next Shabbat + 1", (() => { const d = new Date(); d.setDate(d.getDate() + ((6 - d.getDay() + 7) % 7) + 1); return d; })()]]) {
-  try {
-    const data = await getJson(`https://www.sefaria.org/api/calendars?diaspora=1&year=${date.getFullYear()}&month=${date.getMonth() + 1}&day=${date.getDate()}`);
-    const parasha = data.calendar_items?.find(item => item?.title?.en === "Parashat Hashavua");
-    if (!parasha?.displayValue?.en || !parasha?.url) throw new Error("no Parashat Hashavua item");
-    console.log(`Calendar (${label}): ${parasha.displayValue.en} — ${parasha.ref}`);
-  } catch (error) {
-    problems.push(`calendar ${label}: ${error.message}`);
-  }
-}
-
 const partCount = Object.values(sources).reduce((n, s) => n + s.parts.length, 0);
 const sectionCount = Object.values(sources).reduce((n, s) => n + s.parts.reduce((m, p) => m + p.sections.length, 0), 0);
 console.log(`Checked ${texts.size}/${byUrl.size} Sefaria URLs covering ${sectionCount} sections in ${partCount} parts of ${Object.keys(sources).length} text sources; ${checkedSegments} planned segments non-empty.`);

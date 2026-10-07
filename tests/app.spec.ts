@@ -413,17 +413,40 @@ test("Kaddish landmark deep link opens in place and keeps its bubble", async ({ 
   await expect(page.locator("#section-barkhu-call-to-prayer .reader-section")).toBeVisible();
 });
 
-test("Torah cards show this week's reading from Sefaria's calendar", async ({ page }) => {
+test("Torah cards show the week's reading from the site's own calendar, with links to Sefaria, and never wait for it", async ({ page }) => {
+  const unexpected: string[] = [];
+  await mockSefaria(page, unexpected);
+  await page.clock.setFixedTime(new Date("2026-10-07T12:00:00"));
+  await watchLoading(page);
+  const reading = (lang: "en" | "he") => page.locator(`.reader-calendar:visible [data-reading] [data-lang=${lang}]`);
+  // Shabbat morning: this Shabbat's portion and haftarah (10 October 2026, Bereshit; Shabbat before Rosh Chodesh).
   await page.goto("/shabbat/shacharit/torah-service");
-  const calendar = page.locator(".reader-calendar");
-  await expect(calendar.getByRole("link", { name: "Bereshit" })).toHaveAttribute("href", "https://www.sefaria.org/Genesis.1.1-6.8");
-  await expect(calendar.getByRole("link", { name: "Isaiah 42:5-43:10" }).first()).toBeVisible();
+  await expect(reading("en")).toHaveText(["Bereshit", "Genesis 1:1–6:8", "Haftarah: I Samuel 20:18–42"]);
+  await expect(reading("en").first().getByRole("link", { name: "Bereshit" })).toHaveAttribute("href", "https://www.sefaria.org/Genesis.1.1-6.8");
+  await expect(reading("en").nth(2).getByRole("link")).toHaveAttribute("href", "https://www.sefaria.org/I_Samuel.20.18-42");
+  await expect(reading("he").first()).toHaveText("בראשית");
+  // Shabbat afternoon reads the next week's portion; a weekday card, the coming Shabbat's.
+  await page.goto("/shabbat/mincha/torah-service");
+  await expect(reading("en")).toHaveText(["Noach", "Genesis 6:9–11:32"]);
   await page.goto("/weekday/shacharit/torah-reading");
-  await expect(page.locator(".reader-calendar [data-lang=en]")).toContainText("The coming Shabbat or holiday reading");
-  // Which days read, and what, is the card's date note.
+  await expect(reading("en")).toHaveText(["Bereshit", "Genesis 1:1–6:8"]);
   await expect(page.locator('#section-torah-reading [data-note="torah-weekday"] .note-rule [data-lang=en]')).toContainText("Monday and Thursday mornings");
+  // A festival Shabbat has its own reading; the Monday before it reads the next portion.
+  await page.goto("/shabbat/shacharit/torah-service?date=2027-04-24");
+  await expect(reading("en")).toHaveText(["Chol HaMoed Pesach", "Exodus 33:12–34:26", "Haftarah: Ezekiel 37:1–14"]);
+  await page.goto("/weekday/shacharit/torah-reading?date=2027-04-19");
+  await expect(reading("en")).toHaveText(["Achrei Mot", "Leviticus 16:1–18:30"]);
+  // The date line moves it along.
+  await page.locator(".date-line").getByRole("button", { name: "Next day" }).click();
+  await expect(reading("en")).toHaveText(["Achrei Mot", "Leviticus 16:1–18:30"]);
+  await page.goto("/weekday/shacharit/torah-reading?date=2030-01-06");
+  await expect(reading("en")).toHaveText(["Not in the calendar", "\u00a0"]);
+  // No line ever waited on a request for the reading.
+  expect(await page.evaluate(() => document.body.textContent!.includes("Loading this week"))).toBe(false);
+  expect(await loadingFrames(page)).toBe(0);
   await openFirstSection(page.locator("#section-torah-reading"));
   await expect(page.locator(".reader-section").first()).toBeVisible();
+  expect(unexpected).toEqual([]);
 });
 
 test("two hundred percent text reflows", async ({ page }) => {

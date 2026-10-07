@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@hebcal/core": "^6.14.0",
+    "@hebcal/leyning": "^10.1.0",
     "@playwright/test": "^1.55.1",
     "@types/node": "^22.20.5",
     "cheerio": "^1.1.2",

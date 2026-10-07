@@ -1,8 +1,8 @@
 // Pure Sefaria logic: reading-plan rendering (src/format.ts keeps each edition's formatting and
-// fixes its glitches), licenses and the Torah calendar. Sefaria responses are checked against the
+// fixes its glitches), and licenses. Sefaria responses are checked against the
 // pins when the texts are snapshot (scripts/sefaria-texts.mjs); no DOM and no fetching here.
 import { formatSegment, plainOf, type Inline, type Lang } from "./format";
-import type { CalendarKind, Edition, Localized, Nusach, TextSection } from "./types";
+import type { Edition, Localized, Nusach, TextSection } from "./types";
 
 export type { Lang };
 export type Texts = Record<Lang, string[]>;
@@ -42,42 +42,3 @@ export const licenseOf = (edition: Edition): Localized => {
 
 /** Which nusach's text a prayer shows: Sefard when Sefaria has it, otherwise Ashkenaz. */
 export const textNusach = <T>(sources: Readonly<{ ashkenaz: T; sefard?: T }>, nusach: Nusach): Nusach => sources[nusach] ? nusach : "ashkenaz";
-
-// ───────────── This week's Torah reading, from Sefaria's calendar ─────────────
-
-export type Reading = { name: Localized; ref: string; url: string; haftarah?: { ref: string; url: string } };
-
-function calendarDate(kind: CalendarKind, now = new Date()): Date {
-  if (kind !== "mincha") return now;
-  // Shabbat afternoon reads from the following week's portion: ask for the Shabbat after this one.
-  const date = new Date(now);
-  date.setDate(date.getDate() + ((6 - date.getDay() + 7) % 7) + 1);
-  return date;
-}
-
-export function calendarUrl(kind: CalendarKind, now = new Date()): string {
-  const date = calendarDate(kind, now);
-  return `https://www.sefaria.org/api/calendars?diaspora=1&year=${date.getFullYear()}&month=${date.getMonth() + 1}&day=${date.getDate()}`;
-}
-
-/** Accept a calendar only if it names this week's portion with safe Sefaria links. */
-export function parseCalendar(data: { calendar_items?: Array<Record<string, any>> }): Reading {
-  const items = Array.isArray(data?.calendar_items) ? data.calendar_items : [];
-  const pick = (title: string) => items.find(item => item?.title?.en === title);
-  const safe = (value: unknown) => typeof value === "string" && /^[A-Za-z0-9_.,:\-]+$/.test(value);
-  const parasha = pick("Parashat Hashavua");
-  if (!parasha || typeof parasha.displayValue?.en !== "string" || typeof parasha.displayValue?.he !== "string" || typeof parasha.ref !== "string" || !safe(parasha.url)) throw new Error("Unexpected calendar");
-  const haftarah = pick("Haftarah");
-  return {
-    name: { en: parasha.displayValue.en, he: parasha.displayValue.he },
-    ref: parasha.ref,
-    url: `https://www.sefaria.org/${parasha.url}`,
-    haftarah: haftarah && typeof haftarah.ref === "string" && safe(haftarah.url) ? { ref: haftarah.ref, url: `https://www.sefaria.org/${haftarah.url}` } : undefined,
-  };
-}
-
-export const calendarIntro: Record<CalendarKind, Localized> = {
-  weekday: { en: "The coming Shabbat or holiday reading (Sefaria calendar, outside Israel):", he: "הקריאה של השבת או החג הקרובים (לוח ספריא, חוץ לארץ):" },
-  shabbat: { en: "This Shabbat’s reading (Sefaria calendar, outside Israel):", he: "הקריאה של שבת זו (לוח ספריא, חוץ לארץ):" },
-  mincha: { en: "Shabbat afternoon reads the opening of the following week’s portion (Sefaria calendar, outside Israel):", he: "במנחה של שבת קוראים את תחילת פרשת השבוע הבא (לוח ספריא, חוץ לארץ):" },
-};

@@ -20,6 +20,7 @@
 // `numerals` for days in Hebrew; `omer` the civil day on whose evening each year's count begins.
 import { writeFileSync } from "node:fs";
 import { HDate, HebrewCalendar, flags, gematriya, months as M } from "@hebcal/core";
+import { getLeyningForHoliday, getLeyningForParshaHaShavua } from "@hebcal/leyning";
 
 const from = "2026-09-01", to = "2028-10-31";
 
@@ -147,6 +148,29 @@ for (let d = new HDate(before); ; ) {
 const omer = [];
 for (let year = new HDate(before).getFullYear(); year <= new HDate(after).getFullYear(); year++) omer.push(iso(new HDate(15, M.NISAN, year).greg()));
 
-const table = { from, to, months: monthList, numerals: Array.from({ length: 30 }, (_, i) => gematriya(i + 1)), omer, k: field(kind), t: field(tachanun), m: field(mincha), z: field(tzidkatcha), r: field(reading), p: field(psalms) };
+/**
+ * Each Shabbat's Torah reading outside Israel (@hebcal/leyning): the weekly portion, or a festival's
+ * reading when Shabbat is a festival day, as [date, English, Hebrew, Torah ref, haftarah ref,
+ * 1 if a weekly portion]. The Torah cards show it (src/today.ts), with a link to it on Sefaria. From
+ * the Shabbat before the range to some weeks after it, so "the next portion" is always known.
+ */
+const plain = text => text.normalize("NFC").replace(/[\u0591-\u05C7]/g, m => m === "\u05BE" ? "־" : "").replace(/^פרשת /, "");
+const firstRange = ref => ref.split(/[;,] ?(?=[A-Z])/)[0].split(/, (?=\d)/)[0];
+const shabbatot = [];
+for (const ev of HebrewCalendar.calendar({ start: new Date(before.getTime() - 7 * 864e5), end: new Date(after.getTime() + 60 * 864e5), il: false, sedrot: true })) {
+  if (ev.getDate().greg().getDay() !== 6) continue;
+  const parasha = Boolean(ev.getFlags() & flags.PARSHA_HASHAVUA);
+  if (!parasha && !(ev.getFlags() & (flags.CHAG | flags.CHOL_HAMOED))) continue;
+  const reading = parasha ? getLeyningForParshaHaShavua(ev, false) : getLeyningForHoliday(ev, false);
+  if (!reading?.summary) continue;
+  const date = iso(ev.getDate().greg());
+  if (shabbatot.some(s => s[0] === date)) continue;
+  // A festival Shabbat's name, short enough for one line: "Rosh Hashana I", "Chol HaMoed Pesach".
+  const en = reading.name.en.replace(/'/g, "’").replace(/ \(on Shabbat\)$/, "").replace(/^(\w+) Shabbat Chol ha-Moed$/, "Chol HaMoed $1");
+  const he = plain(reading.name.he).replace(/ \(בשבת\)$/, "").replace(/^שבת חל המועד /, "חול המועד ");
+  shabbatot.push([date, en, he, firstRange(reading.summary), reading.haftara ? firstRange(reading.haftara) : "", parasha ? 1 : 0]);
+}
+
+const table = { from, to, months: monthList, shabbatot, numerals: Array.from({ length: 30 }, (_, i) => gematriya(i + 1)), omer, k: field(kind), t: field(tachanun), m: field(mincha), z: field(tzidkatcha), r: field(reading), p: field(psalms) };
 writeFileSync(new URL("../src/calendar.generated.json", import.meta.url), `${JSON.stringify(table)}\n`);
 console.log(`Calendar ${from} to ${to}: ${days.length} days, ${table.months.length} Hebrew months.`);
