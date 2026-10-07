@@ -205,15 +205,28 @@ main[data-arriving] .section-text:not([hidden]):not(:has(.reader-text, .reader-f
 html[data-fonts=pending] .reader-text{visibility:hidden}
 
 /* Date notes: a calendar rule, then what it means for the date being prayed (src/today.ts). Fine
-   print, inside opened items only. The script writes the status in; in a page that arrives with the
-   note open, room is kept for it (two lines in each language shown; every status fits), so nothing
-   moves. Without a script it is not shown. */
+   print, inside opened items only. The script writes the status in, one line per language shown, in
+   room kept for exactly that (every status fits one line at 320 px), so nothing moves. Without a
+   script it is not shown. */
 .calendar-note{display:block;margin-top:10px;color:#53697b;font-size:.78rem;font-weight:450;line-height:1.4}
 .calendar-note .he{margin-top:2px}
 .note-rule{display:block}
-.note-status{display:block;margin-top:4px;color:var(--ink);font-weight:750}
-.note-status[data-reserve]{min-height:2.8em}
-html:not([data-language=en]):not([data-language=he]) .note-status[data-reserve]{min-height:calc(5.6em + 2px)}
+.note-status{display:block;margin-top:4px;color:var(--ink);font-size:.74rem;font-weight:400}
+@media(max-width:420px){.minor.reader-card>.details{padding-inline:8px}}
+.note-status{min-height:1.4em}
+html:not([data-language=en]):not([data-language=he]) .note-status{min-height:calc(2.8em + 2px)}
+/* The reading: in English its name, then its verses (then the haftarah on Shabbat morning); in Hebrew
+   its name (then the haftarah). One line each. */
+.calendar-reading{min-height:2.8em}
+html[data-language=he] .calendar-reading{min-height:1.4em}
+html:not([data-language=en]):not([data-language=he]) .calendar-reading{min-height:4.2em}
+.calendar-reading.with-haftarah{min-height:4.2em}
+html[data-language=he] .calendar-reading.with-haftarah{min-height:2.8em}
+html:not([data-language=en]):not([data-language=he]) .calendar-reading.with-haftarah{min-height:7em}
+.calendar-reading{margin:4px 0 0;color:var(--ink);font-size:.78rem;font-weight:700;line-height:1.4}
+.calendar-reading>span{display:block}
+.calendar-reading .he{margin-top:0}
+html:not([data-js]) .calendar-reading{display:none}
 html:not([data-js]) .note-status{display:none}
 .seam-note .calendar-note{margin-top:2px}
 html[data-language=he] .calendar-note{text-align:right}

@@ -11,7 +11,7 @@ import { renderToString } from "preact-render-to-string";
 import { displayTitle, HEICHA, heichaAloud, layoutFor, type Movement } from "../movements";
 import { corpus, routeFor, services, type MapRoute } from "../routes";
 import { textNusach } from "../sefaria";
-import type { AstNode, ContentNode, DayType, Localized, Nusach, ServiceId, ServiceMap } from "../types";
+import type { AstNode, CalendarKind, ContentNode, DayType, Localized, Nusach, ServiceId, ServiceMap } from "../types";
 import { noteRules } from "../notes";
 import { partsOf, sourceOf, textUrl } from "../texts";
 import { LanguagePicker, LocalizedText, PeopleIcon, SettingsIcon } from "./common";
@@ -86,14 +86,13 @@ function registerTemplate(view: View, id: string, content: (view: View) => Compo
 
 /**
  * A date note: a calendar rule in plain words, then what it means for the date being prayed, which
- * the browser writes in (src/today.ts). Fine print, inside opened items only. A note opened in place
- * is written in before it is drawn; one the page arrives with (`arriving`) keeps room for its status,
- * so nothing moves when the script writes it.
+ * the browser writes in (src/today.ts), one short line in room kept for it, so nothing moves. Fine
+ * print, inside opened items only.
  */
-function CalendarNote(id: string, arriving: boolean): VNode {
+function CalendarNote(id: string): VNode {
   const rule = noteRules[id];
   if (!rule) throw new Error(`No rule for the date note ${id}`);
-  return <span className="calendar-note" data-note={id}><span className="note-rule">{LocalizedText(rule)}</span><span className="note-status" data-note-status="" data-reserve={arriving ? "" : undefined} /></span>;
+  return <span className="calendar-note" data-note={id}><span className="note-rule">{LocalizedText(rule)}</span><span className="note-status" data-note-status="" /></span>;
 }
 
 const plainText = (node: AstNode): string => node.type === "text" ? node.value : node.children.map(plainText).join("");
@@ -158,7 +157,7 @@ function Ast(view: View, nodes: AstNode[]): VNode {
     if (node.type === "text") return node.value;
     const classes = (node.attrs.class || "").split(/\s+/);
     if (classes.includes("rite") && !classes.includes(view.nusach[0])) return null;
-    if (classes.includes("calendar-note")) return CalendarNote(classes.find(c => c.startsWith("note-"))!.slice("note-".length), view.place.open.size > 0);
+    if (classes.includes("calendar-note")) return CalendarNote(classes.find(c => c.startsWith("note-"))!.slice("note-".length));
     const props: Record<string, unknown> = { key };
     if (node.attrs.class) props.className = node.attrs.class;
     if (node.attrs["data-lang"]) props["data-lang"] = node.attrs["data-lang"];
@@ -334,8 +333,22 @@ function PrayerReader(view: View, node: ContentNode): VNode {
   </section>;
 }
 
-/** This week's Torah reading from Sefaria's calendar; the browser fills it. */
-const TorahCalendar = (kind: string) => <div className="reader-calendar" data-calendar={kind} />;
+/** What a Torah card's reading line introduces (src/today.ts readingFor). */
+const readingIntro: Record<CalendarKind, Localized> = {
+  weekday: { en: "The coming Shabbat’s portion (outside Israel):", he: "פרשת השבת הקרובה (חוץ לארץ):" },
+  shabbat: { en: "This Shabbat’s reading (outside Israel):", he: "הקריאה של שבת זו (חוץ לארץ):" },
+  mincha: { en: "Shabbat afternoon reads the opening of the next week’s portion (outside Israel):", he: "במנחה של שבת קוראים את תחילת פרשת השבוע הבא (חוץ לארץ):" },
+};
+
+/**
+ * The week's Torah reading for the date being prayed, with a link to it on Sefaria. The browser
+ * writes the reading in (src/client/date.ts) from the calendar table, in room kept for it: its name
+ * and verses (in Hebrew, its name), and on Shabbat morning the haftarah, one line each.
+ */
+const TorahCalendar = (kind: CalendarKind) => <div className="reader-calendar" data-calendar={kind}>
+  <p className="calendar-intro">{LocalizedText(readingIntro[kind])}</p>
+  <p className={`calendar-reading${kind === "shabbat" ? " with-haftarah" : ""}`} data-reading="" />
+</div>;
 
 /**
  * An open card with text. A prayer of several sections shows only its breakdown; each entry opens

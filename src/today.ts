@@ -12,6 +12,8 @@ export type CalendarTable = Readonly<{
   months: ReadonlyArray<readonly [string, string, string, number, string]>;
   numerals: readonly string[];
   omer: readonly string[];
+  /** Each Shabbat's reading: date, English, Hebrew, Torah ref, haftarah ref, 1 if a weekly portion. */
+  shabbatot: ReadonlyArray<readonly [string, string, string, string, string, number]>;
   k: string; t: string; m: string; z: string; r: string; p: string;
 }>;
 type Words = { en: string; he: string };
@@ -60,8 +62,9 @@ export function hebrewDate(table: CalendarTable, iso: string): Words | undefined
 }
 
 // ───────────── The notes ─────────────
-// Every status fits two lines of fine print at the narrowest width (tests/date.spec.ts checks), so
-// the room kept for it is enough and nothing moves when it is written in.
+// Every status is one short line, "Today: none—Rosh Chodesh"; the rule beside it (src/notes.ts)
+// explains. Each fits one line of fine print at the narrowest width in each language
+// (tests/date.spec.ts checks), so the room kept for it is exactly enough and nothing moves.
 
 /** Why a prayer is not said, by the codes scripts/calendar.mjs writes. */
 const reasons: Record<string, Words> = {
@@ -73,22 +76,16 @@ const reasons: Record<string, Words> = {
   B: { en: "Tu BiShvat", he: "ט״ו בשבט" },
   V: { en: "Tu B’Av", he: "ט״ו באב" },
   A: { en: "Tisha B’Av", he: "תשעה באב" },
-  N: { en: "the month of Nisan", he: "חודש ניסן" },
+  N: { en: "Nisan", he: "ניסן" },
   G: { en: "Pesach Sheni", he: "פסח שני" },
   L: { en: "Lag BaOmer", he: "ל״ג בעומר" },
-  W: { en: "the days of Shavuot", he: "ימי חג השבועות" },
-  E: { en: "Erev Rosh Hashanah", he: "ערב ראש השנה" },
+  W: { en: "early Sivan", he: "תחילת סיוון" },
+  E: { en: "Erev Rosh Hashana", he: "ערב ראש השנה" },
   X: { en: "Erev Yom Kippur", he: "ערב יום כיפור" },
-  T: { en: "Yom Kippur to Sukkot", he: "מיום כיפור עד סוכות" },
+  T: { en: "after Yom Kippur", he: "אחרי יום כיפור" },
   H: { en: "Chol HaMoed", he: "חול המועד" },
   F: { en: "Erev Shabbat", he: "ערב שבת" },
   O: { en: "Erev Yom Tov", he: "ערב יום טוב" },
-};
-/** Days whose practice varies between communities. */
-const varies: Record<string, Words> = {
-  U: { en: "many omit it to 12 Sivan", he: "רבים עד י״ב בסיוון" },
-  I: { en: "Yom HaAtzmaut", he: "יום העצמאות" },
-  J: { en: "Yom Yerushalayim", he: "יום ירושלים" },
 };
 /** A reason; a lower-case code is the afternoon before that day ("Erev Rosh Chodesh"). */
 const reasonOf = (code: string): Words => {
@@ -100,13 +97,13 @@ const reasonOf = (code: string): Words => {
 
 const join = (when: Words, what: Words): Words => ({ en: `${when.en}: ${what.en}`, he: `${when.he}: ${what.he}` });
 const said = (feminine = false): Words => ({ en: "said", he: feminine ? "נאמרת" : "נאמר" });
-/** "not said — Rosh Chodesh"; Tzidkatcha is feminine in Hebrew. */
-const notSaid = (code: string, feminine = false): Words => { const r = reasonOf(code); return { en: `not said — ${r.en}`, he: `${feminine ? "אינה נאמרת" : "אינו נאמר"} — ${r.he}` }; };
-/** Shabbat and festivals, where a weekday map does not apply, and days whose practice varies. */
+/** "none—Rosh Chodesh" (short enough for the narrowest card); Tzidkatcha is feminine in Hebrew. */
+const notSaid = (code: string, feminine = false): Words => { const r = reasonOf(code); return { en: `none—${r.en}`, he: `${feminine ? "אינה נאמרת" : "אינו נאמר"} — ${r.he}` }; };
+/** Shabbat and festivals, where a weekday map does not apply, and days whose custom varies (U 9-12 Sivan, I Yom HaAtzmaut, J Yom Yerushalayim). */
 const notHere = (code: string): Words | undefined =>
-  code === "S" ? { en: "Shabbat — see the Shabbat maps", he: "שבת — ראו את מפות השבת" }
-  : code === "Y" ? { en: "a festival — its service differs", he: "יום טוב — התפילה בו שונה" }
-  : varies[code] ? { en: `customs vary — ${varies[code].en}`, he: `המנהג משתנה — ${varies[code].he}` }
+  code === "S" ? { en: "it’s Shabbat", he: "שבת" }
+  : code === "Y" ? { en: "it’s a festival", he: "יום טוב" }
+  : "UIJ".includes(code) ? { en: "customs vary", he: "המנהג משתנה" }
   : undefined;
 
 const psalmOfDay = [24, 48, 82, 94, 81, 93, 92];
@@ -122,45 +119,41 @@ export const noteTimes: Record<string, NoteTime> = {
 /** The Shabbat a date belongs to on the Shabbat maps: the date itself if it is Shabbat, otherwise the coming one. */
 export const shabbatOf = (iso: string) => addDays(iso, (6 - weekday(iso) + 7) % 7);
 
-/** "Today", "Tonight", "This Shabbat", or the date itself when another date is dialled in; `named` adds the weekday to "Today". */
-function whenOf(time: NoteTime, iso: string, today: string, named = false): Words {
-  if (time === "evening") return iso === today ? { en: "Tonight", he: "הלילה" } : { en: `${civilDate(iso).en}, evening`, he: `${civilDate(iso).he} בערב` };
-  if (time === "shabbat") {
-    const s = shabbatOf(iso), d = fromIso(s);
-    return s === shabbatOf(today) ? { en: "This Shabbat", he: "בשבת זו" } : { en: `Shabbat ${d.getDate()} ${monthsEn[d.getMonth()]}`, he: `בשבת ${d.getDate()}.${d.getMonth() + 1}` };
-  }
-  if (iso !== today) return civilDate(iso);
-  return named ? { en: `Today (${weekdaysEn[weekday(iso)]})`, he: `היום (${weekdaysHe[weekday(iso)]})` } : { en: "Today", he: "היום" };
+/** "Today", "Tonight", or the date ("12 Oct", "12 Oct, eve"; on the Shabbat maps, the Shabbat's). */
+function whenOf(time: NoteTime, iso: string, today: string): Words {
+  const short = (day: string): Words => { const d = fromIso(day); return { en: `${d.getDate()} ${monthsEn[d.getMonth()]}`, he: `${d.getDate()}.${d.getMonth() + 1}` }; };
+  if (time === "evening") { if (iso === today) return { en: "Tonight", he: "הלילה" }; const d = short(iso); return { en: `${d.en}, eve`, he: `ערב ${d.he}` }; }
+  // On the Shabbat maps, the Shabbat itself: "Today" on the day, otherwise its date.
+  if (time === "shabbat") return shabbatOf(iso) === today ? { en: "Today", he: "היום" } : short(shabbatOf(iso));
+  return iso === today ? { en: "Today", he: "היום" } : short(iso);
 }
 
 const readings: Record<string, Words> = {
-  "-": { en: "no Torah reading", he: "אין קריאת התורה" },
-  M: { en: "Torah reading, three aliyot", he: "קריאת התורה, שלוש עליות" },
-  R: { en: "Rosh Chodesh reading, four aliyot", he: "קריאת ראש חודש, ארבע עליות" },
-  C: { en: "Chanukah reading, three aliyot", he: "קריאת חנוכה, שלוש עליות" },
-  D: { en: "Rosh Chodesh and Chanukah, two scrolls", he: "ראש חודש וחנוכה, שני ספרי תורה" },
-  P: { en: "Purim reading, three aliyot", he: "קריאת פורים, שלוש עליות" },
-  F: { en: "fast-day reading, three aliyot", he: "קריאת תענית, שלוש עליות" },
-  A: { en: "Tisha B’Av reading, three aliyot", he: "קריאת תשעה באב, שלוש עליות" },
-  H: { en: "Chol HaMoed reading, four aliyot", he: "קריאת חול המועד, ארבע עליות" },
+  "-": { en: "no reading", he: "אין קריאה" },
+  M: { en: "Torah reading, 3 aliyot", he: "קריאת התורה, 3 עליות" },
+  R: { en: "Rosh Chodesh, 4 aliyot", he: "ראש חודש, 4 עליות" },
+  C: { en: "Chanukah, 3 aliyot", he: "חנוכה, 3 עליות" },
+  D: { en: "2 scrolls, 4 aliyot", he: "2 ספרי תורה, 4 עליות" },
+  P: { en: "Purim, 3 aliyot", he: "פורים, 3 עליות" },
+  F: { en: "fast day, 3 aliyot", he: "תענית, 3 עליות" },
+  A: { en: "Tisha B’Av, 3 aliyot", he: "תשעה באב, 3 עליות" },
+  H: { en: "Chol HaMoed, 4 aliyot", he: "חול המועד, 4 עליות" },
 };
 
-/** What a note says for a date: its status, or that the calendar does not reach it. */
+const notCovered: Words = { en: "not in the calendar", he: "אינו בלוח" };
+
+/** What a note says for a date: one short line, or that the calendar does not reach it. */
 export function noteStatus(table: CalendarTable, note: string, iso: string, today: string): Words {
   const time = noteTimes[note] || "day";
-  const named = note === "torah-weekday" || note === "daily-psalms";
-  const when = whenOf(time, iso, today, named);
+  const when = whenOf(time, iso, today);
   const day = time === "evening" ? addDays(iso, 1) : time === "shabbat" ? shabbatOf(iso) : iso;
-  if (!covered(table, day)) {
-    const last = fromIso(table.to);
-    return join(when, { en: `not in the calendar (to ${last.getDate()} ${monthsEn[last.getMonth()]} ${last.getFullYear()})`, he: `אינו בלוח (עד ${last.getDate()}.${last.getMonth() + 1}.${last.getFullYear()})` });
-  }
+  if (!covered(table, day)) return join(when, notCovered);
   const i = dayIndex(table, day);
   switch (note) {
     case "tachanun-shacharit": {
       const code = table.t[i];
       if (code !== "-") return join(when, notHere(code) || notSaid(code));
-      return join(when, weekday(day) === 1 || weekday(day) === 4 ? { en: "said, with the Monday–Thursday additions", he: "נאמר, עם התוספות של שני וחמישי" } : said());
+      return join(when, weekday(day) === 1 || weekday(day) === 4 ? { en: "said, the long form", he: "נאמר, בנוסח הארוך" } : said());
     }
     case "tachanun-mincha": {
       const code = table.m[i];
@@ -171,9 +164,9 @@ export function noteStatus(table: CalendarTable, note: string, iso: string, toda
       if (code === "-") return join(when, { en: "after Tachanun", he: "אחרי התחנון" });
       const special = notHere(code);
       if (special) return join(when, special);
-      if (code === "R" || code === "H") return join(when, { en: "after Hallel, as a Full Kaddish", he: "אחרי ההלל, כקדיש שלם" });
+      if (code === "R" || code === "H") return join(when, { en: "after Hallel, as Full Kaddish", he: "אחרי ההלל, כקדיש שלם" });
       if (code === "C") return join(when, { en: "after Hallel", he: "אחרי ההלל" });
-      return join(when, { en: "right after the repetition — no Tachanun", he: "מיד אחרי החזרה — אין תחנון" });
+      return join(when, { en: "after the repetition", he: "אחרי החזרה" });
     }
     case "torah-weekday":
       return join(when, readings[table.r[i]] || notHere(table.r[i])!);
@@ -189,8 +182,7 @@ export function noteStatus(table: CalendarTable, note: string, iso: string, toda
     case "omer": {
       // The count begins on the evening of each year's `omer` day (the second night of Pesach).
       const n = Math.max(0, ...table.omer.map(first => { const k = Math.round((fromIso(iso).getTime() - fromIso(first).getTime()) / 864e5) + 1; return k >= 1 && k <= 49 ? k : 0; }));
-      if (!n) return join(when, { en: "no Omer count", he: "אין ספירת העומר" });
-      return join(when, { en: `count day ${n} of the Omer`, he: `סופרים יום ${n} לעומר` });
+      return join(when, n ? { en: `Omer day ${n}`, he: `יום ${n} לעומר` } : { en: "no Omer count", he: "אין ספירת העומר" });
     }
     case "tzidkatcha": {
       const code = table.z[i];
@@ -199,13 +191,31 @@ export function noteStatus(table: CalendarTable, note: string, iso: string, toda
     case "kaddish-after-tzidkatcha": {
       const code = table.z[i];
       if (code === "-") return join(when, { en: "after Tzidkatcha", he: "אחרי צדקתך" });
-      const special = notHere(code);
-      if (special) return join(when, special);
-      return join(when, { en: "right after the repetition — no Tzidkatcha", he: "מיד אחרי החזרה — אין צדקתך" });
+      return join(when, notHere(code) || { en: "after the repetition", he: "אחרי החזרה" });
     }
   }
   return when;
 }
+
+// ───────────── The week's Torah reading ─────────────
+
+/** Which reading a Torah card shows: the coming Shabbat's portion (weekday), this Shabbat's reading, or (Shabbat afternoon) the next week's portion. */
+export type ReadingKind = "weekday" | "shabbat" | "mincha";
+export type Reading = Readonly<{ name: Words; torah: string; haftarah?: string }>;
+
+/** A reading for the date, from the table's Shabbat readings, or undefined past the table. */
+export function readingFor(table: CalendarTable, kind: ReadingKind, iso: string): Reading | undefined {
+  const shabbat = shabbatOf(iso);
+  const found = kind === "shabbat" ? table.shabbatot.find(s => s[0] === shabbat)
+    : table.shabbatot.find(s => s[5] === 1 && (kind === "mincha" ? s[0] > shabbat : s[0] >= shabbat));
+  if (!found || (kind === "shabbat" && !covered(table, shabbat))) return undefined;
+  return { name: { en: found[1], he: found[2] }, torah: found[3], haftarah: kind === "shabbat" ? found[4] || undefined : undefined };
+}
+
+/** A ref as Sefaria writes it in a link: "I Samuel 20:18-42" → https://www.sefaria.org/I_Samuel.20.18-42. */
+export const sefariaUrl = (ref: string) => `https://www.sefaria.org/${ref.replace(/ (?=\d+:)/, ".").replace(/ /g, "_").replace(/:/g, ".")}`;
+/** A ref for reading: an en dash in ranges. */
+export const showRef = (ref: string) => ref.replace(/-/g, "–");
 
 /** Word every date note under `root` for the date `iso` (the reader's today is `today`). */
 export function fillNotes(table: CalendarTable, root: ParentNode, iso: string, today: string) {
