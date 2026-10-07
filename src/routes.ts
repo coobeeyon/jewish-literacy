@@ -1,6 +1,6 @@
 // Build time: which views exist (see src/paths.ts for how a path is built).
 import corpusJson from "./corpus.generated.json";
-import { layoutFor } from "./movements";
+import { HEICHA, layoutFor } from "./movements";
 import { routeFor, services } from "./paths";
 import type { Corpus, ServiceMap } from "./types";
 
@@ -8,8 +8,11 @@ export { defaultMap, routeFor, services } from "./paths";
 
 export const corpus = corpusJson as Corpus;
 
-/** A map, a movement or prayer in it (`section`), and a section of that prayer (`part`). */
-export type MapRoute = Readonly<{ map: ServiceMap; section?: string; part?: string }>;
+/**
+ * A map, a movement or prayer in it (`section`), and a section of that prayer (`part`). A Mincha
+ * Shmoneh Esrei shown as Heicha Kedushah has part "heicha-kedushah" and its open section in `sub`.
+ */
+export type MapRoute = Readonly<{ map: ServiceMap; section?: string; part?: string; sub?: string }>;
 
 /**
  * Every view the app has: each map; each movement of several prayers; each prayer and landmark;
@@ -21,7 +24,13 @@ export function mapRoutes(): MapRoute[] {
     if (!services[map.day]?.includes(map.id)) throw new Error(`Invalid service ${map.day}/${map.id}`);
     const layout = layoutFor(map);
     out.push({ map });
-    for (const movement of layout.movements) if (!movement.single) out.push({ map, section: movement.id });
+    for (const movement of layout.movements) {
+      if (movement.single) continue;
+      out.push({ map, section: movement.id });
+      if (!movement.heicha) continue;
+      out.push({ map, section: movement.id, part: HEICHA });
+      for (const sub of movement.heicha.slugs) out.push({ map, section: movement.id, part: HEICHA, sub });
+    }
     for (const node of map.nodes) {
       if (!node.routable) continue;
       out.push({ map, section: node.id });
@@ -33,7 +42,7 @@ export function mapRoutes(): MapRoute[] {
   for (const route of out) {
     if (!route.section) continue;
     const target = layoutFor(route.map).resolve(route.section);
-    if (!target || (route.part && !target.node)) throw new Error(`Unresolvable route ${routeFor(route.map, route.section, route.part)}`);
+    if (!target || (route.part && !target.node && !(route.part === HEICHA && target.movement?.heicha))) throw new Error(`Unresolvable route ${routeFor(route.map, route.section, route.part, route.sub)}`);
   }
   return out;
 }

@@ -1,10 +1,12 @@
-// Pure Sefaria logic: response validation, text cleaning, reading-plan rendering, licenses and the
+// Pure Sefaria logic: response validation, reading-plan rendering (src/format.ts keeps each
+// edition's formatting and fixes its glitches), licenses and the
 // Torah calendar. No DOM and no fetching here; src/client/reader.ts does both, using these.
+import { formatSegment, plainOf, type Inline, type Lang } from "./format";
 import type { CalendarKind, Edition, Localized, Nusach, TextSection } from "./types";
 
-export type Lang = "en" | "he";
+export type { Lang };
 export type Texts = Record<Lang, string[]>;
-export type Paragraph = { text: string; rubric: boolean };
+export type Paragraph = { nodes: Inline[]; rubric: boolean };
 export type RenderedPart = { heading?: Localized; en: Paragraph[]; he: Paragraph[] };
 
 /** Accept a response only if it is exactly the pinned ref, editions, licenses and shape. */
@@ -25,36 +27,6 @@ export function validateSection(data: unknown, section: TextSection, edition: Ed
   return out as Texts;
 }
 
-const entities: Record<string, string> = { nbsp: " ", amp: "&", quot: "\"", apos: "'", lt: "<", gt: ">", thinsp: " " };
-export function clean(raw: string, lang: Lang, rubric: boolean): string {
-  let text = raw
-    .replace(/<[^>]*>/g, " ")
-    .replace(/&(nbsp|amp|quot|apos|lt|gt|thinsp);/g, (_, name: string) => entities[name])
-    .replace(/\{[פס]\}/g, "")
-    .replace(/[◂▸▾▴°❖]/g, "");
-  if (lang === "he") {
-    // Koren's Hebrew on Sefaria carries a few English stage words.
-    text = text.replace(/\bQuietly:\s*/g, "בלחש: ").replace(/\s+then\s+/g, " ואחריו ");
-  }
-  if (lang === "en") {
-    text = text
-      .replace(/[<>]/g, "") // stray markup characters in Koren's English
-      .replace(/([a-z\]])\d{1,3}(?=[\s,.;:!?)]|$)/g, "$1"); // stray footnote numbers ("Blessed13")
-    // Koren prints the Hebrew opening words inside its translation ("Leader: יִתְגַּדַּל Magnified…");
-    // the Hebrew is already shown above, so the English keeps only the translation.
-    const withoutHebrew = text.replace(/[֐-׿][֐-׿\s״׳"'־]*(?=\s|$)/g, " ");
-    if (!rubric && /[A-Za-z]/.test(withoutHebrew)) text = withoutHebrew;
-  }
-  if (lang === "en") text = text.replace(/\b(Leader:)(?:\s*Leader:)+/g, "$1"); // "Leader:Leader:" in Koren's Kedushah
-  // Metsudah's English transliterates the Name in old Ashkenazi pronunciation; Mike prefers "LORD", as Koren prints it.
-  if (lang === "en") text = text.replace(/\bAdonoy\b/g, "LORD");
-  if (rubric) text = text // drop printed-page cross references, which mean nothing here
-    .replace(/\s*\(?\s*see laws? [\d–-]+\s*\)?\.?/gi, "")
-    .replace(/,?\s*\(?\s*(?:(?:found|see|turn to|is)\s+)?(?:on\s+)?(?:(?:the\s+)?(?:next|previous|following)\s+)?(?:pp?\.|pages?)(?:\s*[\d–-]+)?\s*\)?/gi, "")
-    .replace(/\s*\(\s*\)/g, "").replace(/\s+([.,;:])/g, "$1");
-  return text.replace(/\s+/g, " ").trim();
-}
-
 export function renderSection(section: TextSection, texts: Texts, out: RenderedPart) {
   for (const item of section.items.split(",")) {
     const match = item.match(/^(\d+)(?:-(\d+))?(t|h|r|rh|re)$/);
@@ -63,9 +35,9 @@ export function renderSection(section: TextSection, texts: Texts, out: RenderedP
     const rubric = kind.startsWith("r");
     const langs: Lang[] = kind === "t" || kind === "r" ? ["en", "he"] : kind === "h" || kind === "rh" ? ["he"] : ["en"];
     for (const lang of langs) {
-      const pieces = texts[lang].slice(from - 1, to).map(segment => clean(segment, lang, rubric));
-      if (pieces.length !== to - from + 1 || pieces.some(piece => !piece)) throw new Error("Pinned Sefaria text is missing");
-      out[lang].push({ text: pieces.join(" "), rubric });
+      const pieces = texts[lang].slice(from - 1, to).map(segment => formatSegment(segment, lang, rubric));
+      if (pieces.length !== to - from + 1 || pieces.some(piece => !plainOf(piece).trim())) throw new Error("Pinned Sefaria text is missing");
+      out[lang].push({ nodes: pieces.flatMap((piece, i) => i ? [" ", ...piece] : piece), rubric });
     }
   }
 }

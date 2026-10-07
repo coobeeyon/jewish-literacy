@@ -2,6 +2,7 @@
 // pinned editions, cached, with loading, failure, retry and attribution. Ported from the React
 // app's reader.tsx; the pure parts live in src/sefaria.ts.
 import { calendarIntro, calendarUrl, licenseOf, parseCalendar, partAnchor, renderSection, textNusach, validateSection, type Reading, type RenderedPart, type Texts } from "../sefaria";
+import type { Inline } from "../format";
 import type { CalendarKind, Edition, Localized, Nusach, TextPart, TextSection, TextSource } from "../types";
 import { bi, h } from "./dom";
 
@@ -68,12 +69,15 @@ function Credit(plan: Plan, fellBack: boolean): HTMLElement {
   );
 }
 
+/** An edition's own formatting, as elements: line breaks, bold, italics, small, big, superscript. */
+const formatted = (nodes: Inline[]): Array<Node | string> => nodes.map(node => typeof node === "string" ? node : "br" in node ? h("br") : h(node.tag, {}, formatted(node.children)));
+
 /** One section of a prayer: heading (when the prayer has several), then Hebrew, then English. */
 function PartText(info: ReaderInfo, index: number, part: RenderedPart, heading: boolean): HTMLElement {
   return h("div", { class: "reader-section", id: partAnchor(info.id, index), tabindex: "-1" },
     heading && part.heading && h("h3", { class: "reader-heading" }, bi(part.heading)),
-    h("div", { class: "reader-text reader-he", "data-lang": "he", lang: "he", dir: "rtl" }, part.he.map(p => h("p", { class: p.rubric ? "rubric" : undefined }, p.text))),
-    part.en.length > 0 && h("div", { class: "reader-text reader-en", "data-lang": "en", lang: "en", dir: "ltr" }, part.en.map(p => h("p", { class: p.rubric ? "rubric" : undefined }, p.text))),
+    h("div", { class: "reader-text reader-he", "data-lang": "he", lang: "he", dir: "rtl" }, part.he.map(p => h("p", { class: p.rubric ? "rubric" : undefined }, formatted(p.nodes)))),
+    part.en.length > 0 && h("div", { class: "reader-text reader-en", "data-lang": "en", lang: "en", dir: "ltr" }, part.en.map(p => h("p", { class: p.rubric ? "rubric" : undefined }, formatted(p.nodes)))),
   );
 }
 
@@ -126,8 +130,8 @@ export function showPrayer(section: HTMLElement, info: ReaderInfo, nusach: Nusac
   run();
 }
 
-/** One section of a prayer of several, shown where its breakdown entry is (in its .section-text). */
-export function showSection(box: HTMLElement, info: ReaderInfo, index: number, nusach: Nusach) {
+/** One section of a prayer of several, shown where its breakdown entry is (in its .section-text), under its entry's heading if it has its own. */
+export function showSection(box: HTMLElement, info: ReaderInfo, index: number, nusach: Nusach, heading?: Localized) {
   const run = () => {
     const live = claim(box);
     const reader = h("div", { class: "reader section-reader", "aria-busy": "true" }, Status("loading"));
@@ -141,7 +145,7 @@ export function showSection(box: HTMLElement, info: ReaderInfo, index: number, n
       .then(part => {
         if (!live()) return;
         reader.removeAttribute("aria-busy");
-        reader.replaceChildren(PartText(info, index, part, true));
+        reader.replaceChildren(PartText(info, index, heading ? { ...part, heading } : part, true));
       })
       .catch(error => {
         if (!live()) return;

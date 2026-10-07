@@ -11,56 +11,77 @@
 //   a group toggle has data-group and data-sections (the slugs of the sections it holds);
 // - a multi-prayer movement lists its members in data-members; a prayer with text has data-reader.
 import { nusach } from "./preferences";
+import { HEICHA } from "../paths";
 import { hideCredit, release, showCalendar, showCredit, showPrayer, showSection, type ReaderInfo } from "./reader";
 
-type NavState = { sections?: string[]; closed?: string; closedSection?: string };
+type NavState = { sections?: string[]; closed?: string; closedSection?: string; switched?: boolean };
 type Navigation = "initial" | "push" | "replace" | "pop";
 
 export function initMap(main: HTMLElement) {
   const base = `/${main.dataset.day}/${main.dataset.service}`;
   /** Ends the initial deep link's hold on its target (see holdInView). */
   let stopHolding: (() => void) | undefined;
-  /** Groups opened or closed by hand, per open prayer; forgotten when the prayer closes. */
+  /** Groups opened or closed by hand, per open prayer (by its item's id); forgotten when the prayer closes. */
   const groups = new Map<string, Record<string, boolean>>();
   /** The nusach each reader element was last filled for. */
   const filled = new WeakMap<Element, string>();
 
   const byId = (id: string) => document.getElementById(id);
-  const routeFor = (section?: string) => section ? `${base}/${section}` : base;
+  const routeFor = (...segments: Array<string | undefined>) => [base, ...segments].filter(Boolean).join("/");
   const infoFor = (el: Element): ReaderInfo => JSON.parse(el.closest<HTMLElement>("[data-reader]")!.dataset.reader!);
   const parentOf = (id: string) => main.querySelector<HTMLElement>(`.service-map > [data-members~="${CSS.escape(id)}"]`)?.id.slice("movement-".length);
 
-  /** The state the URL and history entry name: the open movement and prayer, and its open sections. */
+  /**
+   * The state the URL and history entry name: the open movement and prayer, its open sections, and
+   * whether a Shmoneh Esrei shows as Heicha Kedushah (/<movement>/heicha-kedushah[/<section>]).
+   */
   function route() {
-    const [section, part] = location.pathname.slice(base.length).split("/").filter(Boolean);
+    const [section, part, sub] = location.pathname.slice(base.length).split("/").filter(Boolean);
     const state = history.state as NavState | null;
+    const heicha = part === HEICHA && Boolean(byId(`movement-${section}`)?.hasAttribute("data-heicha"));
+    const latest = heicha ? sub : part;
     // Open sections ride in history state, so Back and Forward restore them; the URL names the latest.
-    const sections = [...(state?.sections || []).filter(s => s !== part), ...(part ? [part] : [])];
+    const sections = [...(state?.sections || []).filter(s => s !== latest), ...(latest ? [latest] : [])];
     const open = new Set<string>();
     if (section) {
       const parent = byId(`movement-${section}`) ? undefined : parentOf(section);
       if (parent) open.add(parent);
       open.add(section);
     }
-    return { section, part, sections, open, state };
+    return { section, part: heicha ? undefined : part, sub: heicha ? sub : undefined, heicha, sections, open, state };
   }
+
+  /** Which form an open region should hold: Heicha Kedushah, for the movement the route shows that way. */
+  const modeFor = (button: HTMLElement) => {
+    const { heicha, section } = route();
+    return heicha && button.dataset.route === section ? "heicha" : undefined;
+  };
+  const templateKey = (region: HTMLElement) => region.dataset.mode ? `${region.id}~${region.dataset.mode}` : region.id;
 
   function template(key: string): DocumentFragment | undefined {
     const found = (byId(`t:${key}:${nusach()}`) || byId(`t:${key}`)) as HTMLTemplateElement | null;
     return found?.content.cloneNode(true) as DocumentFragment | undefined;
   }
 
-  /** Open or close an item: fill or empty its region, and swap a member prayer's summary out or back. */
+  /**
+   * Open or close an item: fill or empty its region (in the form the route asks for), swap a member
+   * prayer's summary out or back, and a Shmoneh Esrei's line for its pattern.
+   */
   function setOpen(button: HTMLElement, open: boolean, keepGroups = false) {
     const item = button.parentElement!;
     const region = byId(button.getAttribute("aria-controls")!)!;
+    // Prayers leaving the page forget the groups opened in them by hand.
+    if (!keepGroups) for (const gone of [item, ...region.querySelectorAll("[data-reader]")]) groups.delete(gone.id);
+    const mode = open ? modeFor(button) : undefined;
     button.setAttribute("aria-expanded", String(open));
     region.hidden = !open;
-    region.replaceChildren(...(open ? [template(region.id)!] : []));
+    if (mode) region.dataset.mode = mode; else delete region.dataset.mode;
+    region.replaceChildren(...(open ? [template(templateKey(region))!] : []));
     if (item.matches(".landmark-reader, .movement:not(.card)")) item.toggleAttribute("data-open", open);
     hideCredit(region);
     filled.delete(region);
-    if (!open && !keepGroups) groups.delete(button.dataset.route!);
+    const blurb = template(`blurb-${button.dataset.route}${mode ? `~${mode}` : ""}`);
+    if (blurb) button.querySelector(".blurb")!.replaceWith(blurb);
     const summary = template(`summary-${button.dataset.route}`);
     if (summary) {
       const copy = button.querySelector(".copy")!;
@@ -71,22 +92,29 @@ export function initMap(main: HTMLElement) {
 
   /** Make the page match the route: open what it names, close the rest, then the open prayer's sections. */
   function sync() {
-    const { open, sections, section } = route();
+    const { open, sections, section, heicha } = route();
     for (let changed = true; changed;) {
       changed = false;
       for (const button of main.querySelectorAll<HTMLElement>("button[data-route]")) {
         if (!button.isConnected) continue;
         const want = open.has(button.dataset.route!);
-        if ((button.getAttribute("aria-expanded") === "true") !== want) { setOpen(button, want); changed = true; }
+        const isOpen = button.getAttribute("aria-expanded") === "true";
+        const region = byId(button.getAttribute("aria-controls")!)!;
+        if (isOpen !== want) setOpen(button, want);
+        // Open, but in the other pattern: refill it in the one the route names.
+        else if (want && region.dataset.mode !== modeFor(button)) { setOpen(button, false); setOpen(button, true); }
+        else continue;
+        changed = true;
       }
     }
-    const item = section ? byId(`section-${section}`) : null;
-    if (item?.querySelector(":scope > .details .toc-toggle")) syncSections(item, section!, sections);
+    // The prayers whose sections the route names: the open prayer, or Heicha Kedushah's two parts.
+    const prayers = heicha ? [...main.querySelectorAll<HTMLElement>(`#movement-${CSS.escape(section!)} [data-heicha-part]`)] : [section && byId(`section-${section}`)];
+    for (const item of prayers) if (item && item.querySelector(":scope > .details .toc-toggle")) syncSections(item, sections);
     fillReaders();
   }
 
-  /** In the open prayer: each entry's section, each group, and the credit once any section is open. */
-  function syncSections(item: HTMLElement, id: string, sections: string[]) {
+  /** In an open prayer: each entry's section, each group, and the credit once any of its sections is open. */
+  function syncSections(item: HTMLElement, sections: string[]) {
     const toggles = [...item.querySelectorAll<HTMLElement>(".toc-toggle[data-section]")];
     const slugs = new Set(toggles.map(t => t.dataset.section!));
     const open = sections.filter(slug => slugs.has(slug));
@@ -98,7 +126,7 @@ export function initMap(main: HTMLElement) {
       box.hidden = !want;
       if (!want) { release(box); filled.delete(box); box.replaceChildren(); }
     }
-    const chosen = groups.get(id) || {};
+    const chosen = groups.get(item.id) || {};
     for (const group of item.querySelectorAll<HTMLElement>(".toc-group")) {
       const want = chosen[group.dataset.group!] ?? group.dataset.sections!.split(" ").some(slug => open.includes(slug));
       group.setAttribute("aria-expanded", String(want));
@@ -114,14 +142,14 @@ export function initMap(main: HTMLElement) {
     const now = nusach();
     const fill = (el: HTMLElement, show: () => void) => { if (filled.get(el) !== now) { filled.set(el, now); show(); } };
     for (const section of main.querySelectorAll<HTMLElement>("section[data-prayer]")) fill(section, () => showPrayer(section, infoFor(section), now));
-    for (const box of main.querySelectorAll<HTMLElement>(".section-text:not([hidden])")) fill(box, () => showSection(box, infoFor(box), Number(box.dataset.part), now));
+    for (const box of main.querySelectorAll<HTMLElement>(".section-text:not([hidden])")) fill(box, () => showSection(box, infoFor(box), Number(box.dataset.part), now, box.dataset.heading ? JSON.parse(box.dataset.heading) : undefined));
     // This week's Torah reading does not depend on the nusach: fetched once per element.
     for (const calendar of main.querySelectorAll<HTMLElement>(".reader-calendar")) if (!filled.has(calendar)) { filled.set(calendar, ""); showCalendar(calendar); }
   }
 
   /** Bring the right thing into view and focus, as the React app did after each navigation. */
   function settle(navigation: Navigation) {
-    const { section, part, state } = route();
+    const { section, part, sub, heicha, state } = route();
     // The React router counted the first entry of a visit (no history state) as the initial load.
     const initial = navigation === "initial" || state === null;
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -136,6 +164,13 @@ export function initMap(main: HTMLElement) {
       // A section: a deep link brings it into view; a tap keeps the entry where it is.
       scrollTo = focus = entryToggle(section, part);
       if (!initial) block = "nearest";
+    } else if (heicha && sub) {
+      scrollTo = focus = document.querySelector<HTMLElement>(`#movement-${CSS.escape(section!)} .toc-toggle[data-section="${CSS.escape(sub)}"]`);
+      if (!initial) block = "nearest";
+    } else if (state?.switched && section) {
+      // Switching pattern keeps the reader at the switch, with focus on the choice made.
+      scrollTo = focus = document.querySelector<HTMLElement>(`#movement-${CSS.escape(section)} .pattern-switch [aria-pressed=true]`);
+      block = "nearest";
     } else if (state?.closed) {
       // Closing keeps the reader where they were, with focus on the control they used.
       scrollTo = byId(state.closed);
@@ -205,20 +240,29 @@ export function initMap(main: HTMLElement) {
 
   /** Opening a section is a step in history; closing one goes back to the last section still open. */
   function toggleSection(toggle: HTMLElement) {
-    const { section, sections } = route();
+    const { section, sections, heicha } = route();
     const slug = toggle.dataset.section!;
-    const prayer = routeFor(section);
+    const prayer = toggle.closest<HTMLElement>("[data-reader]")!;
+    // Heicha Kedushah's sections open under the movement's route, whichever part they are in.
+    const at = heicha ? routeFor(section, HEICHA) : routeFor(section);
     const rest = sections.filter(s => s !== slug);
-    if (toggle.getAttribute("aria-expanded") !== "true") navigate(`${prayer}/${slug}`, { sections: [...rest, slug] });
-    else navigate(rest.length ? `${prayer}/${rest[rest.length - 1]}` : prayer, { sections: rest, closedSection: `${section}/${slug}` }, true);
+    if (toggle.getAttribute("aria-expanded") !== "true") navigate(`${at}/${slug}`, { sections: [...rest, slug] });
+    else navigate(rest.length ? `${at}/${rest[rest.length - 1]}` : at, { sections: rest, closedSection: `${prayer.id.slice("section-".length)}/${slug}` }, true);
   }
 
   function toggleGroup(group: HTMLElement) {
-    const { section, sections } = route();
-    const chosen = groups.get(section!) || {};
+    const prayer = group.closest<HTMLElement>("[data-reader]")!;
+    const chosen = groups.get(prayer.id) || {};
     chosen[group.dataset.group!] = group.getAttribute("aria-expanded") !== "true";
-    groups.set(section!, chosen);
-    syncSections(byId(`section-${section}`)!, section!, sections);
+    groups.set(prayer.id, chosen);
+    syncSections(prayer, route().sections);
+  }
+
+  /** The usual pattern or Heicha Kedushah: a step in history, like opening. */
+  function choosePattern(choice: HTMLElement) {
+    const movement = choice.closest<HTMLElement>(".movement")!.id.slice("movement-".length);
+    const heicha = choice.dataset.patternChoice === "heicha";
+    if (heicha !== route().heicha) navigate(heicha ? routeFor(movement, HEICHA) : routeFor(movement), { switched: true });
   }
 
   main.addEventListener("click", event => {
@@ -227,14 +271,15 @@ export function initMap(main: HTMLElement) {
     if (button.dataset.route) toggleItem(button);
     else if (button.dataset.section) toggleSection(button);
     else if (button.dataset.group) toggleGroup(button);
+    else if (button.dataset.patternChoice) choosePattern(button);
   });
   addEventListener("popstate", () => { sync(); settle("pop"); });
 
   // A nusach change refills every open region whose content differs by nusach, then the texts.
   document.addEventListener("nusachchange", () => {
     for (const button of main.querySelectorAll<HTMLElement>('button[data-route][aria-expanded="true"]')) {
-      const region = button.getAttribute("aria-controls")!;
-      if (button.isConnected && byId(`t:${region}:sefard`)) setOpen(button, false, true);
+      const region = byId(button.getAttribute("aria-controls")!)!;
+      if (button.isConnected && byId(`t:${templateKey(region)}:sefard`)) setOpen(button, false, true);
     }
     for (const button of main.querySelectorAll<HTMLElement>('button[data-route][aria-expanded="false"]')) {
       if (byId(`t:summary-${button.dataset.route}:sefard`)) setOpen(button, false, true);

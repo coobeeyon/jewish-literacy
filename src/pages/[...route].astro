@@ -5,7 +5,7 @@ import { mapRoutes, type MapRoute } from "../routes";
 import { renderMapPage } from "../view/map";
 
 export function getStaticPaths() {
-  return mapRoutes().map(route => ({ params: { route: [route.map.day, route.map.id, route.section, route.part].filter(Boolean).join("/") }, props: { route } }));
+  return mapRoutes().map(route => ({ params: { route: [route.map.day, route.map.id, route.section, route.part, route.sub].filter(Boolean).join("/") }, props: { route } }));
 }
 
 const { route } = Astro.props as { route: MapRoute };

@@ -8,7 +8,7 @@
 // versions are written, one hidden by CSS from <html data-nusach>, so no nusach ever flashes.
 import type { ComponentChildren, VNode } from "preact";
 import { renderToString } from "preact-render-to-string";
-import { displayTitle, layoutFor, type Movement } from "../movements";
+import { displayTitle, HEICHA, heichaAloud, layoutFor, type Movement } from "../movements";
 import { planUrl } from "../plans";
 import { routeFor, services, type MapRoute } from "../routes";
 import { textNusach } from "../sefaria";
@@ -16,7 +16,13 @@ import type { AstNode, ContentNode, DayType, Localized, Nusach, ServiceId, Servi
 import { LanguagePicker, LocalizedText, PeopleIcon, SettingsIcon } from "./common";
 
 /** What is open: movement and prayer ids, and the open prayer's open sections (by slug). */
-type Place = Readonly<{ map: ServiceMap; open: ReadonlySet<string>; sections: readonly string[] }>;
+type Place = Readonly<{
+  map: ServiceMap;
+  open: ReadonlySet<string>;
+  sections: readonly string[];
+  /** The Shmoneh Esrei is shown as Heicha Kedushah rather than silent prayer and repetition. */
+  heicha: boolean;
+}>;
 
 /**
  * An open prayer of several sections: its breakdown entries each expand their own section of text
@@ -24,8 +30,8 @@ type Place = Readonly<{ map: ServiceMap; open: ReadonlySet<string>; sections: re
  */
 type Sections = Readonly<{
   node: ContentNode;
-  /** The section an entry opens: its route slug and text part, if the entry has one. */
-  entry: (key: string) => { slug: string; part: number } | undefined;
+  /** The section an entry opens: its route slug and text part (and a heading in place of the part's), if the entry has one. */
+  entry: (key: string) => { slug: string; part: number; heading?: Localized } | undefined;
   isOpen: (slug: string) => boolean;
   /** Groups of entries (the Shema's paragraphs, the Amidah's blessing groups) open when holding an open section. */
   groupOpen: (keys: string[]) => boolean;
@@ -51,23 +57,27 @@ function perNusach(view: View, content: (view: View) => ComponentChildren): { sa
   return ashkenaz === sefard ? { same: ashkenaz } : { ashkenaz, sefard };
 }
 
-/** A region's container: its content when open (both nusachs if they differ), empty when closed. */
-function Region(view: View, id: string, className: string, open: boolean, content: (view: View) => ComponentChildren): VNode {
-  registerTemplate(view, id, content);
+/**
+ * A region's container: its content when open (both nusachs if they differ), empty when closed.
+ * A region with more than one form (the Shmoneh Esrei, usual or Heicha Kedushah) names its `mode`:
+ * its template is "<id>~<mode>", and the open container says which form it holds.
+ */
+function Region(view: View, id: string, className: string, open: boolean, content: (view: View) => ComponentChildren, mode?: string): VNode {
+  registerTemplate(view, mode ? `${id}~${mode}` : id, content);
   let inner = "";
   if (open && view.fixed) inner = html(content(view));
   else if (open) {
     const versions = perNusach(view, content);
     inner = "same" in versions ? versions.same : nusachs.map(n => `<div class="nusach-variant" data-nusach-only="${n}">${versions[n]}</div>`).join("");
   }
-  return <div id={id} className={className} hidden={!open} dangerouslySetInnerHTML={{ __html: inner }} />;
+  return <div id={id} className={className} hidden={!open} data-mode={open ? mode : undefined} dangerouslySetInnerHTML={{ __html: inner }} />;
 }
 
 /** Write a region's closed-state content once per page, per nusach where it differs. */
 function registerTemplate(view: View, id: string, content: (view: View) => ComponentChildren) {
   if (view.templates.has(id)) return;
   view.templates.set(id, "");
-  const closed: View = { ...view, place: { map: view.place.map, open: new Set(), sections: [] }, sections: undefined };
+  const closed: View = { ...view, place: { map: view.place.map, open: new Set(), sections: [], heicha: false }, sections: undefined };
   const versions = perNusach(closed, content);
   view.templates.set(id, "same" in versions ? template(id, versions.same) : nusachs.map(n => template(`${id}:${n}`, versions[n])).join(""));
 }
@@ -90,7 +100,7 @@ function EntryText(view: View, entryKey: string): VNode | null {
   const entry = sections?.entry(entryKey);
   if (!sections || !entry) return null;
   const open = sections.isOpen(entry.slug);
-  return <div id={`text-${sections.node.id}-${entry.slug}`} className="section-text" hidden={!open} data-part={entry.part} />;
+  return <div id={`text-${sections.node.id}-${entry.slug}`} className="section-text" hidden={!open} data-part={entry.part} data-heading={entry.heading && JSON.stringify(entry.heading)} />;
 }
 
 /** A group heading that shows or hides its entries. */
@@ -171,11 +181,23 @@ function AmidahGroup(view: View, en: string, he: string, keys: string[], childre
 const kedushah = (view: View) => Overlay(view, { en: "Kedushah · leader/congregation call-and-response", he: "קדושה · קריאה ומענה של הש״ץ והציבור" });
 const range = (start: number, end: number) => Array.from({ length: end - start }, (_, i) => `amidah:${start + i + 1}`);
 
-function AmidahDetails(view: View, node: ContentNode): VNode {
-  const repetition = node.section === "repetition";
+/** Heicha Kedushah's part of a Shmoneh Esrei: the first three blessings said aloud, or the rest said silently. */
+type HeichaPart = "aloud" | "silent";
+const holinessOfTheName = ["Holiness of the Name — Kedushat Hashem", "קדושת השם — קדושת השם"] as const;
+
+/** Heicha Kedushah's opening blessings, each opening its text from the leader's repetition. */
+function AloudBlessings(view: View, blessings: ReadonlyArray<readonly [string, string]>): VNode {
+  return <div className="blessings">{[blessings[0], blessings[1], holinessOfTheName].map((b, i) => Blessing(view, i + 1, `amidah:${i + 1}`, b, false, i === 2 ? kedushah(view) : undefined))}</div>;
+}
+
+function AmidahDetails(view: View, node: ContentNode, part?: HeichaPart): VNode {
+  const repetition = node.section === "repetition" && !part;
+  // Heicha Kedushah's silent part starts after the opening group of three blessings.
+  const from = part === "silent" ? 1 : 0;
   if (node.detailKind === "weekday-amidah") {
+    if (part === "aloud") return <div className="amidah-groups">{AloudBlessings(view, weekdayBlessings)}</div>;
     const groups = [["Praise", "שבח", 0, 3], ["Requests", "בקשות", 3, 16], ["Thanksgiving and leave-taking", "הודאה וסיום", 16, 19]] as const;
-    return <div className="amidah-groups">{groups.map(([en, he, start, end]) => AmidahGroup(view, en, he, [...range(start, end), ...(end === 19 && repetition ? ["amidah:kohanim"] : [])], weekdayBlessings.slice(start, end).map((b, i) => {
+    return <div className="amidah-groups">{groups.slice(from).map(([en, he, start, end]) => AmidahGroup(view, en, he, [...range(start, end), ...(end === 19 && repetition ? ["amidah:kohanim"] : [])], weekdayBlessings.slice(start, end).map((b, i) => {
       const n = start + i + 1;
       const overlay = repetition && n === 3 ? kedushah(view) : repetition && n === 18 ? <>{Overlay(view, { en: "Modim D’Rabbanan · parallel congregational response", he: "מודים דרבנן · מענה מקביל של הציבור" })}{Overlay(view, { en: "Priestly blessing or prayer leader’s verses · community practice varies", he: "ברכת כהנים או אמירת הפסוקים בידי הש״ץ · המנהג משתנה בין קהילות" }, "amidah:kohanim")}</> : undefined;
       return Blessing(view, n, `amidah:${n}`, b, repetition, overlay);
@@ -188,8 +210,9 @@ function AmidahDetails(view: View, node: ContentNode): VNode {
     mincha: { en: "Sanctity of the day — Atah Echad", he: "קדושת היום — אתה אחד" },
   };
   const blessings = [["Ancestors — Avot", "אבות — אבות"], ["Divine might — Gevurot", "גבורות — גבורות"], ["God’s holiness — Kedushat Hashem", "קדושת השם — קדושת השם"], [middle[node.variant || "shacharit"].en, middle[node.variant || "shacharit"].he], ["Restore worship — Retzeh", "עבודה — רצה"], ["Thanksgiving — Modim", "הודאה — מודים"], ["Peace blessing", "ברכת השלום"]] as const;
+  if (part === "aloud") return <div className="amidah-groups">{AloudBlessings(view, blessings)}</div>;
   const groups = [["Praise", "שבח", 0, 3], ["Sanctity of the day", "קדושת היום", 3, 4], ["Thanksgiving and peace", "הודאה ושלום", 4, 7]] as const;
-  return <div className="amidah-groups">{groups.map(([en, he, start, end]) => AmidahGroup(view, en, he, range(start, end), blessings.slice(start, end).map((b, i) => { const n = start + i + 1; return Blessing(view, n, `amidah:${n}`, b, repetition, repetition && n === 3 ? kedushah(view) : undefined); })))}{!repetition && Blessing(view, 0, "amidah:conclusion", ["Personal conclusion and steps back", "סיום אישי ופסיעות לאחור"], false)}</div>;
+  return <div className="amidah-groups">{groups.slice(from).map(([en, he, start, end]) => AmidahGroup(view, en, he, range(start, end), blessings.slice(start, end).map((b, i) => { const n = start + i + 1; return Blessing(view, n, `amidah:${n}`, b, repetition, repetition && n === 3 ? kedushah(view) : undefined); })))}{!repetition && Blessing(view, 0, "amidah:conclusion", ["Personal conclusion and steps back", "סיום אישי ופסיעות לאחור"], false)}</div>;
 }
 
 const dayLabels: Record<DayType, Localized> = { weekday: { en: "Weekday", he: "חול" }, shabbat: { en: "Shabbat", he: "שבת" } };
@@ -271,17 +294,20 @@ const TorahCalendar = (kind: string) => <div className="reader-calendar" data-ca
  * its own section in place, at /…/<prayer>/<section>. A prayer of one section shows its text whole.
  * (The Sefaria credit, once a section is open, is added by the browser with the text.)
  */
-function ReaderDetails(view: View, node: ContentNode): VNode {
+function ReaderDetails(view: View, node: ContentNode, heicha?: HeichaPart): VNode {
   const { nusach, place } = view;
   const text = node.text!;
   const shown = textNusach(text, nusach);
   const slugs = text.slugs?.[shown];
   const toc = text.toc[shown] || {};
   const hasBreakdown = node.detailKind || node.details.length > 0;
-  const breakdown = (sections?: Sections) => hasBreakdown && <nav className="card-toc" aria-label={`${node.title.en} sections`}>{node.detailKind ? AmidahDetails({ ...view, sections }, node) : Ast({ ...view, sections }, node.details)}</nav>;
+  const breakdown = (sections?: Sections) => hasBreakdown && <nav className="card-toc" aria-label={`${node.title.en} sections`}>{node.detailKind ? AmidahDetails({ ...view, sections }, node, heicha) : Ast({ ...view, sections }, node.details)}</nav>;
   if (!slugs) return <>{breakdown()}{PrayerReader(node)}</>;
-  const open = place.sections.filter(slug => slugs.includes(slug));
-  const entry = (key: string) => key in toc ? { slug: slugs[toc[key]], part: toc[key] } : undefined;
+  // In Heicha Kedushah a prayer shows only its part of the blessings, and its sections open under the movement's route.
+  const shows = (key: string) => !heicha || (heicha === "aloud") === heichaAloud(key);
+  const entry = (key: string) => key in toc && shows(key) ? { slug: slugs[toc[key]], part: toc[key], heading: heicha === "aloud" && key === "amidah:3" ? heichaKedushahHeading : undefined } : undefined;
+  const own = heicha ? new Set(Object.keys(toc).flatMap(key => entry(key)?.slug ?? [])) : new Set(slugs);
+  const open = place.sections.filter(slug => own.has(slug));
   const sections: Sections = {
     node, entry,
     isOpen: slug => open.includes(slug),
@@ -292,6 +318,8 @@ function ReaderDetails(view: View, node: ContentNode): VNode {
     {breakdown(sections)}
   </>;
 }
+
+const heichaKedushahHeading: Localized = { en: "Kedushah and Holiness of the Name", he: "קדושה וקדושת השם" };
 
 /** The fine print under a landmark's title in the source ("after the final aliyah", "community practice"). */
 const landmarkNote = (node: ContentNode): AstNode | undefined => {
@@ -321,14 +349,59 @@ function Landmark(view: View, node: ContentNode, parent?: string): VNode {
   </li>;
 }
 
-/** A movement of several prayers: one card at the top level that opens into its members. */
+/** The usual pattern or Heicha Kedushah: a small switch at the top of a Shmoneh Esrei that offers both. */
+function PatternSwitch(heicha: boolean): VNode {
+  const choices = [[false, { en: "Usual", he: "כרגיל" }], [true, { en: "When time is short", he: "כשהזמן דחוק" }]] as const;
+  return <div className="picker pattern-switch" role="group" aria-label="How the Shmoneh Esrei is said">{choices.map(([choice, label]) => <button key={String(choice)} type="button" data-pattern-choice={choice ? "heicha" : "usual"} aria-pressed={heicha === choice}>{LocalizedText(label)}</button>)}</div>;
+}
+
+/** When Heicha Kedushah is used, and how; fine print, so only inside the opened movement. */
+const heichaNote: Localized = {
+  en: "Heicha Kedushah is for when time is short, mostly at Mincha; Maariv has no repetition to shorten. The rabbi or congregation decides. Some congregations use it routinely, though many authorities keep it for real need. Practice varies.",
+  he: "הויכע קדושה נאמרת כשהזמן דחוק, בעיקר במנחה; בערבית אין חזרה לקצר. הרב או הקהל מחליטים. יש קהילות שנוהגות כך בקביעות, אף שרבים מהפוסקים מגבילים זאת לשעת הצורך. המנהג משתנה בין קהילות.",
+};
+
+/** Heicha Kedushah in place of silent prayer and repetition: the opening blessings aloud with the leader, then the rest silently. */
+function HeichaBody(view: View, movement: Movement): VNode {
+  const { aloud, silent } = movement.heicha!;
+  const parts = [
+    { node: aloud, part: "aloud", title: { en: "Aloud, with the leader", he: "בקול, עם הש״ץ" }, hint: { en: "The congregation says it along quietly or listens, and answers Kedushah.", he: "הציבור אומר עמו בלחש או מקשיב, ועונה קדושה." } },
+    { node: silent, part: "silent", title: { en: "The rest, silently", he: "השאר, בלחש" }, hint: { en: "Everyone, leader included. No repetition follows.", he: "כולם, גם הש״ץ. אין חזרה אחר כך." } },
+  ] as const;
+  return <>
+    <div className="pattern-note"><p>{LocalizedText(heichaNote)}</p><p className="pattern-source">{LocalizedText({ en: "Shulchan Aruch, Orach Chaim 124:2 and 232:1", he: "שולחן ערוך, אורח חיים קכ״ד ב׳ ורל״ב א׳" })}</p></div>
+    <ol className="members">{parts.map(({ node, part, title, hint }) => <li key={part} id={`section-${node.id}`} className={["card", "member", "reader-card", "heicha-part", node.role, part === "aloud" && node.communal && "communal"].filter(Boolean).join(" ")} data-heicha-part={part} data-reader={readerData(node)}>
+      {part === "aloud" && node.communal && PeopleIcon()}
+      <div className="heicha-head copy"><h3 className="item-title" tabIndex={-1}>{LocalizedText(title)}</h3><span className="hint">{LocalizedText(hint)}</span></div>
+      <div className="details">{ReaderDetails(view, node, part)}</div>
+    </li>)}</ol>
+  </>;
+}
+
+const heichaBlurb: Localized = { en: "Kedushah aloud, then silent", he: "בקול עד הקדושה, ואחר כך בלחש" };
+const Blurb = (blurb: Localized) => <span className="blurb">{LocalizedText(blurb)}</span>;
+
+/**
+ * A movement of several prayers: one card at the top level that opens into its members. A Mincha
+ * Shmoneh Esrei also offers Heicha Kedushah, in place of its members, with its own line.
+ */
 function MovementItem(view: View, movement: Movement): VNode {
   const { place } = view;
   const open = place.open.has(movement.id);
+  const heicha = Boolean(movement.heicha && place.heicha);
   const detailId = `movement-detail-${place.map.day}-${place.map.id}-${movement.id}`;
-  return <li id={`movement-${movement.id}`} className={movementClass(movement)} data-open={open ? "true" : undefined} data-members={movement.members.map(m => m.id).join(" ")}>
-    <button type="button" aria-expanded={open} aria-controls={detailId} data-route={movement.id}>{movement.communal && PeopleIcon()}{MovementHead(movement)}</button>
-    {Region(view, detailId, "movement-body", open, v => <ol className="members">{movement.members.map(node => node.kind === "card" ? Card(v, node, undefined, movement.id) : Landmark(v, node, movement.id))}</ol>)}
+  const usual = (v: View) => <>{movement.heicha && PatternSwitch(false)}<ol className="members">{movement.members.map(node => node.kind === "card" ? Card(v, node, undefined, movement.id) : Landmark(v, node, movement.id))}</ol></>;
+  const shortened = (v: View) => <>{PatternSwitch(true)}{HeichaBody(v, movement)}</>;
+  if (movement.heicha) {
+    // Switching pattern in place swaps the body and the movement's line; both forms are templates.
+    registerTemplate(view, detailId, usual);
+    registerTemplate(view, `${detailId}~heicha`, shortened);
+    registerTemplate(view, `blurb-${movement.id}`, () => Blurb(movement.blurb!));
+    registerTemplate(view, `blurb-${movement.id}~heicha`, () => Blurb(heichaBlurb));
+  }
+  return <li id={`movement-${movement.id}`} className={movementClass(movement)} data-open={open ? "true" : undefined} data-members={movement.members.map(m => m.id).join(" ")} data-heicha={movement.heicha ? "" : undefined}>
+    <button type="button" aria-expanded={open} aria-controls={detailId} data-route={movement.id}>{movement.communal && PeopleIcon()}{MovementHead(heicha ? { ...movement, blurb: heichaBlurb } : movement)}</button>
+    {heicha ? Region(view, detailId, "movement-body", open, shortened, "heicha") : Region(view, detailId, "movement-body", open, usual)}
   </li>;
 }
 
@@ -350,7 +423,10 @@ function placeFor(route: MapRoute): Place {
   const open = new Set<string>();
   if (target?.movement) open.add(target.movement.id);
   if (target?.node) open.add(target.node.id);
-  return { map: route.map, open, sections: route.part ? [route.part] : [] };
+  // A Shmoneh Esrei shown as Heicha Kedushah: /day/service/<movement>/heicha-kedushah[/<section>].
+  const heicha = Boolean(target?.movement?.heicha && !target.node && route.part === HEICHA);
+  const section = heicha ? route.sub : route.part;
+  return { map: route.map, open, sections: section ? [section] : [], heicha };
 }
 
 const checked = new Set<ServiceMap>();
@@ -368,5 +444,5 @@ export function renderMapPage(route: MapRoute): { title: string; main: string; t
     checked.add(route.map);
   }
   const page = render("ashkenaz", placeFor(route));
-  return { title: `${route.map.title.en} — Jewish Literacy Project`, main: page.main, templates: [...page.templates.values()].join(""), path: routeFor(route.map, route.section, route.part) };
+  return { title: `${route.map.title.en} — Jewish Literacy Project`, main: page.main, templates: [...page.templates.values()].join(""), path: routeFor(route.map, route.section, route.part, route.sub) };
 }

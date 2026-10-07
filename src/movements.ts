@@ -24,6 +24,8 @@ type MovementSpec = {
   stages?: Localized[];
   /** A brief or occasional movement, drawn smaller than the main ones. */
   minor?: true;
+  /** A Shmoneh Esrei that may be said as Heicha Kedushah: its leader's repetition and its silent prayer. */
+  heicha?: Readonly<{ aloud: string; silent: string }>;
   members: string[];
 };
 type PlanEntry = string | MovementSpec;
@@ -31,6 +33,14 @@ type PlanEntry = string | MovementSpec;
 const L = (en: string, he: string): Localized => ({ en, he });
 // Mike's usage: "Shmoneh Esrei", with "Amidah" in quotes, on weekdays and Shabbat alike. The route slug stays "amidah".
 const amidah = (blurb: Localized, members: string[], title = L("Shmoneh Esrei (“Amidah”)", "שמונה עשרה (\"עמידה\")")): MovementSpec => ({ id: "amidah", title, blurb, peak: true, members });
+/**
+ * Heicha Kedushah, for when time is short (Shulchan Aruch OC 124:2 and 232:1, with the Mishnah Berurah
+ * and Biur Halacha there): the leader says the first three blessings aloud, through Kedushah, and then
+ * everyone, leader included, finishes silently; no repetition follows. Offered at Mincha only: the
+ * sources' case is Mincha's time running out, the Biur Halacha doubts it at Shacharit, Musaf has no
+ * such deadline, and Maariv has no repetition at all.
+ */
+const minchaAmidah = (silent: string): MovementSpec => ({ ...amidah(silentThenAloud, [silent, finishes, "chazzans-repetition"]), heicha: { aloud: "chazzans-repetition", silent } });
 const silentThenAloud = L("Silent, then repeated aloud", "בלחש, ואחר כך בקול");
 // The Shema is the other pillar of Shacharit and Maariv: drawn with the same peak stature as the Shmoneh Esrei.
 const shema = (member: string): MovementSpec => ({ title: L("Shema and its blessings", "קריאת שמע וברכותיה"), blurb: L("“Hear, O Israel”", "״שמע ישראל״"), peak: true, members: [member] });
@@ -61,7 +71,7 @@ export const plans: Partial<Record<`${DayType}/${ServiceId}`, PlanEntry[]>> = {
   "weekday/mincha": [
     { blurb: L("Psalm 145 opens the service", "תהילים קמ״ה פותח את התפילה"), members: ["ashrei"] },
     "half-kaddish",
-    amidah(silentThenAloud, ["silent-shemoneh-esrei", finishes, "chazzans-repetition"]),
+    minchaAmidah("silent-shemoneh-esrei"),
     { blurb: L("Supplication", "תחינה ובקשת רחמים"), minor: true, members: ["tachanun"] },
     "full-kaddish-titkabel",
     aleinuOnly("aleinu"),
@@ -112,7 +122,7 @@ export const plans: Partial<Record<`${DayType}/${ServiceId}`, PlanEntry[]>> = {
     "half-kaddish",
     { title: L("Torah reading", "קריאת התורה"), stages: [takeOut, threeAliyot, raiseAndReturn], members: ["torah-service"] },
     "half-kaddish-2",
-    amidah(silentThenAloud, ["silent-shabbat-amidah", finishes, "chazzans-repetition"]),
+    minchaAmidah("silent-shabbat-amidah"),
     { blurb: L("Shabbat supplication", "תחינת שבת"), minor: true, members: ["tzidkatcha"] },
     "full-kaddish",
     aleinuOnly("aleinu"),
@@ -134,7 +144,34 @@ export type Movement = Readonly<{
   members: ContentNode[];
   /** A one-card movement is that card: it opens straight into the prayer. */
   single?: ContentNode;
+  heicha?: Heicha;
 }>;
+
+/** The route segment, after the movement's, of its Heicha Kedushah pattern (kept in src/paths.ts, which the browser shares). */
+export { HEICHA } from "./paths";
+/** Said aloud with the leader in Heicha Kedushah, from his repetition: Avot, Gevurot, and Kedushah with the third blessing. */
+export const heichaAloud = (key: string) => key === "amidah:1" || key === "amidah:2" || key === "amidah:3";
+/**
+ * Heicha Kedushah's text: the first three blessings from the repetition, the rest from the silent
+ * prayer. `slugs` are the sections it opens, at /day/service/<movement>/heicha-kedushah/<slug>.
+ */
+export type Heicha = Readonly<{ aloud: ContentNode; silent: ContentNode; slugs: ReadonlySet<string> }>;
+
+function heichaOf(key: string, aloud: ContentNode, silent: ContentNode): Heicha {
+  const slugsOf = (node: ContentNode, keep: (key: string) => boolean) => {
+    const out = new Set<string>();
+    for (const nusach of ["ashkenaz", "sefard"] as const) {
+      const toc = node.text?.toc[nusach], list = node.text?.slugs?.[nusach];
+      if (toc && list) for (const [entry, part] of Object.entries(toc)) if (keep(entry)) out.add(list[part]);
+    }
+    return out;
+  };
+  const said = slugsOf(aloud, heichaAloud), rest = slugsOf(silent, entry => !heichaAloud(entry));
+  // Both prayers' sections share one route, so their slugs must not collide.
+  if (!said.size || !rest.size || [...rest].some(slug => said.has(slug))) throw new Error(`${key}: Heicha Kedushah needs distinct sectioned text from both prayers`);
+  const slugs = new Set([...said, ...rest]);
+  return { aloud, silent, slugs };
+}
 
 export type TopItem = { kind: "movement"; movement: Movement } | { kind: "seam"; node: ContentNode };
 
@@ -167,9 +204,11 @@ export function layoutFor(map: ServiceMap): Layout {
     const single = members.length === 1 ? members[0] : undefined;
     const id = single ? single.id : entry.id;
     if (!id) throw new Error(`${key}: a movement of several prayers needs an id`);
+    if (entry.heicha && ![entry.heicha.aloud, entry.heicha.silent].every(m => entry.members.includes(m))) throw new Error(`${key}: Heicha Kedushah names prayers outside its movement`);
+    const heicha = entry.heicha ? heichaOf(key, node(entry.heicha.aloud), node(entry.heicha.silent)) : undefined;
     return { kind: "movement", movement: {
       id, title: entry.title || displayTitle(cards[0]), blurb: entry.blurb, stages: entry.stages, peak: Boolean(entry.peak), minor: Boolean(entry.minor),
-      tone: cards[0].role || "", communal: cards.every(c => c.communal), members, single,
+      tone: cards[0].role || "", communal: cards.every(c => c.communal), members, single, heicha,
     } };
   });
   // The plan must cover the map exactly, in order, and movement routes must not shadow prayers.

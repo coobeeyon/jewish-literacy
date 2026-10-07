@@ -75,6 +75,15 @@ test.describe("with JavaScript disabled", () => {
     await page.goto("/weekday/shacharit/torah");
     await expect(page.locator("#movement-torah>button")).toHaveAttribute("aria-expanded", "true");
     await expect(page.locator("#movement-torah .stages .stage")).toHaveCount(4);
+    // Heicha Kedushah with a section open: the pattern, its line, its note, and the section.
+    await page.goto("/weekday/mincha/amidah/heicha-kedushah/healing-refaeinu");
+    const amidah = page.locator("#movement-amidah");
+    await expect(amidah.locator(":scope>button")).toHaveAttribute("aria-expanded", "true");
+    await expect(amidah.locator(":scope>button .blurb")).toContainText("Kedushah aloud, then silent");
+    await expect(amidah.locator('[data-pattern-choice="heicha"]')).toHaveAttribute("aria-pressed", "true");
+    await expect(amidah.locator(".pattern-note")).toBeVisible();
+    await expect(expanded(page, '[data-heicha-part="silent"] .toc-toggle[data-section="healing-refaeinu"]')).toHaveAttribute("aria-expanded", "true");
+    await expect(expanded(page, "#text-silent-shemoneh-esrei-healing-refaeinu")).toBeVisible();
   });
 });
 
@@ -106,6 +115,18 @@ test("taps open and close in place: one page load, the URL in step, Back and For
   expect(documents).toHaveLength(1);
   expect(await page.evaluate(() => (window as unknown as { marker: number }).marker)).toBe(42);
   expect(await page.evaluate(() => performance.getEntriesByType("navigation").length)).toBe(1);
+  // The Shmoneh Esrei's pattern switch, too.
+  await page.goto("/weekday/mincha/amidah");
+  await page.evaluate(() => { (window as unknown as { marker: number }).marker = 43; });
+  await page.locator('[data-pattern-choice="heicha"]').click();
+  await expect(page).toHaveURL(/\/amidah\/heicha-kedushah$/);
+  await page.locator('[data-heicha-part="aloud"] .toc-toggle').first().click();
+  await expect(page.locator('[data-heicha-part="aloud"] .reader-section')).toHaveCount(1);
+  await page.goBack();
+  await page.goBack();
+  await expect(page.locator('[data-pattern-choice="usual"]')).toHaveAttribute("aria-pressed", "true");
+  expect(documents).toHaveLength(2);
+  expect(await page.evaluate(() => (window as unknown as { marker: number }).marker)).toBe(43);
 });
 
 for (const [language, hidden] of [["en", "he"], ["he", "en"]] as const) {

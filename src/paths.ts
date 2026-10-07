@@ -9,6 +9,9 @@ export const services: Record<DayType, ServiceId[]> = {
 
 export const defaultMap = "/weekday/shacharit";
 
+/** The route segment, after a Shmoneh Esrei movement's, of its Heicha Kedushah pattern. */
+export const HEICHA = "heicha-kedushah";
+
 /** A map's path, or a movement or prayer in it (`section`), or a section of that prayer (`part`). */
-export const routeFor = (map: Pick<ServiceMap, "day" | "id">, section?: string, part?: string) =>
-  [`/${map.day}/${map.id}`, section, part].filter(Boolean).join("/");
+export const routeFor = (map: Pick<ServiceMap, "day" | "id">, ...segments: Array<string | undefined>) =>
+  [`/${map.day}/${map.id}`, ...segments].filter(Boolean).join("/");
