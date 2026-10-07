@@ -6,7 +6,7 @@
 // returns to today.
 import table from "../calendar.generated.json";
 import { addDays, civilDate, covered, dateFromSearch, fillNotes, fillSummary, hebrewDate, localToday, readingFor, sefariaUrl, showRef, type CalendarTable, type ReadingKind } from "../today";
-import { boxHead, calendarIconPaths, noteRules } from "../notes";
+import { boxHead, boxMore, calendarIconPaths, noteRules, noteSummaries } from "../notes";
 import { bi, h } from "./dom";
 
 /** A calendar box opened from a template arrives empty: its icon, header and rule, as the build writes them (CalendarBox in src/view/map.tsx). */
@@ -15,9 +15,28 @@ function buildBoxes(root: ParentNode) {
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("class", "calendar-mark"); svg.setAttribute("aria-hidden", "true"); svg.setAttribute("viewBox", "0 0 16 16");
     for (const d of calendarIconPaths) { const path = document.createElementNS("http://www.w3.org/2000/svg", "path"); path.setAttribute("fill", "currentColor"); path.setAttribute("d", d); svg.append(path); }
-    box.append(h("p", { class: "box-head" }, svg, bi(boxHead)), h("p", { class: "box-rule" }, bi(noteRules[box.dataset.note!])), h("p", { class: "box-verdict" }));
+    const note = box.dataset.note!;
+    const more = noteRules[note] && h("button", { type: "button", class: "box-more", "aria-expanded": "false" }, bi(boxMore));
+    box.append(h("div", { class: "box-head" }, svg, h("span", { class: "box-title" }, bi(boxHead)), more), h("p", { class: "box-summary" }, bi(noteSummaries[note])), h("p", { class: "box-verdict" }));
   }
 }
+
+/** "All the days": show or hide a box's full rule, written in the first time it is asked for. In place: no navigation. */
+let boxes = 0;
+document.addEventListener("click", event => {
+  const more = (event.target as Element).closest<HTMLButtonElement>(".calendar-box .box-more");
+  if (!more) return;
+  const box = more.closest<HTMLElement>(".calendar-box")!;
+  let full = box.querySelector<HTMLElement>(":scope > .box-full");
+  if (!full) {
+    full = h("p", { class: "box-full", id: `box-full-${++boxes}`, hidden: "" }, bi(noteRules[box.dataset.note!]));
+    box.append(full);
+    more.setAttribute("aria-controls", full.id);
+  }
+  const open = more.getAttribute("aria-expanded") !== "true";
+  more.setAttribute("aria-expanded", String(open));
+  full.hidden = !open;
+});
 
 const calendar = table as unknown as CalendarTable;
 

@@ -12,7 +12,7 @@ import { displayTitle, HEICHA, heichaAloud, layoutFor, type Movement } from "../
 import { corpus, routeFor, services, type MapRoute } from "../routes";
 import { textNusach } from "../sefaria";
 import type { AstNode, CalendarKind, ContentNode, DayType, Localized, Nusach, ServiceId, ServiceMap } from "../types";
-import { boxHead, noteRules } from "../notes";
+import { boxHead, boxMore, noteRules, noteSummaries } from "../notes";
 import { partsOf, sourceOf, textUrl } from "../texts";
 import { CalendarIcon, LanguagePicker, LocalizedText, PeopleIcon, SettingsIcon } from "./common";
 import { Credit, PartText } from "./reader";
@@ -85,20 +85,21 @@ function registerTemplate(view: View, id: string, content: (view: View) => Compo
 }
 
 /**
- * A calendar box: a date-dependent rule, stated in full, then the verdict for the date being prayed
- * with its reason ("Mon 12 Oct (1 Cheshvan): **not said** — it’s Rosh Chodesh."), written in by the
+ * A calendar box, a quick interstitial: a date-dependent rule in one short line, then the verdict
+ * for the date being prayed with its reason ("Mon 12 Oct (1 Cheshvan): **not said** — it’s Rosh Chodesh."), written in by the
  * browser (src/today.ts). At the top of the opened item, before its sections. A page that arrives
  * with a box open has it complete and runs, right after the map, the small script that writes the
  * verdict (src/notes-script.ts), so nothing moves. The templates a box opens from carry it
- * empty, and the browser builds it (src/client/date.ts), so every page stays light.
+ * empty, and the browser builds it (src/client/date.ts), so every page stays light. "All the days"
+ * shows the full rule, naming every day; the browser writes it in when first asked.
  */
 function CalendarBox(id: string, open = true): VNode {
-  const rule = noteRules[id];
-  if (!rule) throw new Error(`No rule for the calendar box ${id}`);
+  const summary = noteSummaries[id];
+  if (!summary) throw new Error(`No rule for the calendar box ${id}`);
   if (!open) return <div className="calendar-box" data-note={id} />;
   return <div className="calendar-box" data-note={id}>
-    <p className="box-head">{CalendarIcon()}{LocalizedText(boxHead)}</p>
-    <p className="box-rule">{LocalizedText(rule)}</p>
+    <div className="box-head">{CalendarIcon()}<span className="box-title">{LocalizedText(boxHead)}</span>{noteRules[id] && <button type="button" className="box-more" aria-expanded={false}>{LocalizedText(boxMore)}</button>}</div>
+    <p className="box-summary">{LocalizedText(summary)}</p>
     <p className="box-verdict" />
   </div>;
 }

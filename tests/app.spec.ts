@@ -430,7 +430,7 @@ test("Torah cards show the week's reading from the site's own calendar, with lin
   await expect(reading("en")).toHaveText(["Noach", "Genesis 6:9–11:32"]);
   await page.goto("/weekday/shacharit/torah-reading");
   await expect(reading("en")).toHaveText(["Bereshit", "Genesis 1:1–6:8"]);
-  await expect(page.locator('#section-torah-reading [data-note="torah-weekday"] .box-rule [data-lang=en]')).toContainText("Monday and Thursday mornings");
+  await expect(page.locator('#section-torah-reading [data-note="torah-weekday"] .box-summary [data-lang=en]')).toContainText("Read Mondays and Thursdays");
   // A festival Shabbat has its own reading; the Monday before it reads the next portion.
   await page.goto("/shabbat/shacharit/torah-service?date=2027-04-24");
   await expect(reading("en")).toHaveText(["Chol HaMoed Pesach", "Exodus 33:12–34:26", "Haftarah: Ezekiel 37:1–14"]);
@@ -528,7 +528,7 @@ test("caveats and conditions stay off the top level and appear when opened", asy
   await expect(page.locator("#movement-torah").getByText("Monday and Thursday · three aliyot")).toBeVisible();
   await page.locator("#section-half-kaddish-2 .landmark-toggle").click();
   // Its calendar box: the rule, then the verdict for the date with its reason.
-  await expect(page.locator("#section-half-kaddish-2 .calendar-box .box-rule")).toContainText("When Tachanun is not said, it comes straight after the leader’s repetition");
+  await expect(page.locator("#section-half-kaddish-2 .calendar-box .box-summary")).toContainText("without it, after the repetition or after Hallel");
   await expect(page.locator("#section-half-kaddish-2 .calendar-box .box-verdict [data-lang=en]")).toContainText("Today, ");
 });
 

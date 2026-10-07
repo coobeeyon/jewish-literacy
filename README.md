@@ -41,9 +41,9 @@ date and its Hebrew date and, in one line, what is special about it for that ser
 Ya’aleh Veyavo, Hallel, Musaf"; "Monday: Torah reading, longer Tachanun"). On the map, each item the date
 decides carries a one-line label ("Not today—Rosh Chodesh", "Today: Torah reading, 3 aliyot"); one that
 is not said is dimmed with a dashed edge, and one said only on such days is outlined. Nothing is hidden.
-Each such item opens with a calendar box, a yellow rectangle headed "Depends on the date": the rule,
-stated in full, then the verdict for the date with its reason ("Mon 12 Oct (1 Cheshvan): **not said** —
-it’s Rosh Chodesh."). Boxes cover Tachanun (with its Monday–Thursday additions), the weekday Torah
+Each such item opens with a calendar box, a yellow rectangle headed "Depends on the date", read at a
+glance: the rule in one short line, then the verdict for the date with its reason ("Mon 12 Oct (1
+Cheshvan): **not said** — it’s Rosh Chodesh."). "All the days" opens the full rule, naming every day. Boxes cover Tachanun (with its Monday–Thursday additions), the weekday Torah
 reading, the psalms after Shacharit, the Omer, Tzidkatcha, and the Kaddish after Tachanun and after
 Tzidkatcha. A page that opens on a box carries a small script (`src/notes-script.ts`), right after the map,
 that writes the verdict before the first paint. The date is today, or one dialled in on the date line, which puts it in the URL

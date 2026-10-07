@@ -205,24 +205,35 @@ main[data-arriving] .section-text:not([hidden]):not(:has(.reader-text, .reader-f
 html[data-fonts=pending] :is(.reader-text,.reader-credit){visibility:hidden}
 
 /* A calendar box: a yellow inscribed rectangle at the top of an opened item whose prayer depends on
-   the date, with the calendar icon and "Depends on the date", the rule, and the verdict for the date
-   with its reason (src/today.ts; the verdict is written before the box is drawn). */
-.calendar-box{position:relative;margin:2px 0 14px;padding:10px 12px 11px 40px;border:2px solid #c28b18;border-radius:12px;background:#fff6d6;color:var(--ink);font-size:.82rem;line-height:1.45;text-align:left}
+   the date, read at a glance: a header row (the calendar icon, "Depends on the date" and, where there
+   is more, "All the days"), the rule in one line, and the verdict for the date with its reason
+   (src/today.ts; the verdict is written before the box is drawn). */
+.calendar-box{margin:2px 0 14px;padding:8px 11px 10px;border:2px solid #c28b18;border-radius:12px;background:#fff6d6;color:var(--ink);font-size:.78rem;line-height:1.4;text-align:left}
 .calendar-box p{margin:0}
-.calendar-box .calendar-mark{position:absolute;top:11px;left:13px;width:1.15rem;height:1.15rem;color:#8a6110}
-.box-head{color:#8a6110;font-size:.72rem;font-weight:800;letter-spacing:.02em;text-transform:uppercase}
-.box-head [data-lang]{display:inline-block;white-space:nowrap}
-.box-head .he{margin:0 0 0 10px;text-transform:none}
-.calendar-box .box-rule{margin-top:4px}
-.calendar-box .box-verdict{margin-top:7px;padding-top:7px;border-top:1px solid #e3c87a}
+.box-head{display:flex;align-items:center;flex-wrap:wrap;gap:4px 6px;color:#8a6110}
+.box-head .calendar-mark{flex:none;width:1.1rem;height:1.1rem}
+.box-title{flex:1;font-size:.88em;font-weight:800;white-space:nowrap}
+.box-title .he{display:inline;margin:0 0 0 8px}
+/* With both languages shown, the header is in English; Hebrew alone shows it in Hebrew. */
+html:not([data-language=he]) .box-title .he{display:none}
+.calendar-box .box-summary{margin-top:5px}
+/* "All the days": a small control at the end of the header row that shows the full rule in place. */
+.box-more{display:inline-flex;align-items:center;gap:4px;margin:0 0 0 auto;padding:1px 6px;border:1px solid #c28b18;border-radius:8px;background:#fff2c4;color:#6d4c0b;font:750 .68rem/1.4 system-ui,sans-serif;cursor:pointer}
+.box-more .he{margin:0}
+.box-more:after{content:"▾";font-size:.8em}
+.box-more[aria-expanded=true]:after{content:"▴"}
+html:not([data-language=he]) .box-more [data-lang=he]{display:none}
+html:not([data-js]) .box-more{display:none}
+.calendar-box .box-full{margin-top:7px;padding-top:6px;border-top:1px solid #e3c87a;color:#3d5164}
+.calendar-box .box-verdict{margin-top:6px;padding-top:6px;border-top:1px solid #e3c87a}
 /* The verdict word: bold in English (Hebrew is bold throughout), and highlighted in both. */
 .box-verdict b{padding:0 3px;border-radius:4px;background:#ffe39a}
 .box-verdict [data-lang=en] b{font-weight:800}
-.calendar-box .he{margin-top:3px;text-align:right}
-html[data-language=he] .calendar-box{padding:10px 40px 11px 12px;text-align:right}
-html[data-language=he] .calendar-box .calendar-mark{left:auto;right:13px}
+.calendar-box .he{margin-top:2px;text-align:right}
+html[data-language=he] .calendar-box{text-align:right}
+html[data-language=he] .box-more{margin:0 auto 0 0}
 html:not([data-js]) .box-verdict{display:none}
-@media(max-width:420px){.minor.reader-card>.details{padding-inline:8px}.calendar-box{padding-left:34px}.calendar-box .calendar-mark{left:10px}}
+@media(max-width:420px){.minor.reader-card>.details{padding-inline:8px}}
 /* The reading: in English its name, then its verses (then the haftarah on Shabbat morning); in Hebrew
    its name (then the haftarah). One line each. */
 .calendar-reading{min-height:2.8em}

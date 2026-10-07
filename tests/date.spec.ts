@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
 import { HDate, HebrewCalendar, flags } from "@hebcal/core";
-import { noteRules } from "../src/notes";
+import { noteRules, noteSummaries } from "../src/notes";
 import { daySummary, noteStatus, noteTimes, type CalendarTable } from "../src/today";
 import { mockSefaria } from "./sefaria-mock";
 
@@ -56,9 +56,12 @@ test.describe("the calendar box", () => {
       const box = page.locator(`.calendar-box[data-note="${note}"]:visible`);
       await expect(box, path).toHaveCount(1);
       await expect(box.locator("svg.calendar-mark")).toHaveCount(1);
-      await expect(box.locator(".box-head [data-lang=en]")).toHaveText("Depends on the date");
-      await expect(box.locator(".box-head [data-lang=he]")).toHaveText("תלוי בתאריך");
-      await expect(box.locator(".box-rule [data-lang=en]")).not.toBeEmpty();
+      await expect(box.locator(".box-title [data-lang=en]")).toHaveText("Depends on the date");
+      await expect(box.locator(".box-title [data-lang=he]")).toHaveText("תלוי בתאריך");
+      // A quick interstitial: one short line for the rule, then the verdict.
+      await expect(box.locator(".box-summary [data-lang=en]")).toHaveText(noteSummaries[note].en);
+      expect(noteSummaries[note].en.length, note).toBeLessThan(110);
+      await expect(box.locator(".box-more")).toHaveCount(noteRules[note] ? 1 : 0);
       await expect(box.locator(".box-verdict b").first()).not.toBeEmpty();
       // At the top of the opened item, before its sections and text.
       const region = box.locator("xpath=..");
@@ -66,6 +69,58 @@ test.describe("the calendar box", () => {
       // Yellow, inscribed: a gold border on a pale yellow fill.
       expect(await box.evaluate(el => [getComputedStyle(el).borderTopColor, getComputedStyle(el).backgroundColor])).toEqual(["rgb(194, 139, 24)", "rgb(255, 246, 214)"]);
     }
+  });
+
+  test("at 390 px it reads at a glance: a header line, a short rule, the verdict; “All the days” holds the rest", async ({ page }) => {
+    test.skip(test.info().project.name !== "phone-390", "the phone width");
+    await todayIs(page, "2026-10-07");
+    for (const language of ["en", "he", "both"] as const) {
+      await page.addInitScript(l => localStorage.setItem("weekday-shacharit-language", l), language);
+      await page.goto("/weekday/mincha/tachanun?date=2026-10-12");
+      const lines = await page.locator('.calendar-box[data-note="tachanun-mincha"]:visible').evaluate(el => {
+        const lh = parseFloat(getComputedStyle(el).lineHeight);
+        const count = (s: string) => [...el.querySelectorAll(s)].filter(e => (e as HTMLElement).checkVisibility()).map(e => Math.round(e.getBoundingClientRect().height / lh));
+        return { head: count(".box-head"), summary: count(".box-summary > span"), verdict: count(".box-verdict > span") };
+      });
+      // One header line (with "All the days" at its end), then at most three lines of rule and two of verdict in each language.
+      expect(lines.head, language).toEqual([1]);
+      for (const n of lines.summary) expect(n, `${language} summary`).toBeLessThanOrEqual(3);
+      for (const n of lines.verdict) expect(n, `${language} verdict`).toBeLessThanOrEqual(2);
+    }
+  });
+
+  test("“All the days” shows the full rule in place, by mouse or keyboard, without navigating", async ({ page }) => {
+    await todayIs(page, "2026-10-07");
+    await page.goto("/weekday/mincha/tachanun?date=2026-10-12");
+    const url = page.url(), entries = await page.evaluate(() => history.length);
+    const box = page.locator('.calendar-box[data-note="tachanun-mincha"]:visible'), more = box.locator(".box-more");
+    await expect(more).toHaveAttribute("aria-expanded", "false");
+    await expect(more.locator("[data-lang=en]")).toHaveText("All the days");
+    await expect(box.locator(".box-full")).toHaveCount(0);
+    await more.click();
+    await expect(more).toHaveAttribute("aria-expanded", "true");
+    const full = box.locator(".box-full");
+    await expect(full).toBeVisible();
+    await expect(full.locator("[data-lang=en]")).toHaveText(noteRules["tachanun-mincha"].en);
+    expect(await more.getAttribute("aria-controls")).toBe(await full.getAttribute("id"));
+    // By keyboard: it closes, and opens again.
+    await more.focus();
+    await page.keyboard.press("Enter");
+    await expect(more).toHaveAttribute("aria-expanded", "false");
+    await expect(full).toBeHidden();
+    await page.keyboard.press("Space");
+    await expect(full).toBeVisible();
+    // The card stays open and nothing navigated.
+    await expect(page.locator("#section-tachanun>button")).toHaveAttribute("aria-expanded", "true");
+    expect(page.url()).toBe(url);
+    expect(await page.evaluate(() => history.length)).toBe(entries);
+    // A box opened in place has it too; one whose summary is the whole rule has none.
+    await page.goto("/weekday/shacharit?date=2026-10-12");
+    await page.locator("#section-tachanun>button").click();
+    await page.locator('.calendar-box[data-note="tachanun-shacharit"]:visible .box-more').click();
+    await expect(page.locator('.calendar-box[data-note="tachanun-shacharit"]:visible .box-full [data-lang=en]')).toHaveText(noteRules["tachanun-shacharit"].en);
+    await page.goto("/weekday/maariv/concluding-prayers?date=2027-05-14");
+    await expect(page.locator('.calendar-box[data-note="omer"]:visible .box-more')).toHaveCount(0);
   });
 
   test("its rules name the days: none refers back to another rule", () => {
@@ -79,7 +134,7 @@ test.describe("the calendar box", () => {
   // [path with ?date=, note, verdict, what it checks]; today is Wednesday 7 October 2026.
   const cases: Array<[string, string, string, string]> = [
     ["/weekday/shacharit/tachanun?date=2026-10-13", "tachanun-shacharit", "Tue 13 Oct (2 Cheshvan): said — none of the exceptions applies.", "an ordinary weekday"],
-    ["/weekday/shacharit/tachanun?date=2026-10-19", "tachanun-shacharit", "Mon 19 Oct (8 Cheshvan): said, with the longer Monday–Thursday additions — it’s Monday.", "a Monday"],
+    ["/weekday/shacharit/tachanun?date=2026-10-19", "tachanun-shacharit", "Mon 19 Oct (8 Cheshvan): said, in its longer form — it’s Monday.", "a Monday"],
     ["/weekday/shacharit/tachanun?date=2026-10-12", "tachanun-shacharit", "Mon 12 Oct (1 Cheshvan): not said — it’s Rosh Chodesh.", "Rosh Chodesh"],
     ["/weekday/mincha/tachanun?date=2026-10-12", "tachanun-mincha", "Mon 12 Oct (1 Cheshvan): not said — it’s Rosh Chodesh.", "Rosh Chodesh, at Mincha"],
     ["/weekday/mincha/tachanun?date=2026-11-09", "tachanun-mincha", "Mon 9 Nov (29 Cheshvan): not said — it’s the afternoon before Rosh Chodesh.", "the afternoon before Rosh Chodesh"],
@@ -87,20 +142,20 @@ test.describe("the calendar box", () => {
     ["/weekday/mincha/tachanun?date=2027-08-11", "tachanun-mincha", "Wed 11 Aug (8 Av): not said — it’s the afternoon before Tisha B’Av.", "the afternoon before Tisha B'Av"],
     ["/weekday/shacharit/tachanun?date=2026-12-20", "tachanun-shacharit", "Sun 20 Dec (10 Tevet): said — none of the exceptions applies.", "a fast day: Tachanun said"],
     ["/weekday/shacharit/torah-reading?date=2026-12-20", "torah-weekday", "Sun 20 Dec (10 Tevet): the fast-day reading, three aliyot — it’s the Fast of 10 Tevet.", "a fast day: its reading"],
-    ["/weekday/shacharit/torah-reading?date=2026-10-13", "torah-weekday", "Tue 13 Oct (2 Cheshvan): no Torah reading — it’s Tuesday; the weekday reading is on Mondays, Thursdays and special days.", "a Tuesday: no reading"],
-    ["/weekday/shacharit/torah-reading?date=2026-10-19", "torah-weekday", "Mon 19 Oct (8 Cheshvan): Torah reading, three aliyot from the coming Shabbat’s portion — it’s Monday.", "a Monday: the reading"],
+    ["/weekday/shacharit/torah-reading?date=2026-10-13", "torah-weekday", "Tue 13 Oct (2 Cheshvan): no Torah reading — it’s Tuesday.", "a Tuesday: no reading"],
+    ["/weekday/shacharit/torah-reading?date=2026-10-19", "torah-weekday", "Mon 19 Oct (8 Cheshvan): three aliyot from the coming portion — it’s Monday.", "a Monday: the reading"],
     ["/weekday/shacharit/torah-reading?date=2026-12-10", "torah-weekday", "Thu 10 Dec (30 Kislev): Rosh Chodesh and Chanukah, from two scrolls — Rosh Chodesh falls in Chanukah.", "Rosh Chodesh in Chanukah"],
-    ["/weekday/shacharit/half-kaddish-2?date=2026-10-12", "kaddish-after-tachanun", "Mon 12 Oct (1 Cheshvan): after Hallel, as a Full Kaddish — it’s Rosh Chodesh: Hallel, and no Tachanun.", "Rosh Chodesh: after Hallel"],
-    ["/weekday/shacharit/half-kaddish-2?date=2026-12-07", "kaddish-after-tachanun", "Mon 7 Dec (27 Kislev): after Hallel — it’s Chanukah: Hallel, and no Tachanun.", "Chanukah: after Hallel"],
-    ["/weekday/shacharit/half-kaddish-2?date=2027-05-25", "kaddish-after-tachanun", "Tue 25 May (18 Iyyar): straight after the repetition — there is no Tachanun: it’s Lag BaOmer.", "Lag BaOmer: after the repetition"],
-    ["/weekday/shacharit/aleinu-and-closing-psalms?date=2026-10-12", "daily-psalms", "Mon 12 Oct (1 Cheshvan): Psalms 48 and 104 — it’s Monday, and Rosh Chodesh.", "Rosh Chodesh on a Monday: two psalms"],
+    ["/weekday/shacharit/half-kaddish-2?date=2026-10-12", "kaddish-after-tachanun", "Mon 12 Oct (1 Cheshvan): after Hallel, as a Full Kaddish — it’s Rosh Chodesh.", "Rosh Chodesh: after Hallel"],
+    ["/weekday/shacharit/half-kaddish-2?date=2026-12-07", "kaddish-after-tachanun", "Mon 7 Dec (27 Kislev): after Hallel — it’s Chanukah.", "Chanukah: after Hallel"],
+    ["/weekday/shacharit/half-kaddish-2?date=2027-05-25", "kaddish-after-tachanun", "Tue 25 May (18 Iyyar): straight after the repetition — no Tachanun: it’s Lag BaOmer.", "Lag BaOmer: after the repetition"],
+    ["/weekday/shacharit/aleinu-and-closing-psalms?date=2026-10-12", "daily-psalms", "Mon 12 Oct (1 Cheshvan): Psalms 48 and 104 — it’s Monday and Rosh Chodesh.", "Rosh Chodesh on a Monday: two psalms"],
     ["/weekday/shacharit/tachanun?date=2027-06-16", "tachanun-shacharit", "Wed 16 Jun (11 Sivan): said in some synagogues — many omit it until 12 Sivan.", "11 Sivan: customs split"],
-    ["/weekday/maariv/concluding-prayers?date=2027-05-14", "omer", "The evening of Fri 14 May (8 Iyyar begins): count day 23 of the Omer — the count runs from the second night of Pesach to Shavuot.", "an Omer evening"],
-    ["/weekday/maariv/concluding-prayers?date=2027-04-21", "omer", "The evening of Wed 21 Apr (15 Nisan begins): no Omer count — the Omer is counted only from the second night of Pesach to the night before Shavuot.", "the first Seder night"],
-    ["/weekday/maariv/concluding-prayers?date=2027-06-09", "omer", "The evening of Wed 9 Jun (5 Sivan begins): count day 49 of the Omer — the last evening before Shavuot.", "the night before Shavuot"],
+    ["/weekday/maariv/concluding-prayers?date=2027-05-14", "omer", "The evening of Fri 14 May (8 Iyyar begins): count day 23 of the Omer — it’s between Pesach and Shavuot.", "an Omer evening"],
+    ["/weekday/maariv/concluding-prayers?date=2027-04-21", "omer", "The evening of Wed 21 Apr (15 Nisan begins): no Omer count — it’s not between Pesach and Shavuot.", "the first Seder night"],
+    ["/weekday/maariv/concluding-prayers?date=2027-06-09", "omer", "The evening of Wed 9 Jun (5 Sivan begins): count day 49 of the Omer — the last, before Shavuot.", "the night before Shavuot"],
     ["/shabbat/mincha/tzidkatcha?date=2026-10-17", "tzidkatcha", "Shabbat, 17 Oct (6 Cheshvan): said — none of the exceptions applies.", "a Shabbat with Tzidkatcha"],
     ["/shabbat/mincha/tzidkatcha?date=2026-10-10", "tzidkatcha", "This Shabbat, 10 Oct (29 Tishrei): not said — the next day is Rosh Chodesh.", "a Shabbat without Tzidkatcha"],
-    ["/shabbat/mincha/full-kaddish?date=2026-10-08", "kaddish-after-tzidkatcha", "This Shabbat, 10 Oct (29 Tishrei): straight after the repetition — Tzidkatcha is not said: the next day is Rosh Chodesh.", "a Thursday reads the coming Shabbat"],
+    ["/shabbat/mincha/full-kaddish?date=2026-10-08", "kaddish-after-tzidkatcha", "This Shabbat, 10 Oct (29 Tishrei): straight after the repetition — no Tzidkatcha: the next day is Rosh Chodesh.", "a Thursday reads the coming Shabbat"],
   ];
   for (const [path, note, expected, what] of cases) {
     test(`${what}: ${path}`, async ({ page }) => {
@@ -126,8 +181,8 @@ test.describe("the calendar box", () => {
     await expect(tag(page, "section-tachanun")).toHaveText("Not today—Rosh Chodesh");
     await todayIs(page, "2027-05-13");
     await page.goto("/weekday/maariv/concluding-prayers");
-    await expect(verdict(page, "omer")).toHaveText("Tonight, Thu 13 May (7 Iyyar begins): count day 22 of the Omer — the count runs from the second night of Pesach to Shavuot.");
-    await expect(verdict(page, "omer", "he")).toHaveText("הלילה, ליל ז׳ באייר: סופרים יום 22 לעומר — סופרים מליל שני של פסח עד שבועות.");
+    await expect(verdict(page, "omer")).toHaveText("Tonight, Thu 13 May (7 Iyyar begins): count day 22 of the Omer — it’s between Pesach and Shavuot.");
+    await expect(verdict(page, "omer", "he")).toHaveText("הלילה, ליל ז׳ באייר: סופרים יום 22 לעומר — בין פסח לשבועות.");
     await todayIs(page, "2026-10-10");
     await page.goto("/shabbat/mincha/tzidkatcha");
     await expect(verdict(page, "tzidkatcha")).toHaveText("This Shabbat, 10 Oct (29 Tishrei): not said — the next day is Rosh Chodesh.");
@@ -215,8 +270,9 @@ test.describe("the date line", () => {
     // A box opened from a template is complete at once: icon, header, rule and verdict.
     const tapped = page.locator('.calendar-box[data-note="tachanun-shacharit"]:visible');
     await expect(tapped.locator("svg.calendar-mark")).toHaveCount(1);
-    await expect(tapped.locator(".box-head [data-lang=en]")).toHaveText("Depends on the date");
-    await expect(tapped.locator(".box-rule [data-lang=en]")).toContainText("It is not said on Shabbat, festivals, Rosh Chodesh");
+    await expect(tapped.locator(".box-title [data-lang=en]")).toHaveText("Depends on the date");
+    await expect(tapped.locator(".box-summary [data-lang=en]")).toHaveText(noteSummaries["tachanun-shacharit"].en);
+    await expect(tapped.locator(".box-more")).toHaveAttribute("aria-expanded", "false");
     await page.locator('[data-service-choice="mincha"]').click();
     await expect(page).toHaveURL(/\/weekday\/mincha\?date=2026-10-12$/);
     await page.locator("#section-tachanun>button").click();
@@ -238,7 +294,7 @@ test.describe("the date line", () => {
     await todayIs(page, "2026-10-07");
     await page.goto("/weekday/shacharit/tachanun?date=2030-01-01");
     await expect(verdict(page, "tachanun-shacharit")).toHaveText("Tue 1 Jan: not in the calendar — the calendar runs to 31 Oct 2028.");
-    await expect(page.locator('.calendar-box[data-note="tachanun-shacharit"]:visible .box-rule [data-lang=en]')).toContainText("It is not said on Shabbat, festivals");
+    await expect(page.locator('.calendar-box[data-note="tachanun-shacharit"]:visible .box-summary [data-lang=en]')).toContainText("Skipped on Shabbat, Rosh Chodesh");
     await expect(page.locator(".date-line [data-date-text] [data-lang=en]")).toHaveText("Tue 1 Jan · not in the calendar");
     await expect(page.locator(".date-line [data-date-today]")).toBeVisible();
     for (const bad of ["2026-02-30", "tomorrow", "2026-1-5"]) {
@@ -391,9 +447,10 @@ test.describe("the calendar table", () => {
 
   test("every note has its rule and its reading of the calendar, and the content uses them all", () => {
     // Every note reads the calendar; one more reading marks a breakdown entry only (the Monday–Thursday additions).
-    expect([...Object.keys(noteRules), "monday-thursday"].sort()).toEqual(Object.keys(noteTimes).sort());
+    expect([...Object.keys(noteSummaries), "monday-thursday"].sort()).toEqual(Object.keys(noteTimes).sort());
+    for (const note of Object.keys(noteRules)) expect(noteSummaries[note], note).toBeTruthy();
     const content = readFileSync(new URL("../content/roadmap.html", import.meta.url), "utf8");
-    expect([...new Set([...content.matchAll(/calendar-note note-([a-z-]+)/g)].map(m => m[1]))].sort()).toEqual(Object.keys(noteRules).sort());
+    expect([...new Set([...content.matchAll(/calendar-note note-([a-z-]+)/g)].map(m => m[1]))].sort()).toEqual(Object.keys(noteSummaries).sort());
     expect([...content.matchAll(/ mark-([a-z-]+)/g)].map(m => m[1]).sort()).toEqual(["monday-thursday", "omer"]);
   });
 
