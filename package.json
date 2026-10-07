@@ -10,7 +10,7 @@
     "snapshot-texts": "node scripts/snapshot-texts.mjs",
     "calendar": "node scripts/calendar.mjs",
     "dev": "astro dev",
-    "build": "node scripts/validate-corpus.mjs && tsc --noEmit && astro build && node scripts/compress-dist.mjs",
+    "build": "node scripts/validate-corpus.mjs && node scripts/check-wording.mjs && tsc --noEmit && astro build && node scripts/compress-dist.mjs",
     "test": "npm run extract && npm run build && playwright test",
     "perf": "node scripts/perf.mjs"
   },
