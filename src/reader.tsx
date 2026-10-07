@@ -166,7 +166,7 @@ export const textNusach = (node: ContentNode, nusach: "ashkenaz" | "sefard") => 
  * section's Sefaria text are fetched the first time it opens and cached; loading, failure and retry
  * show here, in the section.
  */
-export function SectionText({ node, index }: { node: ContentNode; index: number }) {
+export function SectionText({ node, index, heading }: { node: ContentNode; index: number; heading?: Localized }) {
   const { nusach } = usePreferences();
   const sourceId = node.text![textNusach(node, nusach)]!;
   const [attempt, setAttempt] = useState(0);
@@ -185,7 +185,7 @@ export function SectionText({ node, index }: { node: ContentNode; index: number 
   const current = state.key === key ? state : { status: "loading" as const, part: undefined, timeout: false };
   return <div className="reader section-reader" aria-busy={current.status === "loading" || undefined}>
     <Status status={current.status} timeout={current.timeout} />
-    {current.status === "ready" && current.part && <PartText node={node} index={index} part={current.part} heading />}
+    {current.status === "ready" && current.part && <PartText node={node} index={index} part={heading ? { ...current.part, heading } : current.part} heading />}
     {current.status === "error" && <Failure node={node} retry={() => setAttempt(n => n + 1)} />}
   </div>;
 }

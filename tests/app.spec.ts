@@ -681,3 +681,110 @@ test("Hebrew text is bold everywhere", async ({ page }) => {
   await page.getByRole("button", { name: "עברית" }).click();
   await check("Hebrew-only mode");
 });
+
+// Heicha Kedushah: when time is short, the leader says the first three blessings aloud and everyone finishes silently.
+const heichaKedushah = "kedushah-in-the-repetition-in-place-of-gods-holiness";
+
+test("Heicha Kedushah is offered at Mincha only, never at Maariv, and the usual pattern is the default", async ({ page }) => {
+  const offered = ["weekday/mincha", "shabbat/mincha"];
+  for (const [day, service] of services) {
+    // Weekday Maariv's Shmoneh Esrei is a single silent prayer, so its movement is that card.
+    const id = `${day}/${service}` === "weekday/maariv" ? "silent-shemoneh-esrei" : "amidah";
+    await page.goto(`/${day}/${service}/${id}`);
+    const amidah = page.locator(id === "amidah" ? "#movement-amidah" : `#section-${id}`);
+    await expect(amidah.locator(":scope>button")).toHaveAttribute("aria-expanded", "true");
+    await expect(page.locator(".pattern-switch")).toHaveCount(offered.includes(`${day}/${service}`) ? 1 : 0);
+    const has = offered.includes(`${day}/${service}`);
+    await expect(amidah.locator(".pattern-switch")).toHaveCount(has ? 1 : 0);
+    if (has) {
+      await expect(amidah.locator('[data-pattern-choice="usual"]')).toHaveAttribute("aria-pressed", "true");
+      await expect(amidah.locator(".pattern-note")).toHaveCount(0);
+      await expect(amidah.locator("#section-chazzans-repetition>button")).toBeVisible();
+    }
+  }
+  // Not a route where it isn't offered; the usual routes are unchanged.
+  for (const path of ["/weekday/maariv/amidah/heicha-kedushah", "/weekday/shacharit/amidah/heicha-kedushah", "/shabbat/musaf/amidah/heicha-kedushah", `/weekday/mincha/amidah/heicha-kedushah/no-such-section`, "/weekday/mincha/chazzans-repetition/heicha-kedushah"]) {
+    await page.goto(path);
+    await expect(page.getByRole("heading", { name: /Page not found/ })).toBeVisible();
+  }
+  // The note is fine print: never on the top level.
+  await page.goto("/weekday/mincha");
+  await expect(page.locator(".service-map").getByText("time is short")).toHaveCount(0);
+});
+
+test("switching to Heicha Kedushah changes which parts show", async ({ page }) => {
+  await page.goto("/weekday/mincha/amidah");
+  const amidah = page.locator("#movement-amidah");
+  await amidah.locator('[data-pattern-choice="heicha"]').click();
+  await expect(page).toHaveURL(/\/weekday\/mincha\/amidah\/heicha-kedushah$/);
+  await expect(amidah.locator('[data-pattern-choice="heicha"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(amidah.locator('[data-pattern-choice="heicha"]')).toBeFocused();
+  await expect(amidah.locator(".pattern-note")).toContainText("time is short");
+  await expect(amidah.locator(".pattern-note")).toContainText("Practice varies");
+  await expect(amidah.locator(":scope>button .blurb")).toContainText("Kedushah aloud, then silent");
+  // No repetition card and no silent-prayer card: one pass, aloud then silent.
+  await expect(amidah.locator(".members>.card>button")).toHaveCount(0);
+  await expect(amidah.getByText("Chazzan’s repetition")).toHaveCount(0);
+  const aloud = amidah.locator('[data-heicha-part="aloud"]'), silent = amidah.locator('[data-heicha-part="silent"]');
+  await expect(aloud.locator(".toc-toggle")).toHaveCount(3);
+  await expect(aloud.locator(".toc-toggle").nth(2)).toContainText("Holiness of the Name");
+  await expect(aloud.locator(".overlay")).toContainText("Kedushah");
+  await expect(aloud.locator('.toc-toggle[data-section="' + heichaKedushah + '"]')).toHaveCount(1);
+  await expect(silent.locator('.toc-toggle[data-section="ancestors-avot"]')).toHaveCount(0);
+  await expect(silent.locator('.toc-toggle[data-section="knowledge-atah-chonen"]')).toHaveCount(1);
+  await expect(silent.locator('.toc-toggle[data-section="personal-conclusion-elohai-netzor-and-steps-back"]')).toBeVisible();
+  await expect(amidah.locator('[data-section="priestly-blessing-said-by-the-prayer-leader"]')).toHaveCount(0);
+  // Kedushah opens in place, from the repetition's text; a silent blessing opens from the silent prayer's.
+  await aloud.locator('.toc-toggle[data-section="' + heichaKedushah + '"]').click();
+  await expect(page).toHaveURL(new RegExp(`/weekday/mincha/amidah/heicha-kedushah/${heichaKedushah}$`));
+  await expect(aloud.locator(".reader-section")).toHaveCount(1);
+  await expect(aloud.locator(".reader-heading")).toContainText("Kedushah and Holiness of the Name");
+  await expect(aloud.locator(".reader-credit")).toBeVisible();
+  await silent.locator(".toc-group").first().click();
+  await silent.locator('.toc-toggle[data-section="healing-refaeinu"]').click();
+  await expect(page).toHaveURL(/\/weekday\/mincha\/amidah\/heicha-kedushah\/healing-refaeinu$/);
+  await expect(silent.locator("#text-silent-shemoneh-esrei-healing-refaeinu .reader-section")).toBeVisible();
+  await expect(amidah.locator(".reader-section")).toHaveCount(2);
+  // Back to the usual pattern: both cards return, the note goes.
+  await amidah.locator('[data-pattern-choice="usual"]').click();
+  await expect(page).toHaveURL(/\/weekday\/mincha\/amidah$/);
+  await expect(amidah.locator("#section-silent-shemoneh-esrei>button")).toBeVisible();
+  await expect(amidah.locator("#section-chazzans-repetition>button")).toBeVisible();
+  await expect(amidah.locator(".pattern-note")).toHaveCount(0);
+  await expect(amidah.locator(":scope>button .blurb")).toContainText("Silent, then repeated aloud");
+});
+
+test("Heicha Kedushah deep links work, and Back/Forward step through the patterns", async ({ page }) => {
+  await page.goto(`/shabbat/mincha/amidah/heicha-kedushah/${heichaKedushah}`);
+  const amidah = page.locator("#movement-amidah");
+  await expect(amidah.locator(":scope>button")).toHaveAttribute("aria-expanded", "true");
+  await expect(amidah.locator('[data-pattern-choice="heicha"]')).toHaveAttribute("aria-pressed", "true");
+  const toggle = amidah.locator(`.toc-toggle[data-section="${heichaKedushah}"]`);
+  await expect(toggle).toHaveAttribute("aria-expanded", "true");
+  await expect(toggle).toBeFocused();
+  await expect(amidah.locator(".reader-section")).toBeInViewport();
+  await expect(amidah.locator('[data-heicha-part="silent"] .toc-toggle[data-section="sanctity-of-the-day-atah-echad"]')).toHaveCount(1);
+  // History: usual → Heicha Kedushah → a section, then back and forward again.
+  await page.goto("/weekday/mincha/amidah");
+  await amidah.locator('[data-pattern-choice="heicha"]').click();
+  await expect(page).toHaveURL(/\/amidah\/heicha-kedushah$/);
+  await amidah.locator('[data-heicha-part="aloud"] .toc-toggle[data-section="ancestors-avot"]').click();
+  await expect(page).toHaveURL(/\/amidah\/heicha-kedushah\/ancestors-avot$/);
+  await page.goBack();
+  await expect(page).toHaveURL(/\/amidah\/heicha-kedushah$/);
+  await expect(amidah.locator(".reader-section")).toHaveCount(0);
+  await page.goBack();
+  await expect(page).toHaveURL(/\/weekday\/mincha\/amidah$/);
+  await expect(amidah.locator('[data-pattern-choice="usual"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(amidah.locator("#section-chazzans-repetition>button")).toBeVisible();
+  await page.goForward();
+  await expect(page).toHaveURL(/\/amidah\/heicha-kedushah$/);
+  await expect(amidah.locator('[data-heicha-part="aloud"]')).toBeVisible();
+  await page.goForward();
+  await expect(page).toHaveURL(/\/amidah\/heicha-kedushah\/ancestors-avot$/);
+  await expect(amidah.locator('[data-heicha-part="aloud"] .reader-section')).toHaveCount(1);
+  // Closing the section stays in Heicha Kedushah.
+  await amidah.locator('.toc-toggle[data-section="ancestors-avot"]').click();
+  await expect(page).toHaveURL(/\/amidah\/heicha-kedushah$/);
+  await expect(amidah.locator('.toc-toggle[data-section="ancestors-avot"]')).toBeFocused();
+});

@@ -147,3 +147,18 @@ body[data-language=he] .stage{text-align:right}
 .reader-he{font-synthesis:none}
 /* Hebrew prayer text is flush right in every browser; don't rely on `start` resolving against dir=rtl. */
 .reader-he,.reader-he p{text-align:right}
+/* Heicha Kedushah: a small switch at the top of a Shmoneh Esrei that offers it, its note, and its two parts. */
+.pattern-switch{grid-template-columns:repeat(2,minmax(0,1fr));margin:0 0 10px;padding:3px;border-color:var(--border);border-radius:12px}
+.pattern-switch button{min-height:34px;border-radius:9px;font-size:.78rem}
+.pattern-switch button[aria-pressed=true]{background:var(--accent)}
+.pattern-switch .he{margin-top:1px}
+.pattern-switch button:focus-visible{outline:3px solid #155e8a;outline-offset:1px}
+.pattern-note{margin:0 4px 10px;color:#385269;font-size:.78rem;line-height:1.4}
+.pattern-note p{margin:0}
+.pattern-note p+p{margin-top:5px}
+.pattern-note [data-lang=he]{text-align:right}
+.pattern-note .pattern-source{color:#607487;font-size:.7rem}
+.members .heicha-head{padding:10px 12px 8px}
+.members>.heicha-part.communal>.heicha-head{padding-left:40px}
+.members>.heicha-part.communal>.communal-mark{top:9px;left:9px;width:1.4rem;height:1.4rem}
+.heicha-part .card-toc{margin-bottom:4px}
