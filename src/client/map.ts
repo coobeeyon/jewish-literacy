@@ -11,10 +11,11 @@
 //   prayer's summary is in "t:summary-<prayer id>";
 // - a section toggle has data-section (its slug) and its text box (.section-text, data-part) beside it;
 //   a group toggle has data-group and data-sections (the slugs of the sections it holds);
-// - a multi-prayer movement lists its members in data-members; a prayer with text has data-reader.
+// - a multi-prayer movement lists its members in data-members; a prayer with text has data-reader;
+//   text the page arrived with (a deep link's) is marked data-filled, and is kept as it is.
 import { nusach } from "./preferences";
 import { HEICHA } from "../paths";
-import { hideCredit, release, showCalendar, showCredit, showPrayer, showSection, type ReaderInfo } from "./reader";
+import { hideCredit, prefetchTexts, release, showCalendar, showCredit, showPrayer, showSection, textsIn, type ReaderInfo } from "./reader";
 
 /** A history entry's state; `y` is where the page was scrolled when a switch left it for another map. */
 export type NavState = { sections?: string[]; closed?: string; closedSection?: string; switched?: boolean; y?: number };
@@ -34,6 +35,8 @@ export function initMap(main: HTMLElement, arrival: Navigation = "initial"): Map
   const groups = new Map<string, Record<string, boolean>>();
   /** The nusach each reader element was last filled for. */
   const filled = new WeakMap<Element, string>();
+  /** Text the page arrived with, written for the nusach shown (see the data-nusach-only unwrapping below): counted as filled. */
+  const adopt = (el: Element | null) => { if (!el?.hasAttribute("data-filled")) return; el.removeAttribute("data-filled"); filled.set(el.matches("[data-credit]") ? el.parentElement! : el, nusach()); };
 
   const byId = (id: string) => document.getElementById(id);
   const routeFor = (...segments: Array<string | undefined>) => [base, ...segments].filter(Boolean).join("/");
@@ -143,6 +146,7 @@ export function initMap(main: HTMLElement, arrival: Navigation = "initial"): Map
       byId(group.getAttribute("aria-controls")!)!.hidden = !want;
     }
     const details = item.querySelector<HTMLElement>(":scope > .details")!;
+    adopt(details.querySelector(":scope > [data-credit]"));
     if (!open.length) { hideCredit(details); filled.delete(details); }
     else if (filled.get(details) !== nusach()) { filled.set(details, nusach()); showCredit(details, infoFor(item), nusach()); }
   }
@@ -150,7 +154,7 @@ export function initMap(main: HTMLElement, arrival: Navigation = "initial"): Map
   /** Start (or, after a nusach change, redo) every prayer text and open section on the page. */
   function fillReaders() {
     const now = nusach();
-    const fill = (el: HTMLElement, show: () => void) => { if (filled.get(el) !== now) { filled.set(el, now); show(); } };
+    const fill = (el: HTMLElement, show: () => void) => { adopt(el); if (filled.get(el) !== now) { filled.set(el, now); show(); } };
     for (const section of main.querySelectorAll<HTMLElement>("section[data-prayer]")) fill(section, () => showPrayer(section, infoFor(section), now));
     for (const box of main.querySelectorAll<HTMLElement>(".section-text:not([hidden])")) fill(box, () => showSection(box, infoFor(box), Number(box.dataset.part), now, box.dataset.heading ? JSON.parse(box.dataset.heading) : undefined));
     // This week's Torah reading does not depend on the nusach: fetched once per element.
@@ -288,6 +292,7 @@ export function initMap(main: HTMLElement, arrival: Navigation = "initial"): Map
   });
   // A nusach change refills every open region whose content differs by nusach, then the texts.
   document.addEventListener("nusachchange", () => {
+    prefetchTexts(textsIn(store, nusach()));
     for (const button of main.querySelectorAll<HTMLElement>('button[data-route][aria-expanded="true"]')) {
       const region = byId(button.getAttribute("aria-controls")!)!;
       if (button.isConnected && stored(`t:${templateKey(region)}:sefard`)) setOpen(button, false, true);
@@ -306,6 +311,8 @@ export function initMap(main: HTMLElement, arrival: Navigation = "initial"): Map
   try { sessionStorage.setItem(`service:${main.dataset.day}`, main.dataset.service!); } catch { /* optional */ }
   sync();
   settle(arrival);
+  // Every prayer on this map, ready before it is opened.
+  prefetchTexts(textsIn(store, nusach()));
   return {
     pop: () => { sync(); settle("pop"); },
     dispose: () => { stopHolding?.(); listening.abort(); },

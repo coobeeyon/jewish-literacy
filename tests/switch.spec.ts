@@ -22,9 +22,13 @@ async function showing(page: Page, day: string, service: string, title: string) 
 }
 
 /** Every same-origin request from here on (Sefaria is mocked and not counted). */
+/** Requests to the site, except the idle prefetch of a map's prayer texts and the reader's fonts (src/client/reader.ts). */
 function requests(page: Page) {
   const seen: Array<{ url: string; type: string }> = [];
-  page.on("request", request => { if (new URL(request.url()).hostname === "127.0.0.1") seen.push({ url: request.url(), type: request.resourceType() }); });
+  page.on("request", request => {
+    const url = new URL(request.url());
+    if (url.hostname === "127.0.0.1" && !url.pathname.startsWith("/texts/") && request.resourceType() !== "font") seen.push({ url: request.url(), type: request.resourceType() });
+  });
   return seen;
 }
 
@@ -38,7 +42,7 @@ test("every map page carries every map, closed, and stays under 50 KB gzipped", 
   }
 });
 
-test("day and service switch in place: no request, the title, heading and focus follow", async ({ page }) => {
+test("day and service switch in place: no request (beyond the idle prefetch of prayer texts), the title, heading and focus follow", async ({ page }) => {
   await page.goto("/weekday/shacharit");
   await page.evaluate(() => { (window as unknown as { marker: number }).marker = 42; });
   await page.waitForLoadState("networkidle");

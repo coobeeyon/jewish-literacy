@@ -1,9 +1,10 @@
 ---
 // Every page: the fonts and styles, the saved display preferences applied before first paint,
 // and the one small browser script (src/client/main.ts). Styles are inlined (astro.config.mjs). A page
-// that shows prayer text as it arrives preloads the reader's fonts (so the text never re-flows when
-// they land), its reading plan and its Sefaria texts, so the text does not wait on the script. The inline script runs before
-// first paint:
+// that opens on prayer text (written into the page; see src/texts.ts) preloads the reader's fonts, so
+// they arrive with the page, and holds the text undrawn until they are in (at most three seconds;
+// see styles.css), so it never re-flows: a script at the top of <body>, where the inlined styles'
+// font faces are known. The inline script in <head> runs before first paint:
 // language and nusach become attributes on <html>, and CSS does the rest. Its keys and defaults
 // match src/client/preferences.ts.
 import "@fontsource/noto-serif-hebrew/700.css";
@@ -20,8 +21,8 @@ import icon32 from "../icons/favicon-32.png?no-inline";
 import icon16 from "../icons/favicon-16.png?no-inline";
 import appleIcon from "../icons/apple-touch-icon.png?no-inline";
 
-interface Props { title: string; reading?: { plan?: string; texts: string[] } }
-const { title, reading } = Astro.props;
+interface Props { title: string; opensOnText?: boolean }
+const { title, opensOnText } = Astro.props;
 ---
 <!doctype html>
 <html lang="en">
@@ -31,10 +32,7 @@ const { title, reading } = Astro.props;
     <meta name="theme-color" content="#f7fafc" />
     <title>{title}</title>
     <script is:inline>(function(){var r=document.documentElement,l,n;try{l=localStorage.getItem("weekday-shacharit-language");n=localStorage.getItem("weekday-shacharit-nusach")}catch(e){}l=l==="en"||l==="he"?l:"both";r.setAttribute("data-language",l);r.setAttribute("data-nusach",n==="sefard"?"sefard":"ashkenaz");r.lang=l==="he"?"he":"en";r.dir="ltr"})()</script>
-    {reading && <link rel="preconnect" href="https://www.sefaria.org" crossorigin />}
-    {reading?.plan && <link rel="preload" href={reading.plan} as="fetch" type="application/json" crossorigin />}
-    {reading?.texts.map(href => <link rel="preload" href={href} as="fetch" crossorigin />)}
-    {reading && [hebrew, hebrewLatin, english].map(href => <link rel="preload" href={href} as="font" type="font/woff2" crossorigin />)}
+    {opensOnText && [hebrew, hebrewLatin, english].map(href => <link rel="preload" href={href} as="font" type="font/woff2" crossorigin />)}
     <link rel="icon" href={iconSvg} type="image/svg+xml" />
     <link rel="icon" href={icon32} type="image/png" sizes="32x32" />
     <link rel="icon" href={icon16} type="image/png" sizes="16x16" />
@@ -43,6 +41,7 @@ const { title, reading } = Astro.props;
     <script>import "../client/main";</script>
   </head>
   <body>
+    {opensOnText && <script is:inline>(function(){var r=document.documentElement,f=document.fonts,h='700 1em "Noto Serif Hebrew"',e='1em "Source Serif 4"',d=function(){requestAnimationFrame(function(){requestAnimationFrame(function(){r.removeAttribute("data-fonts")})})};if(!f||f.check(h,"א")&&f.check(e,"a"))return;r.setAttribute("data-fonts","pending");Promise.race([Promise.all([f.load(h,"אa"),f.load(e,"a")]),new Promise(function(s){setTimeout(s,3000)})]).then(d,d)})()</script>}
     <slot />
   </body>
 </html>

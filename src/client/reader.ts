@@ -1,26 +1,25 @@
-// Prayer text from Sefaria, shown in place: fetched the first time it opens, validated against the
-// pinned editions, cached, with loading, failure, retry and attribution. Ported from the React
-// app's reader.tsx; the pure parts live in src/sefaria.ts.
-import { calendarIntro, calendarUrl, licenseOf, parseCalendar, partAnchor, renderSection, textNusach, validateSection, type Reading, type RenderedPart, type Texts } from "../sefaria";
-import type { Inline } from "../format";
-import type { CalendarKind, Edition, Localized, Nusach, TextPart, TextSection, TextSource } from "../types";
+// Prayer text shown in place. The build renders each prayer's text (src/texts.ts): a page that opens
+// on text has it already; anything opened later comes from the prayer's small text file, fetched on
+// the first open or, usually, prefetched for the whole map once the page is idle, and then shown at
+// once. A loading line, failure, retry and the Sefaria link remain for a slow or failed fetch.
+import { calendarIntro, calendarUrl, parseCalendar, partAnchor, textNusach, type Reading } from "../sefaria";
+import type { TextFile } from "../texts";
+import type { CalendarKind, Localized, Nusach } from "../types";
 import { bi, h } from "./dom";
 
 /** What a prayer card or landmark carries in its data-reader attribute (see readerData in src/view/map.tsx). */
 export type ReaderInfo = Readonly<{
   id: string;
   title: Localized;
-  plans: Readonly<{ ashkenaz: string; sefard?: string }>;
+  texts: Readonly<{ ashkenaz: string; sefard?: string }>;
   links: Readonly<{ ashkenaz: string; sefard?: string }>;
 }>;
 
-type Plan = { source: TextSource; editions: Record<string, Edition> };
-
 /** Fetch JSON with the app's rules: a timeout, and only a JSON answer counts. */
-function getJson(url: string, timeout?: number): Promise<unknown> {
+function getJson(url: string, timeout?: number, priority?: "low"): Promise<unknown> {
   const controller = new AbortController();
   const timer = timeout ? setTimeout(() => controller.abort(), timeout) : undefined;
-  return fetch(url, { signal: controller.signal, headers: { Accept: "application/json" } })
+  return fetch(url, { signal: controller.signal, headers: { Accept: "application/json" }, priority })
     .then(response => {
       if (!response.ok || !(response.headers.get("content-type") || "").includes("application/json")) throw new Error(`Request failed: ${url}`);
       return response.json();
@@ -38,58 +37,73 @@ function cached<T>(cache: Map<string, Promise<T>>, url: string, load: () => Prom
   return request;
 }
 
-const plans = new Map<string, Promise<Plan>>();
-const segments = new Map<string, Promise<Texts>>();
+const files = new Map<string, Promise<TextFile>>();
+/** Text files that have arrived, for showing at once. */
+const arrived = new Map<string, TextFile>();
 const readings = new Map<string, Promise<Reading>>();
 
-/** A prayer's reading plan, one small file per prayer and nusach. */
-const loadPlan = (url: string) => cached(plans, url, () => getJson(url) as Promise<Plan>);
-
-const loadSection = (section: TextSection, edition: Edition) =>
-  cached(segments, section.url, () => getJson(section.url, 15000).then(data => validateSection(data, section, edition)));
+const loadText = (url: string, priority?: "low") => cached(files, url, () => getJson(url, 15000, priority).then(data => {
+  const file = data as TextFile;
+  if (!Array.isArray(file?.parts) || typeof file.credit !== "string") throw new Error("Unexpected text file");
+  arrived.set(url, file);
+  return file;
+}));
 
 /**
- * The reader's fonts, loaded before any text shows, so text never appears in a stand-in font and
- * re-flows when they land (pages that open on text preload them; see Page.astro). Gives up after
- * three seconds and shows the text anyway.
+ * The reader's fonts, loaded before any text is placed, so text never appears in a stand-in font
+ * and re-flows when they land (pages that open on text preload them; see Page.astro). Gives up
+ * after three seconds and shows the text anyway.
  */
-let fonts: Promise<unknown> | undefined;
+let fonts: Promise<unknown> | undefined, fontsIn = false;
 const readerFonts = () => fonts ??= Promise.race([
   Promise.all([document.fonts.load('700 1em "Noto Serif Hebrew"', "אa"), document.fonts.load('1em "Source Serif 4"', "a")]),
   new Promise(resolve => setTimeout(resolve, 3000)),
-]).catch(() => undefined);
+]).catch(() => undefined).then(() => { fontsIn = true; });
 
-function loadPart(part: TextPart, editions: Plan["editions"]): Promise<RenderedPart> {
-  const texts = Promise.all(part.sections.map(section => loadSection(section, editions[section.edition])));
-  return Promise.all([texts, readerFonts()]).then(([all]) => {
-    const out: RenderedPart = { heading: part.heading, en: [], he: [] };
-    part.sections.forEach((section, i) => renderSection(section, all[i], out));
-    if (!out.he.some(p => !p.rubric)) throw new Error("No prayer text");
-    return out;
-  });
+/** A prayer's text, now if it has arrived (and the fonts with it), or once it does. */
+const textNow = (url: string) => fontsIn ? arrived.get(url) : undefined;
+const textSoon = (url: string) => Promise.all([loadText(url), readerFonts()]).then(([file]) => file);
+
+/**
+ * Prefetch a map's prayer texts (and the reader's fonts) a moment after the page has loaded, when
+ * the browser is idle, a few at a time and at low priority, so that nothing competes with the
+ * first paint and a later open shows its text at once. A new call replaces whatever an earlier one
+ * still had waiting (a switch to another map, or the other nusach).
+ */
+let waiting: string[] = [];
+const settleDelay = 1000;
+export function prefetchTexts(urls: string[]) {
+  waiting = [...new Set(urls)].filter(url => !files.has(url));
+  const next = (): unknown => { const url = waiting.shift(); return url && loadText(url, "low").catch(() => undefined).then(next); };
+  const start = () => { readerFonts(); for (let i = 0; i < 3; i++) next(); };
+  const idle = () => setTimeout(() => "requestIdleCallback" in window ? requestIdleCallback(start, { timeout: 1000 }) : start(), settleDelay);
+  if (document.readyState === "complete") idle(); else addEventListener("load", idle, { once: true });
+}
+
+/** Every prayer text a map's markup refers to (looking inside its templates too), in one nusach. */
+export function textsIn(root: ParentNode, nusach: Nusach, out: string[] = []): string[] {
+  for (const el of root.querySelectorAll<HTMLElement>("[data-reader]")) out.push(urlFor(JSON.parse(el.dataset.reader!), nusach));
+  for (const template of root.querySelectorAll("template")) textsIn(template.content, nusach, out);
+  return out;
 }
 
 // ───────────── Rendering ─────────────
 
-function Credit(plan: Plan, fellBack: boolean): HTMLElement {
-  const { source } = plan;
-  const editions = [...new Set(source.parts.flatMap(p => p.sections.map(s => s.edition)))].map(id => plan.editions[id]);
-  const renamesName = editions.some(edition => edition.id.startsWith("metsudah"));
-  return h("p", { class: "reader-credit" },
-    h("span", { "data-lang": "en" }, "Text from ", h("a", { href: source.fallbackUrl }, "Sefaria"), ". ", editions.map((edition, i) => h("span", {}, i > 0 && "; ", h("cite", {}, edition.cite.en), " (", h("a", { href: edition.he.source }, edition.sourceLabel.en), "), license reported by Sefaria: ", licenseOf(edition).en)), ".", renamesName && " The English shows the Name as “LORD”.", fellBack && " Nusach Sefard text for this prayer isn’t available on Sefaria, so the Ashkenaz text is shown."),
-    h("span", { class: "he", "data-lang": "he" }, "הטקסט מתוך ", h("a", { href: source.fallbackUrl }, "ספריא"), ". ", editions.map((edition, i) => h("span", {}, i > 0 && "; ", h("cite", {}, edition.cite.he), " (", h("a", { href: edition.he.source }, edition.sourceLabel.he), "), הרישיון המדווח בספריא: ", licenseOf(edition).he)), ".", renamesName && " באנגלית השם מוצג כ־LORD.", fellBack && " נוסח ספרד של תפילה זו אינו זמין בספריא, ולכן מוצג נוסח אשכנז."),
-  );
+/** Markup the build rendered (src/view/reader.tsx), as nodes. */
+function built(html: string): DocumentFragment {
+  const template = document.createElement("template");
+  template.innerHTML = html;
+  return template.content;
 }
 
-/** An edition's own formatting, as elements: line breaks, bold, italics, small, big, superscript. */
-const formatted = (nodes: Inline[]): Array<Node | string> => nodes.map(node => typeof node === "string" ? node : "br" in node ? h("br") : h(node.tag, {}, formatted(node.children)));
+const credit = (file: TextFile, fellBack: boolean) => built(fellBack ? file.fellBack : file.credit);
 
-/** One section of a prayer: heading (when the prayer has several), then Hebrew, then English. */
-function PartText(info: ReaderInfo, index: number, part: RenderedPart, heading: boolean): HTMLElement {
+/** One section of a prayer: heading (when the prayer has several, or the entry gives its own), then Hebrew, then English. */
+function PartText(info: ReaderInfo, index: number, part: TextFile["parts"][number], showHeading: boolean, heading?: Localized): HTMLElement {
+  const title = heading || part.heading;
   return h("div", { class: "reader-section", id: partAnchor(info.id, index), tabindex: "-1" },
-    heading && part.heading && h("h3", { class: "reader-heading" }, bi(part.heading)),
-    h("div", { class: "reader-text reader-he", "data-lang": "he", lang: "he", dir: "rtl" }, part.he.map(p => h("p", { class: p.rubric ? "rubric" : undefined }, formatted(p.nodes)))),
-    part.en.length > 0 && h("div", { class: "reader-text reader-en", "data-lang": "en", lang: "en", dir: "ltr" }, part.en.map(p => h("p", { class: p.rubric ? "rubric" : undefined }, formatted(p.nodes)))),
+    showHeading && title && h("h3", { class: "reader-heading" }, bi(title)),
+    built(part.html),
   );
 }
 
@@ -114,7 +128,31 @@ function claim(el: Element): () => boolean {
 export const release = (el: Element) => { claims.delete(el); };
 
 const failed = (error: unknown) => (error as Error | undefined)?.name === "AbortError";
-const planFor = (info: ReaderInfo, nusach: Nusach) => info.plans[textNusach(info.plans, nusach)]!;
+const urlFor = (info: ReaderInfo, nusach: Nusach) => info.texts[textNusach(info.texts, nusach)]!;
+const fellBackFor = (info: ReaderInfo, nusach: Nusach) => nusach === "sefard" && !info.texts.sefard;
+
+/**
+ * Show a prayer's text in `el`: at once if it is here; otherwise a loading line (marked busy), then
+ * the text, or the failure with "Try again".
+ */
+function present(el: HTMLElement, info: ReaderInfo, nusach: Nusach, render: (file: TextFile) => void, show: (...nodes: Node[]) => void) {
+  const url = urlFor(info, nusach);
+  const run = () => {
+    const live = claim(el);
+    const file = textNow(url);
+    if (file) { render(file); return; }
+    el.setAttribute("aria-busy", "true");
+    show(Status("loading"));
+    textSoon(url)
+      .then(file => { if (!live()) return; el.removeAttribute("aria-busy"); render(file); })
+      .catch(error => {
+        if (!live()) return;
+        el.removeAttribute("aria-busy");
+        show(Status("error", failed(error)), Failure(info, nusach, run));
+      });
+  };
+  run();
+}
 
 /**
  * A prayer shown whole (one with a single section, or with no breakdown: Kaddish, Barkhu), in its
@@ -123,59 +161,28 @@ const planFor = (info: ReaderInfo, nusach: Nusach) => info.plans[textNusach(info
 export function showPrayer(section: HTMLElement, info: ReaderInfo, nusach: Nusach) {
   const calendar = section.querySelector<HTMLElement>(":scope > .reader-calendar");
   const show = (...nodes: Node[]) => { for (const child of [...section.childNodes]) if (child !== calendar) child.remove(); section.append(...nodes); };
-  const run = () => {
-    const live = claim(section);
-    section.setAttribute("aria-busy", "true");
-    show(Status("loading"));
-    loadPlan(planFor(info, nusach))
-      .then(plan => Promise.all(plan.source.parts.map(part => loadPart(part, plan.editions))).then(parts => {
-        if (!live()) return;
-        section.removeAttribute("aria-busy");
-        show(h("div", { class: "reader-texts" }, parts.map((part, i) => PartText(info, i, part, parts.length > 1))), Credit(plan, nusach === "sefard" && !info.plans.sefard));
-      }))
-      .catch(error => {
-        if (!live()) return;
-        section.removeAttribute("aria-busy");
-        show(Status("error", failed(error)), Failure(info, nusach, run));
-      });
-  };
-  run();
+  present(section, info, nusach, file => show(h("div", { class: "reader-texts" }, file.parts.map((part, i) => PartText(info, i, part, file.parts.length > 1))), credit(file, fellBackFor(info, nusach))), show);
 }
 
 /** One section of a prayer of several, shown where its breakdown entry is (in its .section-text), under its entry's heading if it has its own. */
 export function showSection(box: HTMLElement, info: ReaderInfo, index: number, nusach: Nusach, heading?: Localized) {
-  const run = () => {
-    const live = claim(box);
-    const reader = h("div", { class: "reader section-reader", "aria-busy": "true" }, Status("loading"));
-    box.replaceChildren(reader);
-    loadPlan(planFor(info, nusach))
-      .then(plan => {
-        const part = plan.source.parts[index];
-        if (!part) throw new Error("Unknown text section");
-        return loadPart(part, plan.editions);
-      })
-      .then(part => {
-        if (!live()) return;
-        reader.removeAttribute("aria-busy");
-        reader.replaceChildren(PartText(info, index, heading ? { ...part, heading } : part, true));
-      })
-      .catch(error => {
-        if (!live()) return;
-        reader.removeAttribute("aria-busy");
-        reader.replaceChildren(Status("error", failed(error)), Failure(info, nusach, run));
-      });
-  };
-  run();
+  const reader = h("div", { class: "reader section-reader" });
+  box.replaceChildren(reader);
+  present(reader, info, nusach, file => {
+    const part = file.parts[index];
+    reader.replaceChildren(part ? PartText(info, index, part, true, heading) : Status("error"));
+  }, (...nodes) => reader.replaceChildren(...nodes));
 }
 
 /** The Sefaria credit for a prayer read section by section, at the end of its open card. */
 export function showCredit(details: HTMLElement, info: ReaderInfo, nusach: Nusach) {
   const live = claim(details);
   details.querySelector(":scope > [data-credit]")?.remove();
-  loadPlan(planFor(info, nusach)).then(plan => {
-    if (!live()) return;
-    details.append(h("div", { class: "reader", "data-credit": "" }, Credit(plan, nusach === "sefard" && !info.plans.sefard)));
-  }).catch(() => undefined);
+  const url = urlFor(info, nusach);
+  const add = (file: TextFile) => details.append(h("div", { class: "reader", "data-credit": "" }, credit(file, fellBackFor(info, nusach))));
+  const file = arrived.get(url);
+  if (file) add(file);
+  else loadText(url).then(file => { if (live()) add(file); }).catch(() => undefined);
 }
 
 export function hideCredit(details: HTMLElement) {

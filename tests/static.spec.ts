@@ -67,11 +67,13 @@ test.describe("with JavaScript disabled", () => {
     // A Kaddish seam, with its fine print, inside its movement.
     await page.goto("/shabbat/musaf/rabbis-kaddish");
     await expect(page.locator("#movement-closing>button")).toHaveAttribute("aria-expanded", "true");
-    await expect(page.locator("#section-rabbis-kaddish")).toHaveAttribute("data-open", "true");
-    await expect(page.locator("#section-rabbis-kaddish .landmark-toggle")).toHaveAttribute("aria-expanded", "true");
-    await expect(page.locator("#section-rabbis-kaddish .seam-note")).toBeVisible();
-    // Without a script there is no live text, but the way to Sefaria is there.
-    await expect(page.locator("#section-rabbis-kaddish noscript")).toHaveCount(1);
+    // (Its movement's body is in the HTML once per nusach, one hidden by CSS: hence :visible.)
+    await expect(expanded(page, "#section-rabbis-kaddish")).toHaveAttribute("data-open", "true");
+    await expect(expanded(page, "#section-rabbis-kaddish .landmark-toggle")).toHaveAttribute("aria-expanded", "true");
+    await expect(expanded(page, "#section-rabbis-kaddish .seam-note")).toBeVisible();
+    // Without a script the text is there too, with its credit and the way to Sefaria.
+    await expect(expanded(page, "#section-rabbis-kaddish .reader-he p").first()).toBeVisible();
+    await expect(expanded(page, "#section-rabbis-kaddish .reader-credit a[href^='https://www.sefaria.org/']").first()).toBeVisible();
     await page.goto("/weekday/shacharit/torah");
     await expect(page.locator("#movement-torah>button")).toHaveAttribute("aria-expanded", "true");
     await expect(page.locator("#movement-torah .stages .stage")).toHaveCount(4);
@@ -80,10 +82,16 @@ test.describe("with JavaScript disabled", () => {
     const amidah = page.locator("#movement-amidah");
     await expect(amidah.locator(":scope>button")).toHaveAttribute("aria-expanded", "true");
     await expect(amidah.locator(":scope>button .blurb")).toContainText("Kedushah aloud, then silent");
-    await expect(amidah.locator('[data-pattern-choice="heicha"]')).toHaveAttribute("aria-pressed", "true");
-    await expect(amidah.locator(".pattern-note")).toBeVisible();
+    await expect(amidah.locator('[data-pattern-choice="heicha"]:visible')).toHaveAttribute("aria-pressed", "true");
+    await expect(amidah.locator(".pattern-note:visible")).toBeVisible();
     await expect(expanded(page, '[data-heicha-part="silent"] .toc-toggle[data-section="healing-refaeinu"]')).toHaveAttribute("aria-expanded", "true");
     await expect(expanded(page, "#text-silent-shemoneh-esrei-healing-refaeinu")).toBeVisible();
+    await expect(expanded(page, "#text-silent-shemoneh-esrei-healing-refaeinu .reader-he p").first()).toBeVisible();
+    // A section's text, in the saved nusach only.
+    await page.goto("/weekday/shacharit/tachanun/falling-on-the-face");
+    await expect(page.locator("#text-tachanun-falling-on-the-face .reader-he p:visible").first()).toBeVisible();
+    await expect(page.locator(".reader-credit:visible")).toHaveCount(1);
+    await expect(page.locator(".reader-credit:visible")).toContainText("Koren");
   });
 });
 
@@ -222,7 +230,7 @@ test("a deep link near the end of the page still lands on its target once the te
   await expect.poll(() => page.locator("#movement-closing").evaluate(el => Math.round(el.getBoundingClientRect().top))).toBeGreaterThan(100);
 });
 
-test("a first load paints with the page alone: styles inlined, fonts preloaded only where text shows", async ({ page, request }) => {
+test("a first load paints with the page alone: styles inlined, text in the page, fonts preloaded only where text shows", async ({ page, request }) => {
   test.skip(test.info().project.name !== "phone-390", "markup does not depend on the viewport");
   const map = await (await request.get("/weekday/maariv")).text();
   expect(map).not.toMatch(/<link[^>]+rel="stylesheet"/);
@@ -234,9 +242,10 @@ test("a first load paints with the page alone: styles inlined, fonts preloaded o
     expect(fonts, path).toHaveLength(3);
     // The very files the styles use, so nothing loads twice.
     for (const font of fonts) expect(section).toContain(`url(${font})`);
-    // And the open prayer's reading plan, as the reader will ask for it.
-    const plan = section.match(/<link rel="preload" href="(\/plans\/[^"]+)" as="fetch"/)![1];
-    expect(section).toContain(`&quot;ashkenaz&quot;:&quot;${plan}&quot;`);
+    // The text is in the page; nothing is asked of Sefaria.
+    expect(section).toContain('class="reader-text reader-he"');
+    expect(section).not.toContain("sefaria.org/api");
+    expect(section).not.toContain('rel="preconnect"');
   }
   await page.goto("/weekday/maariv");
   await expect(page.locator("#service-heading")).toBeVisible();
@@ -260,8 +269,8 @@ test("deep links land before the script runs, where the script would put them", 
   }
 });
 
-test("a deep link's text arrives without shifting the page", async ({ page }) => {
-  await page.route("https://www.sefaria.org/api/v3/texts/**", async route => { await new Promise(r => setTimeout(r, 400)); await route.fallback(); });
+test("a deep link's text shows without shifting the page, even when its fonts arrive late", async ({ page }) => {
+  await page.route("**/_astro/*.woff2", async route => { await new Promise(r => setTimeout(r, 400)); await route.fallback(); });
   await page.addInitScript(() => {
     (window as unknown as { shift: number }).shift = 0;
     new PerformanceObserver(list => { for (const entry of list.getEntries() as Array<PerformanceEntry & { value: number; hadRecentInput: boolean }>) if (!entry.hadRecentInput) (window as unknown as { shift: number }).shift += entry.value; }).observe({ type: "layout-shift", buffered: true });
@@ -269,6 +278,7 @@ test("a deep link's text arrives without shifting the page", async ({ page }) =>
   for (const path of ["/weekday/shacharit/tachanun/falling-on-the-face", "/weekday/mincha/ashrei"]) {
     await page.goto(path);
     await expect(page.locator(".reader-text").first()).toBeVisible();
+    await page.evaluate(() => document.fonts.ready);
     await page.waitForTimeout(300);
     expect(await page.evaluate(() => (window as unknown as { shift: number }).shift), path).toBeLessThan(0.02);
   }

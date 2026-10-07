@@ -1,6 +1,6 @@
-// Pure Sefaria logic: response validation, reading-plan rendering (src/format.ts keeps each
-// edition's formatting and fixes its glitches), licenses and the
-// Torah calendar. No DOM and no fetching here; src/client/reader.ts does both, using these.
+// Pure Sefaria logic: reading-plan rendering (src/format.ts keeps each edition's formatting and
+// fixes its glitches), licenses and the Torah calendar. Sefaria responses are checked against the
+// pins when the texts are snapshot (scripts/sefaria-texts.mjs); no DOM and no fetching here.
 import { formatSegment, plainOf, type Inline, type Lang } from "./format";
 import type { CalendarKind, Edition, Localized, Nusach, TextSection } from "./types";
 
@@ -8,24 +8,6 @@ export type { Lang };
 export type Texts = Record<Lang, string[]>;
 export type Paragraph = { nodes: Inline[]; rubric: boolean };
 export type RenderedPart = { heading?: Localized; en: Paragraph[]; he: Paragraph[] };
-
-/** Accept a response only if it is exactly the pinned ref, editions, licenses and shape. */
-export function validateSection(data: unknown, section: TextSection, edition: Edition): Texts {
-  const result = data as { ref?: unknown; warnings?: unknown; versions?: unknown };
-  if (result?.ref !== section.ref || !Array.isArray(result.warnings) || result.warnings.length || !Array.isArray(result.versions) || result.versions.length !== 2) throw new Error("Unexpected Sefaria response");
-  const out: Partial<Texts> = {};
-  for (const version of result.versions as Array<Record<string, unknown>>) {
-    const language = version.language as Lang;
-    const expected = edition[language];
-    if (!expected || out[language]) throw new Error("Unexpected Sefaria edition");
-    if (version.versionTitle !== expected.title || version.license !== expected.license || version.versionSource !== expected.source || version.actualLanguage !== expected.language || version.direction !== expected.direction) throw new Error("Sefaria metadata changed");
-    const segments = typeof version.text === "string" ? [version.text] : version.text;
-    if (!Array.isArray(segments) || segments.length !== section.count[language] || segments.some(s => typeof s !== "string")) throw new Error("Sefaria text shape changed");
-    out[language] = segments as string[];
-  }
-  if (!out.en || !out.he) throw new Error("Missing language");
-  return out as Texts;
-}
 
 export function renderSection(section: TextSection, texts: Texts, out: RenderedPart) {
   for (const item of section.items.split(",")) {

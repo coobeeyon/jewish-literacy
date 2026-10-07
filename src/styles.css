@@ -198,3 +198,8 @@ html[data-switch-in] .service-title,html[data-switch-in] .service-map{animation:
 /* A deep link that opens on prayer text keeps a screen's room for it while it loads, so nothing
    below jumps down when it arrives (main[data-arriving] until the reader first taps, scrolls or types). */
 main[data-arriving] .section-text:not([hidden]):not(:has(.reader-text, .reader-failure)),main[data-arriving] section[data-prayer]:not(:has(.reader-text, .reader-failure)){min-height:100vh}
+
+/* A page that opens on prayer text has the text in its HTML. Until the reader's fonts are in (at most
+   three seconds; see Page.astro), the text keeps its place but is not drawn, so it never shows in a
+   stand-in font and then re-flows. Without a script it simply shows. */
+html[data-fonts=pending] .reader-text{visibility:hidden}

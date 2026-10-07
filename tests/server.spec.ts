@@ -44,16 +44,21 @@ test.describe("server.mjs", () => {
     expect(await about.text()).toContain('id="about-heading"');
   });
 
-  test("reading plans are small, compressed and cached for good", async ({ request }) => {
+  test("prayer texts are small, compressed and cached for good", async ({ request }) => {
     const html = await (await request.get("/weekday/mincha/ashrei")).text();
-    const plan = html.match(/&quot;ashkenaz&quot;:&quot;(\/plans\/[^&]+\.json)&quot;/)![1];
-    const response = await request.get(plan, { headers: { "Accept-Encoding": "br" } });
+    const url = html.match(/&quot;ashkenaz&quot;:&quot;(\/texts\/[^&]+\.json)&quot;/)![1];
+    const response = await request.get(url, { headers: { "Accept-Encoding": "br" } });
     expect(response.status()).toBe(200);
     expect(response.headers()["content-type"]).toBe("application/json");
     expect(response.headers()["content-encoding"]).toBe("br");
     expect(response.headers()["cache-control"]).toBe("public, max-age=31536000, immutable");
-    expect(Number(response.headers()["content-length"])).toBeLessThan(2000);
-    expect((await response.json()).source.id).toBe("weekday/mincha/ashrei:ashkenaz");
+    expect(Number(response.headers()["content-length"])).toBeLessThan(4000);
+    const file = await response.json();
+    expect(file.parts).toHaveLength(1);
+    expect(file.parts[0].html).toMatch(/<div class="reader-text reader-he"[^>]*><p>[א-ת]/);
+    expect(file.parts[0].html).toContain("Happy are those who dwell in Your House");
+    expect(file.credit).toContain("Koren Shalem Siddur (Ashkenaz)");
+    expect(file.fellBack).toContain("isn’t available on Sefaria");
   });
 
   test("every file has a strong ETag and Last-Modified, and an unchanged one is a bodiless 304", async ({ request }) => {

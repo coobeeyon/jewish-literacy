@@ -9,11 +9,12 @@
 import type { ComponentChildren, VNode } from "preact";
 import { renderToString } from "preact-render-to-string";
 import { displayTitle, HEICHA, heichaAloud, layoutFor, type Movement } from "../movements";
-import { planSource, planUrl } from "../plans";
 import { corpus, routeFor, services, type MapRoute } from "../routes";
 import { textNusach } from "../sefaria";
 import type { AstNode, ContentNode, DayType, Localized, Nusach, ServiceId, ServiceMap } from "../types";
+import { partsOf, sourceOf, textUrl } from "../texts";
 import { LanguagePicker, LocalizedText, PeopleIcon, SettingsIcon } from "./common";
+import { Credit, PartText } from "./reader";
 
 /** What is open: movement and prayer ids, and the open prayer's open sections (by slug). */
 type Place = Readonly<{
@@ -94,13 +95,31 @@ function EntryToggle(view: View, entryKey: string, children: ComponentChildren):
   return <button type="button" className="toc-toggle" aria-expanded={open} aria-controls={`text-${sections.node.id}-${entry.slug}`} data-section={entry.slug}>{children}</button>;
 }
 
-/** Where an entry's section of text goes. The browser fetches and shows the text when it opens. */
+/**
+ * Where an entry's section of text goes. Open in the page as it arrives, the text is written in
+ * (data-filled tells the browser it is there); otherwise the browser places it when it opens.
+ */
 function EntryText(view: View, entryKey: string): VNode | null {
   const sections = view.sections;
   const entry = sections?.entry(entryKey);
   if (!sections || !entry) return null;
   const open = sections.isOpen(entry.slug);
-  return <div id={`text-${sections.node.id}-${entry.slug}`} className="section-text" hidden={!open} data-part={entry.part} data-heading={entry.heading && JSON.stringify(entry.heading)} />;
+  const { id } = shownText(view, sections.node);
+  return <div id={`text-${sections.node.id}-${entry.slug}`} className="section-text" hidden={!open} data-part={entry.part} data-heading={entry.heading && JSON.stringify(entry.heading)} data-filled={open ? "" : undefined}>
+    {open && <div className="reader section-reader">{PartText(sections.node.id, entry.part, partsOf(id)[entry.part], true, entry.heading)}</div>}
+  </div>;
+}
+
+/** The text a prayer shows in a nusach: Sefard's where Sefaria has it, otherwise Ashkenaz's (and the credit says so). */
+const shownText = (view: View, node: ContentNode) => {
+  const text = node.text!;
+  return { id: text[textNusach(text, view.nusach)]!, fellBack: view.nusach === "sefard" && !text.sefard };
+};
+
+/** The Sefaria credit under a prayer's text. */
+function TextCredit(view: View, node: ContentNode): VNode {
+  const { id, fellBack } = shownText(view, node);
+  return Credit(sourceOf(id), fellBack);
 }
 
 /** A group heading that shows or hides its entries. */
@@ -253,11 +272,11 @@ function MovementCopy(movement: Movement): VNode {
 
 const movementClass = (m: Movement) => ["movement", m.tone, m.peak && "peak", m.minor && "minor", m.stages && "event", m.communal && "communal"].filter(Boolean).join(" ");
 
-/** What the browser needs to show a prayer's text: its reading plan per nusach, title and Sefaria links. */
+/** What the browser needs to show a prayer's text: its text file per nusach, title and Sefaria links. */
 const readerData = (node: ContentNode) => node.text && JSON.stringify({
   id: node.id,
   title: node.title,
-  plans: { ashkenaz: planUrl(node.text.ashkenaz), ...(node.text.sefard ? { sefard: planUrl(node.text.sefard) } : {}) },
+  texts: { ashkenaz: textUrl(node.text.ashkenaz), ...(node.text.sefard ? { sefard: textUrl(node.text.sefard) } : {}) },
   links: node.text.links,
 });
 
@@ -281,11 +300,16 @@ function Card(view: View, node: ContentNode, movement?: Movement, parent?: strin
   </li>;
 }
 
-/** A prayer shown whole (one section, or no breakdown, as Kaddish and Barkhu). The browser fills it. */
-function PrayerReader(node: ContentNode): VNode {
-  return <section className="reader" aria-label={`${node.title.en} prayer text`} data-prayer="">
+/**
+ * A prayer shown whole (one section, or no breakdown, as Kaddish and Barkhu). Open in the page as
+ * it arrives, its text is written in (data-filled); otherwise the browser places it when it opens.
+ */
+function PrayerReader(view: View, node: ContentNode): VNode {
+  const open = view.place.open.has(node.id);
+  const parts = open ? partsOf(shownText(view, node).id) : [];
+  return <section className="reader" aria-label={`${node.title.en} prayer text`} data-prayer="" data-filled={open ? "" : undefined}>
     {node.text!.calendar && TorahCalendar(node.text!.calendar)}
-    <noscript><p><a href={node.text!.links.ashkenaz}>{LocalizedText({ en: `Read ${node.title.en} on Sefaria`, he: `לקריאת ${node.title.he} בספריא` })}</a></p></noscript>
+    {open && <><div className="reader-texts">{parts.map((part, i) => PartText(node.id, i, part, parts.length > 1))}</div>{TextCredit(view, node)}</>}
   </section>;
 }
 
@@ -305,7 +329,7 @@ function ReaderDetails(view: View, node: ContentNode, heicha?: HeichaPart): VNod
   const toc = text.toc[shown] || {};
   const hasBreakdown = node.detailKind || node.details.length > 0;
   const breakdown = (sections?: Sections) => hasBreakdown && <nav className="card-toc" aria-label={`${node.title.en} sections`}>{node.detailKind ? AmidahDetails({ ...view, sections }, node, heicha) : Ast({ ...view, sections }, node.details)}</nav>;
-  if (!slugs) return <>{breakdown()}{PrayerReader(node)}</>;
+  if (!slugs) return <>{breakdown()}{PrayerReader(view, node)}</>;
   // In Heicha Kedushah a prayer shows only its part of the blessings, and its sections open under the movement's route.
   const shows = (key: string) => !heicha || (heicha === "aloud") === heichaAloud(key);
   const entry = (key: string) => key in toc && shows(key) ? { slug: slugs[toc[key]], part: toc[key], heading: heicha === "aloud" && key === "amidah:3" ? heichaKedushahHeading : undefined } : undefined;
@@ -316,9 +340,11 @@ function ReaderDetails(view: View, node: ContentNode, heicha?: HeichaPart): VNod
     isOpen: slug => open.includes(slug),
     groupOpen: keys => keys.some(key => { const e = entry(key); return e ? open.includes(e.slug) : false; }),
   };
+  // Once a section is open, the credit follows the breakdown (the browser adds and removes it as sections open and close).
   return <>
     {text.calendar && <div className="reader">{TorahCalendar(text.calendar)}</div>}
     {breakdown(sections)}
+    {open.length > 0 && <div className="reader" data-credit="" data-filled="">{TextCredit(view, node)}</div>}
   </>;
 }
 
@@ -348,7 +374,7 @@ function Landmark(view: View, node: ContentNode, parent?: string): VNode {
   return <li id={`section-${node.id}`} className={`${className} landmark-reader`} data-open={open ? "true" : undefined} data-reader={readerData(node)}>
     {node.communal && PeopleIcon()}
     <button type="button" className="landmark-toggle" aria-expanded={open} aria-controls={detailId} data-route={node.id} data-parent={parent}><span className="landmark-title" tabIndex={-1}>{LocalizedText(node.title)}</span></button>
-    {Region(view, detailId, "landmark-details", open, v => <>{note && <p className="seam-note">{note.type === "element" && Ast(v, note.children)}</p>}{PrayerReader(node)}</>)}
+    {Region(view, detailId, "landmark-details", open, v => <>{note && <p className="seam-note">{note.type === "element" && Ast(v, note.children)}</p>}{PrayerReader(v, node)}</>)}
   </li>;
 }
 
@@ -436,11 +462,7 @@ function placeFor(route: MapRoute): Place {
 const checked = new Set<ServiceMap>();
 
 /** A map page in its route's state: the <main> markup and the templates that follow it. */
-/**
- * A map page: `reading` is set where prayer text shows as soon as the page arrives (an open prayer
- * shown whole, or an open section), with the open prayer's reading plan where there is one.
- */
-export function renderMapPage(route: MapRoute): { title: string; main: string; templates: string; path: string; landing?: string; reading?: Reading } {
+export function renderMapPage(route: MapRoute): { title: string; main: string; templates: string; path: string; landing?: string; opensOnText: boolean } {
   const render = (nusach: Nusach, place: Place) => {
     const templates = new Map<string, string>();
     return { main: html(ServiceView({ place, nusach, fixed: false, templates })), templates };
@@ -459,22 +481,9 @@ export function renderMapPage(route: MapRoute): { title: string; main: string; t
   return {
     title: `${route.map.title.en} — Jewish Literacy Project`, main: page.main, templates, path: routeFor(route.map, route.section, route.part, route.sub),
     landing: landingFor(route),
-    reading: readingFor(route, page.main),
+    // A page that opens on prayer text has it in the HTML (and preloads the reader's fonts; see Page.astro).
+    opensOnText: page.main.includes("data-filled"),
   };
-}
-
-/** What a page that opens on prayer text can ask for early: the open prayer's plan and its Sefaria texts (Ashkenaz, the default). */
-type Reading = { plan?: string; texts: string[] };
-
-function readingFor(route: MapRoute, main: string): Reading | undefined {
-  const whole = /<section [^>]*\bdata-prayer[\s=>]/.test(main);
-  const open = [...main.matchAll(/class="section-text"(?![^>]*\bhidden)[^>]*data-part="(\d+)"/g)].map(m => Number(m[1]));
-  if (!whole && !open.length) return undefined;
-  const node = route.section ? layoutFor(route.map).resolve(route.section)?.node : undefined;
-  if (!node?.text) return { texts: [] };
-  const source = planSource(node.text.ashkenaz);
-  const parts = open.length ? open.map(i => source.parts[i]) : source.parts;
-  return { plan: planUrl(node.text.ashkenaz), texts: [...new Set(parts.flatMap(part => part?.sections.map(section => section.url) || []))] };
 }
 
 /**

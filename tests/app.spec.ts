@@ -1,8 +1,26 @@
+import { readFileSync } from "node:fs";
 import { expect, test, type Locator, type Page } from "@playwright/test";
-import { corpus, mockSefaria, sefariaResponse } from "./sefaria-mock";
+import { corpus, mockSefaria } from "./sefaria-mock";
 
-// No test talks to the real Sefaria; scripts/verify-sefaria.mjs checks the live API.
+// The site serves its own snapshot of the prayer texts (content/texts); only the Torah calendar
+// still comes from Sefaria, and no test talks to the real Sefaria (mockSefaria stands in, and
+// fails any text request). scripts/verify-sefaria.mjs checks the live API.
 test.beforeEach(async ({ page }) => { await mockSefaria(page); });
+
+/** Text files the page fetched (/texts/…), in order. */
+function textRequests(page: Page): string[] {
+  const seen: string[] = [];
+  page.on("request", request => { if (new URL(request.url()).pathname.startsWith("/texts/")) seen.push(new URL(request.url()).pathname); });
+  return seen;
+}
+
+/** Count every loading line any reader shows, from the start of the page. */
+const watchLoading = (page: Page) => page.addInitScript(() => {
+  const w = window as unknown as { loadingFrames: number };
+  w.loadingFrames = 0;
+  new MutationObserver(records => { for (const r of records) for (const node of r.addedNodes) if (node instanceof Element && (node.matches(".reader-status") || node.querySelector(".reader-status"))) w.loadingFrames++; }).observe(document, { childList: true, subtree: true });
+});
+const loadingFrames = (page: Page) => page.evaluate(() => (window as unknown as { loadingFrames: number }).loadingFrames);
 
 const services = [
   ["weekday", "shacharit"], ["weekday", "mincha"], ["weekday", "maariv"],
@@ -100,17 +118,13 @@ test("invalid and retired routes do not silently redirect", async ({ page }) => 
   }
 });
 
-test("Ashrei fetch renders safe self-hosted siddur typography", async ({ page }) => {
-  await page.route("https://www.sefaria.org/api/v3/texts/**", route => {
-    const body = sefariaResponse(route.request().url())!;
-    body.versions[0].text[0] = "<script>unsafe()</script> אַשְׁרֵי יוֹשְׁבֵי בֵיתֶךָ";
-    body.versions[1].text[0] = "Happy are those who dwell in Your house";
-    return route.fulfill({ contentType: "application/json", body: JSON.stringify(body) });
-  });
+test("Ashrei shows the self-hosted siddur text in its typography", async ({ page }) => {
   await page.goto("/weekday/mincha/ashrei");
   await expect(page.locator(".reader-texts")).toBeVisible();
-  await expect(page.locator(".reader-he").first()).toContainText("אַשְׁרֵי יוֹשְׁבֵי בֵיתֶךָ");
-  await expect(page.locator(".reader-en").first()).toContainText("Happy are those who dwell in Your house");
+  const snapshot = JSON.parse(readFileSync(new URL("../content/texts/weekday/mincha/ashrei.ashkenaz.json", import.meta.url), "utf8"));
+  const opening = (Object.values(snapshot.refs)[0] as { he: Record<string, string> }).he[1].split(",")[0];
+  await expect(page.locator(".reader-he").first()).toContainText(opening);
+  await expect(page.locator(".reader-en").first()).toContainText("Happy are those who dwell in Your House");
   await expect(page.locator(".reader script")).toHaveCount(0);
   await expect(page.locator("#section-ashrei .copy .hint")).toHaveCount(0);
   expect(await page.locator(".reader-he").first().evaluate(el => ({ family: getComputedStyle(el).fontFamily, weight: getComputedStyle(el).fontWeight }))).toEqual(expect.objectContaining({ family: expect.stringContaining("Noto Serif Hebrew"), weight: "700" }));
@@ -125,12 +139,14 @@ test("Ashrei fetch renders safe self-hosted siddur typography", async ({ page })
 test("Ashrei failure retains fallback and retry", async ({ page }) => {
   let attempts = 0;
   let fail = true;
-  await page.route("https://www.sefaria.org/api/v3/texts/**", route => {
+  await page.route("**/texts/weekday-mincha-ashrei-*", route => {
     attempts += 1;
     if (fail) return route.abort();
     return route.fallback();
   });
-  await page.goto("/weekday/mincha/ashrei");
+  // A deep link has its text already; a tap on the map fetches it.
+  await page.goto("/weekday/mincha");
+  await page.locator("#section-ashrei>button").click();
   await expect(page.getByText("The prayer text could not be loaded.")).toBeVisible();
   await expect(page.getByRole("link", { name: "Read Ashrei on Sefaria" })).toHaveAttribute("href", /^https:\/\/www\.sefaria\.org\/The_Koren_Shalem_Siddur/);
   await page.getByRole("button", { name: "Try again" }).click();
@@ -142,13 +158,10 @@ test("Ashrei failure retains fallback and retry", async ({ page }) => {
   await expect(page.locator(".reader-failure")).toHaveCount(0);
 });
 
-test("changed Sefaria metadata is refused rather than shown", async ({ page }) => {
-  await page.route("https://www.sefaria.org/api/v3/texts/**", route => {
-    const body = sefariaResponse(route.request().url())!;
-    body.versions[1].license = "All rights reserved";
-    return route.fulfill({ contentType: "application/json", body: JSON.stringify(body) });
-  });
-  await page.goto("/shabbat/maariv/vayechulu");
+test("a text file that is not one is refused rather than shown", async ({ page }) => {
+  await page.route("**/texts/shabbat-maariv-vayechulu-*", route => route.fulfill({ contentType: "application/json", body: JSON.stringify({ text: "something else" }) }));
+  await page.goto("/shabbat/maariv/amidah");
+  await page.locator("#section-vayechulu>button").click();
   await expect(page.getByText("The prayer text could not be loaded.")).toBeVisible();
   await expect(page.locator(".reader-texts")).toHaveCount(0);
 });
@@ -188,26 +201,25 @@ for (const nusach of ["ashkenaz", "sefard"] as const) {
       await expect(item.locator(':scope>[aria-expanded="true"], :scope>.landmark-toggle[aria-expanded="true"]')).toHaveCount(1);
       await openFirstSection(item);
       await expect(item.locator(".reader-section").first()).toBeVisible();
-      await expect(item.locator(".reader-en p:not(.rubric)").first()).toContainText("English segment");
-      await expect(item.locator(".reader-he p:not(.rubric)").first()).toContainText("טֶקְסְט");
+      await expect(item.locator(".reader-en p:not(.rubric)").first()).toContainText(/[A-Za-z]{3}/);
+      await expect(item.locator(".reader-he p:not(.rubric)").first()).toContainText(/[א-ת]/);
       await expect(item.locator(".reader-credit [data-lang=en]")).toContainText(nusach === "sefard" ? "Nusach Sefard" : "Sefaria");
       await noOverflow(page);
     }
   });
 }
 
-test("nusach switch changes the Sefaria edition of an open card", async ({ page }) => {
-  const requested: string[] = [];
-  await mockSefaria(page, { onText: url => requested.push(decodeURIComponent(url)) });
+test("nusach switch changes the edition of an open card", async ({ page }) => {
+  const requested = textRequests(page);
   await page.goto("/weekday/shacharit/pesukei-dzimra/barukh-sheamar");
   await expect(page.locator(".reader-credit [data-lang=en]")).toContainText("Koren Shalem Siddur (Ashkenaz)");
-  expect(requested.every(url => url.includes("Koren_Shalem_Siddur;_Ashkenaz"))).toBe(true);
-  requested.length = 0;
+  const he = await page.locator("#section-pesukei-dzimra .reader-he").first().textContent();
   await openSettings(page);
   await page.getByRole("button", { name: /Nusach Sefard/ }).click();
   await expect(page.locator(".reader-credit [data-lang=en]")).toContainText("Nusach Sefard");
-  expect(requested.length).toBeGreaterThan(0);
-  expect(requested.every(url => url.includes("Weekday_Siddur_Sefard_Linear"))).toBe(true);
+  await expect(page.locator(".reader-credit [data-lang=en]")).toContainText("Metsudah");
+  expect(await page.locator("#section-pesukei-dzimra .reader-he").first().textContent()).not.toBe(he);
+  expect(requested.some(path => path.startsWith("/texts/weekday-shacharit-pesukei-dzimra-sefard-"))).toBe(true);
   // The open section stays open in the other nusach, under that nusach's entry.
   await expect(page.locator("#section-pesukei-dzimra .card-toc li").first()).toContainText("Hodu");
   await expect(page.locator(".reader-heading")).toHaveCount(1);
@@ -250,21 +262,15 @@ for (const nusach of ["ashkenaz", "sefard"] as const) {
   });
 }
 
-test("opening a prayer of several sections shows only its breakdown, and fetches nothing yet", async ({ page }) => {
-  const requested: string[] = [];
-  await mockSefaria(page, { onText: url => requested.push(url) });
+test("opening a prayer of several sections shows only its breakdown", async ({ page }) => {
   await page.goto("/weekday/shacharit/tachanun");
   const item = page.locator("#section-tachanun");
   await expect(item.locator(".toc-toggle")).toHaveCount(3);
   await expect(item.locator(".reader-section, .reader-texts")).toHaveCount(0);
   for (const toggle of await item.locator(".toc-toggle").all()) await expect(toggle).toHaveAttribute("aria-expanded", "false");
-  await page.waitForTimeout(300);
-  expect(requested).toEqual([]);
 });
 
 test("tapping a section shows only that section, directly under its entry; tapping again closes it", async ({ page }) => {
-  const requested: string[] = [];
-  await mockSefaria(page, { onText: url => requested.push(url) });
   await page.goto("/weekday/shacharit/tachanun");
   const item = page.locator("#section-tachanun");
   const entry = item.locator(".toc-entry").filter({ hasText: "Falling on the face" });
@@ -283,7 +289,6 @@ test("tapping a section shows only that section, directly under its entry; tappi
   expect(sectionBox.top).toBeGreaterThanOrEqual(toggleBox.bottom - 1);
   expect(sectionBox.top - toggleBox.bottom).toBeLessThan(60);
   expect(next.top).toBeGreaterThan(sectionBox.bottom);
-  expect(requested.length).toBeGreaterThan(0);
   // Several sections can be open at once.
   await item.locator(".toc-entry").filter({ hasText: "Supplication" }).locator(".toc-toggle").click();
   await expect(item.locator(".reader-section")).toHaveCount(2);
@@ -643,7 +648,7 @@ for (const nusach of ["ashkenaz", "sefard"] as const) {
     await seam.locator(".landmark-toggle").click();
     await expect(page).toHaveURL(/\/shabbat\/mincha\/half-kaddish-2$/);
     await expect(seam.locator(".seam-note")).toContainText("after the Torah is returned to the ark");
-    await expect(seam.locator(".reader-he p:not(.rubric)").first()).toContainText("טֶקְסְט");
+    await expect(seam.locator(".reader-he p:not(.rubric)").first()).toContainText(/[א-ת]/);
     await expect(seam.locator(".reader-credit [data-lang=en]")).toContainText(nusach === "sefard" ? "Nusach Sefard" : "Koren");
   });
 }
@@ -730,24 +735,12 @@ test("Hebrew body text is flush right; centered Hebrew titles stay centered", as
 });
 
 test("Sefard English shows the Name as LORD, and the credit says so", async ({ page }) => {
+  // Metsudah's English transliterates the Name (tests/texts.spec.ts checks the snapshot has it).
   const transliteration = /Adonoy/;
-  // Metsudah's English transliterates the Name; put it where Sefaria has it, inside the English text.
-  await mockSefaria(page, {
-    handle: async route => {
-      const url = route.request().url();
-      const body = url.includes("/api/v3/texts/") ? sefariaResponse(url) : undefined;
-      if (!body) return false;
-      const english = body.versions.find(v => v.language === "en")!;
-      if (english.versionTitle.toLowerCase().includes("metsudah")) english.text = english.text.map(t => `Blessed are You, Adonoy, our God. Adonoy’s kindness. ${t}`);
-      await route.fulfill({ contentType: "application/json", body: JSON.stringify(body) });
-      return true;
-    },
-  });
   await page.addInitScript(() => localStorage.setItem("weekday-shacharit-nusach", "sefard"));
   for (const path of ["/weekday/mincha/ashrei", "/weekday/shacharit/tachanun/falling-on-the-face", "/shabbat/maariv/barkhu-call-to-prayer"]) {
     await page.goto(path);
-    const english = page.locator(".reader-en").first();
-    await expect(english).toContainText("Blessed are You, LORD, our God. LORD’s kindness.");
+    await expect(page.locator(".reader-en:visible").first()).toContainText(/\bLORD\b/);
     for (const text of await page.locator(".reader-en").allTextContents()) expect(text, path).not.toMatch(transliteration);
     await expect(page.locator(".reader-credit [data-lang=en]")).toContainText("The English shows the Name as “LORD”.");
     await expect(page.locator(".reader-credit [data-lang=he]")).toContainText("באנגלית השם מוצג כ־LORD.");
@@ -867,34 +860,137 @@ test("Heicha Kedushah deep links work, and Back/Forward step through the pattern
 });
 
 test("each edition's own formatting is kept: Koren's line breaks and small caps, safely, with the glitch fixes", async ({ page }) => {
-  const lines = Array.from({ length: 21 }, (_, i) => `שׁוּרָה ${i + 1}`);
-  await page.route("https://www.sefaria.org/api/v3/texts/**", route => {
-    const body = sefariaResponse(route.request().url())!;
-    const [he, en] = body.versions;
-    he.text[0] = "<b>אַשְׁרֵי</b> יוֹשְׁבֵי בֵיתֶֽךָ<br>אַשְׁרֵי הָעָם";
-    he.text[1] = ["תְּהִלָּה לְדָוִד", ...lines].join("<br>");
-    he.text[2] = "<i class=\"instruction\">Quietly:</i> בָּרוּךְ<script>bad()</script><br>";
-    en.text[0] = "<i class=\"instruction\" style=\"color:red\" onclick=\"alert(1)\">Leader:</i> <small><i class=\"instruction\">Leader:</i></small>אַשְׁרֵי Happy13 are those<br>whose God is the <small>LORD</small>. Adonoy <span data-x=\"1\">kept</span><sup class=\"footnote-marker\">1</sup><i class=\"footnote\">NOTE BODY</i>";
-    return route.fulfill({ contentType: "application/json", body: JSON.stringify(body) });
-  });
+  // Koren's Ashrei as the snapshot has it (tests/texts.spec.ts checks the sanitizing itself).
+  const snapshot = JSON.parse(readFileSync(new URL("../content/texts/weekday/mincha/ashrei.ashkenaz.json", import.meta.url), "utf8"));
+  const psalm: string = (Object.values(snapshot.refs)[0] as { he: Record<string, string> }).he[2];
+  const lines = psalm.split("<br>").map(line => line.replace(/[◂▸]/g, "").trim());
   await page.goto("/weekday/mincha/ashrei");
   const he = page.locator("#section-ashrei .reader-he>p"), en = page.locator("#section-ashrei .reader-en>p");
   await expect(he).toHaveCount(3);
   // One line per <br>: the opening line and the verses after it.
-  await expect(he.nth(1).locator("br")).toHaveCount(21);
-  expect((await he.nth(1).innerText()).split("\n").map(line => line.trim())).toEqual(["תְּהִלָּה לְדָוִד", ...lines]);
+  await expect(he.nth(1).locator("br")).toHaveCount(lines.length - 1);
+  expect(lines.length).toBeGreaterThan(20);
+  expect((await he.nth(1).innerText()).split("\n").map(line => line.trim())).toEqual(lines);
   expect(await he.nth(0).evaluate(p => getComputedStyle(p).textAlign)).toBe("right");
-  expect(await he.nth(0).locator("b").evaluate(b => getComputedStyle(b).fontWeight)).toBe("700");
   // Koren's small "LORD" renders small.
   const small = en.nth(0).locator("small", { hasText: "LORD" });
   await expect(small).toHaveCount(1);
   const sizes = await small.evaluate(el => [parseFloat(getComputedStyle(el).fontSize), parseFloat(getComputedStyle(el.parentElement!).fontSize)]);
   expect(sizes[0]).toBeLessThan(sizes[1]);
-  // No raw tags, attributes, scripts, footnotes or unknown elements reach the page.
+  // Only the kept formatting reaches the page.
   const text = page.locator("#section-ashrei .reader-texts");
-  await expect(text.locator("script, span, sup, [style], [onclick], [class=instruction], [data-x]")).toHaveCount(0);
-  for (const p of await text.locator("p").all()) expect(await p.textContent()).not.toMatch(/[<>]|NOTE BODY|bad\(\)/);
-  // The glitch fixes still apply, on text inside the formatting.
-  expect(await en.nth(0).innerText()).toBe("Leader: Happy are those\nwhose God is the LORD. LORD kept");
-  await expect(he.nth(2)).toHaveText("בלחש: בָּרוּךְ");
+  await expect(text.locator("script, span, sup, [style], [onclick], p [class], [data-x]")).toHaveCount(0);
+  for (const p of await text.locator("p").all()) expect(await p.textContent()).not.toMatch(/[<>◂▸]/);
+  // The glitch fixes apply: Koren's English starts with the Hebrew opening word, already shown above.
+  expect((await en.nth(0).innerText()).split("\n")[0]).toBe("Happy are those who dwell in Your House;");
+  // Bold, where an edition has it, is bold.
+  await page.goto("/weekday/mincha/half-kaddish");
+  await page.evaluate(() => { localStorage.setItem("weekday-shacharit-nusach", "sefard"); });
+  await page.reload();
+  const bold = page.locator("#section-half-kaddish .reader-he b").first();
+  await expect(bold).toBeVisible();
+  expect(await bold.evaluate(b => getComputedStyle(b).fontWeight)).toBe("700");
+});
+
+// ---- Self-hosted text: no Sefaria request for prayer text, and no loading line in normal use. ----
+
+test("prayer text never comes from Sefaria", async ({ page }) => {
+  const unexpected: string[] = [];
+  await mockSefaria(page, unexpected);
+  await page.goto("/weekday/shacharit/tachanun/falling-on-the-face");
+  await expect(page.locator("#text-tachanun-falling-on-the-face .reader-he p").first()).toBeVisible();
+  await page.locator('.toc-toggle[data-section="supplication"]').click();
+  await expect(page.locator("#text-tachanun-supplication .reader-he p").first()).toBeVisible();
+  await page.goto("/shabbat/maariv");
+  await page.locator("#section-barkhu-call-to-prayer .landmark-toggle").click();
+  await expect(page.locator("#section-barkhu-call-to-prayer .reader-he p").first()).toBeVisible();
+  expect(unexpected).toEqual([]);
+});
+
+/** Wait until every prayer text of the map on the page has arrived (prefetched once the page is idle). */
+async function prefetched(page: Page) {
+  const expected = await page.evaluate(() => {
+    const nusach = document.documentElement.dataset.nusach as "ashkenaz" | "sefard";
+    const main = document.querySelector("main")!;
+    const urls = new Set<string>();
+    const walk = (root: ParentNode) => {
+      for (const el of root.querySelectorAll<HTMLElement>("[data-reader]")) { const texts = JSON.parse(el.dataset.reader!).texts; urls.add(texts[nusach] || texts.ashkenaz); }
+      for (const t of root.querySelectorAll("template")) walk(t.content);
+    };
+    walk(document.querySelector(`template[data-map="${main.dataset.day}/${main.dataset.service}"]`)!.content);
+    return [...urls];
+  });
+  expect(expected.length).toBeGreaterThan(5);
+  await expect.poll(() => page.evaluate(urls => urls.filter(url => !performance.getEntriesByName(new URL(url, location.href).href).length).length, expected), { timeout: 10000 }).toBe(0);
+}
+
+for (const nusach of ["ashkenaz", "sefard"] as const) {
+  test(`once the page has been idle a moment, every prayer and section opens on its text, with no loading line (${nusach})`, async ({ page }) => {
+    await watchLoading(page);
+    await page.addInitScript(nusach => localStorage.setItem("weekday-shacharit-nusach", nusach), nusach);
+    const requested = textRequests(page);
+    await page.goto("/weekday/shacharit");
+    // Nothing is fetched before the page has loaded and settled.
+    expect(requested).toEqual([]);
+    await prefetched(page);
+    const before = requested.length;
+    // Prayers and Kaddish at the top level and inside movements; a prayer of several opens its first section.
+    const cases = [[null, "opening-blessings"], [null, "rabbis-kaddish"], [null, "pesukei-dzimra"], [null, "shema-and-its-blessings"], ["amidah", "chazzans-repetition"], [null, "tachanun"], ["torah", "half-kaddish-3"], ["closing", "aleinu-and-closing-psalms"]] as const;
+    for (const [movement, id] of cases) {
+      if (movement) await page.locator(`#movement-${movement}>button`).click();
+      const item = page.locator(`#section-${id}`);
+      await item.locator(":scope>button").click();
+      await openFirstSection(item);
+      await expect(item.locator(".reader-he p").first(), id).toBeVisible();
+    }
+    expect(await loadingFrames(page)).toBe(0);
+    // Each text came once, from the prefetch.
+    expect(requested.length).toBe(before);
+  });
+}
+
+test("after a switch to another map, its texts are prefetched too", async ({ page }) => {
+  await watchLoading(page);
+  await page.goto("/weekday/shacharit");
+  await prefetched(page);
+  await page.locator('[data-day-choice="shabbat"]').click();
+  await expect(page.locator("main")).toHaveAttribute("data-day", "shabbat");
+  await prefetched(page);
+  await page.locator("#section-barkhu-call-to-prayer .landmark-toggle").click();
+  await expect(page.locator("#section-barkhu-call-to-prayer .reader-he p").first()).toBeVisible();
+  expect(await loadingFrames(page)).toBe(0);
+});
+
+test("a tap before the text has arrived shows the loading line, then the text", async ({ page }) => {
+  await watchLoading(page);
+  let release!: () => void;
+  const held = new Promise<void>(resolve => { release = resolve; });
+  await page.route("**/texts/weekday-shacharit-rabbis-kaddish-ashkenaz-*", async route => { await held; await route.fallback(); });
+  await page.goto("/weekday/shacharit");
+  await page.locator("#section-rabbis-kaddish .landmark-toggle").click();
+  await expect(page.locator("#section-rabbis-kaddish .reader-status")).toBeVisible();
+  await expect(page.locator("#section-rabbis-kaddish section[data-prayer]")).toHaveAttribute("aria-busy", "true");
+  release();
+  await expect(page.locator("#section-rabbis-kaddish .reader-he p").first()).toBeVisible();
+  await expect(page.locator("#section-rabbis-kaddish .reader-status")).toHaveCount(0);
+  await expect(page.locator("#section-rabbis-kaddish .reader-credit")).toBeVisible();
+});
+
+test("a deep link's text is in the page itself, for both nusachs, and the script keeps it", async ({ page, request }) => {
+  const html = await (await request.get("/weekday/shacharit/tachanun/falling-on-the-face")).text();
+  // Both nusachs' text and credit, one shown from <html data-nusach> before any script.
+  expect(html.match(/data-nusach-only="(ashkenaz|sefard)"/g)?.length).toBe(2);
+  expect(html).toContain("Koren Shalem Siddur (Ashkenaz)");
+  expect(html).toContain("Metsudah Linear Siddur (Nusach Sefard, weekday)");
+  expect(html).not.toContain("sefaria.org/api");
+  await watchLoading(page);
+  await page.goto("/weekday/shacharit/tachanun/falling-on-the-face");
+  const text = page.locator("#text-tachanun-falling-on-the-face .reader-section");
+  await expect(text.locator(".reader-he p").first()).toBeVisible();
+  // The very element the page arrived with: not replaced by the script.
+  await page.evaluate(() => { (document.querySelector("#text-tachanun-falling-on-the-face .reader-section") as HTMLElement & { original?: boolean }).original = true; });
+  await page.waitForTimeout(300);
+  expect(await text.evaluate(el => (el as HTMLElement & { original?: boolean }).original)).toBe(true);
+  await expect(page.locator(".reader-credit")).toHaveCount(1);
+  expect(await loadingFrames(page)).toBe(0);
 });
