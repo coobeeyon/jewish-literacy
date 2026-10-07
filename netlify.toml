@@ -1,4 +1,5 @@
-# Every view is a prebuilt page in dist/ (e.g. /weekday/shacharit is weekday/shacharit/index.html).
+# Every view is a prebuilt page in dist/ (e.g. /weekday/shacharit is weekday/shacharit.html), so
+# Netlify serves the slashless URLs the app uses directly (the trailing-slash form redirects to them).
 # Keep the redirects in step with src/redirects.ts and server.mjs. Netlify compresses on its own.
 [build]
 command = "npm run build"
@@ -61,6 +62,6 @@ for = "/shabbat/*"
 Cache-Control = "public, max-age=0, must-revalidate"
 
 [[headers]]
-for = "/about/*"
+for = "/about"
 [headers.values]
 Cache-Control = "public, max-age=0, must-revalidate"

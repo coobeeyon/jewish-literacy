@@ -31,8 +31,17 @@ test.describe("server.mjs", () => {
     const body = await deep.text();
     expect(body).toContain(script);
     expect(body).toMatch(/<button type="button" class="toc-toggle" aria-expanded="true" aria-controls="text-tachanun-falling-on-the-face"/);
-    // A trailing slash names the same page.
-    expect((await request.get("/weekday/shacharit/tachanun/")).status()).toBe(200);
+    // Pages are files (weekday/shacharit.html), so a host serves the slashless URLs the app uses
+    // without a redirect; a trailing slash names the same page here.
+    for (const path of ["/weekday/maariv", "/weekday/maariv/", "/weekday/shacharit/tachanun", "/weekday/shacharit/tachanun/", "/weekday/shacharit/tachanun/falling-on-the-face"]) {
+      const response = await request.get(path, { maxRedirects: 0 });
+      expect(response.status(), path).toBe(200);
+      expect(await response.text(), path).toContain('<ol class="service-map">');
+    }
+    // About is the page itself, not a stand-in that redirects.
+    const about = await request.get("/about", { maxRedirects: 0 });
+    expect(about.status()).toBe(200);
+    expect(await about.text()).toContain('id="about-heading"');
   });
 
   test("reading plans are small, compressed and cached for good", async ({ request }) => {

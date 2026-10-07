@@ -4,7 +4,8 @@ import { createServer } from "node:http";
 import { extname, join, normalize } from "node:path";
 
 // Serves the prebuilt site in dist/: each view is its own page (/weekday/shacharit is
-// dist/weekday/shacharit/index.html), old URLs redirect, and anything else gets dist/404.html.
+// dist/weekday/shacharit.html; a trailing slash names the same page), old URLs redirect, and
+// anything else gets dist/404.html.
 const root = new URL("./dist/", import.meta.url).pathname;
 const host = process.env.JL_HOST || "127.0.0.1";
 const port = Number(process.env.JL_PORT || 4173);
@@ -56,7 +57,8 @@ function resolve(pathname) {
   const notFound = { file: join(root, "404.html"), status: 404 };
   let relative;
   try { relative = normalize(decodeURIComponent(pathname)).replace(/^(\.\.[/\\])+/, "").replace(/^[/\\]+/, ""); } catch { return notFound; }
-  for (const file of [join(root, relative), join(root, relative, "index.html")]) if (file.startsWith(root) && isFile(file)) return { file, status: 200 };
+  const page = relative.replace(/[/\\]+$/, "");
+  for (const file of [join(root, relative), `${join(root, page)}.html`, join(root, relative, "index.html")]) if (file.startsWith(root) && isFile(file)) return { file, status: 200 };
   return notFound;
 }
 
