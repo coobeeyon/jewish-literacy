@@ -145,3 +145,5 @@ body[data-language=he] .stage{text-align:right}
    Noto Serif Hebrew is self-hosted at 700 only, so 700 is always a real face, never synthesized. */
 [data-lang=he],[data-lang=he] *,[lang=he],[lang=he] *{font-weight:700}
 .reader-he{font-synthesis:none}
+/* Hebrew prayer text is flush right in every browser; don't rely on `start` resolving against dir=rtl. */
+.reader-he,.reader-he p{text-align:right}
