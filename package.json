@@ -1,0 +1,30 @@
+{
+  "name": "jewish-literacy-project",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "extract": "node scripts/extract-corpus.mjs",
+    "pin-sefaria": "node scripts/pin-sefaria.mjs",
+    "verify-sefaria": "node scripts/verify-sefaria.mjs",
+    "dev": "vite",
+    "build": "node scripts/validate-corpus.mjs && tsc -b && vite build && node scripts/compress-dist.mjs",
+    "test": "npm run extract && npm run build && playwright test"
+  },
+  "dependencies": {
+    "@fontsource/noto-serif-hebrew": "^5.2.8",
+    "@fontsource/source-serif-4": "^5.2.8",
+    "@vitejs/plugin-react": "^5.0.4",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-router-dom": "^7.9.1",
+    "vite": "^7.1.7"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.1",
+    "@types/react": "^19.1.14",
+    "@types/react-dom": "^19.1.9",
+    "cheerio": "^1.1.2",
+    "typescript": "^5.9.2"
+  }
+}

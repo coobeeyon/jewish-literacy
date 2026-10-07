@@ -1,0 +1,23 @@
+[build]
+command = "npm run build"
+publish = "dist"
+
+[[redirects]]
+from = "/roadmap.html"
+to = "/weekday/shacharit"
+status = 301
+
+[[redirects]]
+from = "/weekday-shacharit.html"
+to = "/weekday/shacharit"
+status = 301
+
+[[redirects]]
+from = "/about.html"
+to = "/about"
+status = 301
+
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200

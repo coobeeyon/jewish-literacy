@@ -1,0 +1,147 @@
+:root{--ink:#17324d;--muted:#607487;--paper:#f7fafc}*{box-sizing:border-box}[hidden]{display:none!important}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font-family:system-ui,sans-serif}main{width:min(760px,calc(100% - 28px));margin:auto;padding:26px 0 60px}header{text-align:center}h1{margin:0;font-size:clamp(1.5rem,6.2vw,3rem);line-height:1.08}h1 .he{margin-top:2px}header p{color:var(--muted)}a{color:var(--ink);font-weight:750;text-underline-offset:3px}.controls{display:grid;gap:7px;width:min(440px,100%);margin:14px auto 0}.picker{display:grid;padding:4px;border:1px solid #b8c5d0;border-radius:14px;background:white}.daytype,.nusach{grid-template-columns:repeat(2,minmax(0,1fr))}.service.weekday,.language{grid-template-columns:repeat(3,minmax(0,1fr))}.service.shabbat{grid-template-columns:repeat(4,minmax(0,1fr))}.picker button{min-width:0;min-height:42px;cursor:pointer;padding:0 5px;border:0;border-radius:10px;background:none;color:var(--muted);font:700 .85rem system-ui,sans-serif;overflow-wrap:anywhere}.picker button[aria-pressed=true]{background:var(--ink);color:white}[data-lang=he]{direction:rtl;unicode-bidi:isolate;font-family:Arial,sans-serif}.he{display:block;margin-top:4px}.bi>[data-lang=he],.bi>.toc-toggle>[data-lang=he]{display:block;margin-top:2px}body[data-language=en] [data-lang=he],body[data-language=he] [data-lang=en]{display:none!important}body[data-language=he] .copy,body[data-language=he] .details{text-align:right}.about-link{display:inline-block;margin-top:6px;font-size:.9rem}.about-link .he{margin-top:1px}.service-title{margin:16px 0 0;font-size:clamp(1.3rem,5vw,2rem);line-height:1.15}.service-title .he{margin-top:2px}.service-title:focus{outline:none}.service-title:focus-visible{outline:3px solid #155e8a;outline-offset:3px}
+.copy{min-width:0;padding:0 7px;overflow-wrap:anywhere}.copy h2{margin:0;font-size:clamp(1.2rem,4vw,1.65rem)}.hint{display:block;margin-top:7px;color:#385269;font-size:.86rem;line-height:1.35}.details{margin:-3px 14px 18px 52px;padding:13px;border-radius:15px;background:#ffffff99;overflow-wrap:anywhere}.chips{display:grid;gap:8px;padding:0;margin:0;list-style:none}.chips li,.badge{display:block;padding:9px 11px;border:1px solid #17324d30;border-radius:12px;background:#fff9;font-size:.78rem;line-height:1.3}.badge{display:inline-block;margin-top:8px;background:#fff2c4;font-weight:750}.nested{display:grid;gap:8px;padding:10px;border:2px solid var(--border);border-radius:16px;background:#ffffff70}.nested-title{font-weight:800}.nested .chips{padding-inline-start:9px;border-inline-start:3px solid var(--accent)}
+.opening{--fill:#d9eef9;--border:#69a9c8;--accent:#3f91b7}.praise{--fill:#ffe6a7;--border:#d9a52e;--accent:#c38b12}.shema{--fill:#ddf3df;--border:#6cad73;--accent:#4f9b59}.amidah{--fill:#eadffc;--border:#9972d2;--accent:#7d55b8}.tachanun{--fill:#ffdede;--border:#d67b7b;--accent:#bd5e5e}.torah{--fill:#e0f2ef;--border:#65a99f;--accent:#438f84}.closing{--fill:#e7ebef;--border:#8798a8;--accent:#687d8f}
+.boundary{margin:10px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:7px;text-align:center;color:#53697b;font-size:.73rem;font-weight:800}.boundary:before,.boundary:after{content:'';height:2px;background:#71899a}.boundary.muted:before,.boundary.muted:after{height:0;border-top:2px dashed #91a2af}.boundary small{display:block;font-size:.61rem}.internal{margin:12px 0}.threshold{margin:7px 12px;text-align:center;color:#607487;font-size:.74rem;font-weight:800}.communal-key{display:flex;align-items:center;justify-content:center;gap:7px;margin:14px auto 0;font-size:.76rem;font-weight:750}.communal-mark{width:1.3rem;height:1.3rem;flex:none}.communal{position:relative}.communal>.communal-mark,.card.communal>button>.communal-mark{position:absolute;z-index:2;top:10px;left:10px;width:1.55rem;height:1.55rem;margin:0;padding:2px;border-radius:5px;background:var(--paper)}.card.communal{overflow:visible}.kaddish{grid-template-columns:1fr;margin:12px 0;padding:12px 14px;border:4px double currentColor;border-radius:15px;background:#fff;color:var(--ink);font-size:.91rem;box-shadow:0 3px 0 #17324d18}.kaddish:before,.kaddish:after{display:none}.kaddish small{margin-top:3px;font-size:.68rem;font-weight:650}
+.amidah-groups{display:grid;gap:10px}.amidah-group{padding:10px;border:2px solid #9972d2;border-radius:15px;background:#fff8}.amidah-group summary{cursor:pointer;font-weight:800}.blessings{display:grid;gap:6px;margin-top:9px}.blessing{padding:8px 10px;border:1px solid #9972d2;border-radius:11px;background:#fff}.overlay{display:block;margin-top:5px;padding:4px 7px;border-left:4px solid #c28b18;background:#fff2c4;font-size:.75rem}.amen{display:block;color:#607487;font-size:.68rem}
+.reader-card>.details{margin:0;padding:0 24px 22px;background:transparent}.reader{padding:0;background:transparent}.reader-status{margin:0 0 12px;color:#385269;font-weight:700}.reader-texts{display:grid;gap:18px}.reader-text{margin:0;padding:0;background:transparent;white-space:pre-wrap;font-size:1.12rem;line-height:1.8}.reader-text.reader-en{font-family:"Source Serif 4",serif;font-weight:400}.reader-text.reader-he{font-family:"Noto Serif Hebrew",serif;font-weight:700}.reader-credit{margin:18px 0 0;padding-top:12px;border-top:1px solid #69a9c8;color:#53697b;font-size:.75rem;line-height:1.55}.reader a{color:#164f78}.reader-failure{padding:12px;border:2px solid #bd5e5e;border-radius:13px;background:#fff}.reader-failure p{margin:0 0 6px}.reader-action{display:inline-flex;align-items:center;justify-content:center;min-height:44px;margin:11px 8px 0 0;padding:9px 13px;border:2px solid var(--ink);border-radius:12px;background:#fff;color:var(--ink);font:800 .85rem system-ui,sans-serif;cursor:pointer}
+.card-toc{margin:0 0 20px}
+.reader-section:focus{outline:none}
+.reader-section{scroll-margin-top:12px}
+.reader-section{display:grid;gap:10px}
+.reader-section+.reader-section{margin-top:8px}
+.reader-heading{margin:0;padding-top:2px;color:var(--accent,#385269);font:800 .8rem/1.35 system-ui,sans-serif;letter-spacing:.02em}
+.reader-heading .he{margin-top:1px}
+.reader-text p{margin:0}
+.reader-text p+p{margin-top:.55em}
+.reader-text .rubric{color:#53697b;font:italic 600 .78rem/1.5 system-ui,sans-serif}
+.reader-he .rubric{font-style:normal}
+.reader-calendar{margin:0 0 16px;color:#274259;font:600 .86rem/1.55 system-ui,sans-serif}
+.reader-calendar p{margin:0}
+.reader-calendar p+p{margin-top:6px}
+.landmark-toggle{position:relative;display:block;width:100%;min-height:44px;margin:0;padding:2px 30px;border:0;background:none;color:inherit;font:inherit;text-align:center;cursor:pointer}
+.landmark-toggle:after{content:'+';position:absolute;right:0;top:50%;transform:translateY(-50%);font-size:1.35rem;color:#53697b}
+.landmark-toggle[aria-expanded=true]:after{content:'−'}
+.landmark-toggle:focus-visible{outline:3px solid #155e8a;outline-offset:3px}
+.landmark-title{display:block;outline:none}
+.landmark-reader[data-open] .landmark-toggle small{display:none}
+.landmark-details{margin-top:12px;font-weight:400;text-align:start}
+body[data-language=he] .landmark-details{text-align:right}
+footer{text-align:center;color:var(--muted);font-size:.78rem;margin-top:24px}.about{width:min(680px,calc(100% - 28px));padding-top:28px}.about nav{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:32px}.about nav .language{width:min(240px,58%)}.about article h1{margin-bottom:24px}.lead{font-size:clamp(1.1rem,4.5vw,1.35rem);line-height:1.55}.about-section{margin-top:18px;padding:20px;border:1px solid #c8d4de;border-radius:20px;background:#fff}.about-section h2{margin:0 0 10px;font-size:1.25rem}.about-section p,.about .lead{margin:0;line-height:1.58;color:#334d63}.not-found p{font-size:1.1rem}
+@media(max-width:420px){main{width:min(100% - 20px,760px);padding-top:24px}.service.shabbat .he{font-size:.72rem}.card>button{padding-inline:11px}.details{margin-left:45px;margin-right:10px;padding:11px}.reader-card>.details{margin:0;padding:0 17px 19px}.reader-text{font-size:1.05rem}.about nav{align-items:flex-start;flex-direction:column}.about nav .language{width:100%}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+/* Controls: day and service always visible; language and nusach behind one small settings toggle. */
+.control-row{display:flex;gap:7px}
+.control-row .daytype{flex:1 1 auto}
+.settings-toggle{display:flex;align-items:center;gap:7px;flex:0 1 auto;min-width:0;min-height:52px;padding:4px 12px;border:1px solid #b8c5d0;border-radius:14px;background:#fff;color:var(--muted);font:700 .76rem/1.2 system-ui,sans-serif;text-align:start;cursor:pointer}
+.settings-toggle[aria-expanded=true]{border-color:var(--ink);color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.settings-toggle:focus-visible{outline:3px solid #155e8a;outline-offset:3px}
+.settings-label{min-width:0}.settings-label .he{margin-top:2px}
+.settings-mark{width:1.05rem;height:1.05rem;flex:none}
+.settings{display:grid;gap:7px;padding:7px;border:1px dashed #9fb0be;border-radius:17px;background:#eef3f7}
+.communal-key{margin-top:8px;color:var(--muted);font-size:.7rem;column-gap:6px;flex-wrap:wrap}
+.communal-key .communal-mark{width:1rem;height:1rem}
+
+/* The service map: a spine through a handful of movements, joined by slim Kaddish/Barkhu seams. */
+.service-map{position:relative;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:9px;margin:16px 0 0;padding:0;list-style:none;counter-reset:n}
+.service-map:before{content:'';position:absolute;top:14px;bottom:14px;left:50%;border-left:3px solid #c6d3dd;transform:translateX(-50%)}
+.service-map>li{position:relative;z-index:1}
+.movement{flex:0 0 calc(100% - 26px);min-width:0;counter-increment:n;border:2px solid var(--border);border-radius:20px;background:var(--fill);box-shadow:0 4px 12px #17324d16}
+.movement.minor{flex-basis:calc(100% - 58px)}
+.movement.peak{flex-basis:100%;margin:8px 0;border-width:4px;border-radius:26px;box-shadow:0 12px 28px #17324d30}
+.movement>button{display:grid;grid-template-columns:34px minmax(0,1fr) 22px;align-items:center;column-gap:10px;width:100%;padding:11px 12px;border:0;background:none;color:inherit;text-align:left;font:inherit;cursor:pointer}
+.movement>button:before{content:counter(n);display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;font-weight:800}
+.movement>button:after{content:'+';justify-self:center;font-size:1.45rem;line-height:1;color:var(--accent)}
+.movement>button[aria-expanded=true]:after{content:'−'}
+.movement>button:focus-visible,.members>.card>button:focus-visible{outline:3px solid #155e8a;outline-offset:3px;border-radius:18px}
+.movement>button .copy{padding:0}
+.movement>button .item-title{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:12px;margin:0;font-size:1.16rem;line-height:1.25;outline:none}
+.movement>button .item-title .he,.blurb .he{display:block;margin:0 0 0 auto}
+.blurb{display:flex;flex-wrap:wrap;column-gap:12px;margin-top:2px;color:#385269;font-size:.8rem;line-height:1.35}
+.movement.minor>button{padding-block:7px}
+.movement.minor>button:before{width:26px;height:26px;font-size:.82rem;justify-self:center}
+.movement.minor>button .item-title{font-size:1rem}
+.movement.peak>button{grid-template-columns:46px minmax(0,1fr) 24px;min-height:150px;padding:20px 14px}
+.movement.peak>button:before{width:44px;height:44px;font-size:1.3rem}
+.movement.peak>button .item-title{font-size:1.45rem;line-height:1.18}
+.movement.peak>button .blurb{margin-top:6px;font-size:.9rem;color:#2c4257}
+.movement.communal>button>.communal-mark{position:absolute;z-index:2;top:-9px;left:-7px;width:1.35rem;height:1.35rem;margin:0;padding:2px;border:1px solid var(--border);border-radius:6px;background:var(--paper)}
+.movement.card{overflow:visible}
+.movement.reader-card>.details{margin:0;padding:0 18px 20px}
+.movement>.details{margin:-2px 12px 14px 56px}
+
+/* Second level: the prayers inside an open movement. */
+.movement-body{padding:0 10px 12px}
+.members{display:flex;flex-direction:column;gap:8px;margin:0;padding:0;list-style:none}
+.members>.card{position:relative;border:2px solid var(--border);border-radius:16px;background:#fffffff2}
+.members>.card.conditional{border-style:dashed}
+.members>.card>button{display:grid;grid-template-columns:minmax(0,1fr) 22px;align-items:center;width:100%;padding:10px 12px;border:0;background:none;color:inherit;text-align:left;font:inherit;cursor:pointer}
+.members>.card>button:after{content:'+';justify-self:center;font-size:1.35rem;line-height:1;color:var(--accent)}
+.members>.card>button[aria-expanded=true]:after{content:'−'}
+.members>.card.communal>button{padding-left:40px}
+.members>.card.communal>button>.communal-mark{top:9px;left:9px;width:1.4rem;height:1.4rem}
+.members .copy{padding:0}
+.members .item-title{margin:0;font-size:1.02rem;line-height:1.3;outline:none}
+.members .hint{margin-top:4px;font-size:.8rem}
+.members>.reader-card>.details{margin:0;padding:0 12px 14px}
+.members>.card>.details{margin:-2px 10px 12px}
+.members>.seam{align-self:center}
+.members>.seam[data-open]{align-self:stretch}
+.members>.threshold{margin:2px 8px;font-size:.72rem}
+
+/* Kaddish and Barkhu seams: one slim double-bordered line, the minyan mark on its upper-left corner. */
+.seam.kaddish{display:block;max-width:100%;margin:0;padding:0 4px 0 12px;border-width:4px;border-radius:13px;font-size:.8rem;box-shadow:0 2px 0 #17324d14}
+.seam.kaddish>.communal-mark{top:-10px;left:-10px;width:1.25rem;height:1.25rem;padding:1px;border-radius:5px}
+.seam .landmark-toggle{min-height:32px;padding:3px 26px 3px 4px;text-align:center}
+.seam .landmark-toggle:after{font-size:1.15rem;right:2px}
+.seam .landmark-title .he{display:inline;margin:0 0 0 9px}
+.seam[data-open]{flex-basis:100%;padding:0 14px 14px}
+.seam[data-open] .landmark-toggle{min-height:44px}
+.seam-note{margin:0 0 12px;color:#53697b;font-size:.78rem;font-weight:650;line-height:1.4}
+.seam-note .he{margin-top:2px}
+@media(max-width:420px){main{padding-top:16px}.movement>button{column-gap:8px;padding-inline:10px}.movement.peak>button{padding-inline:12px}.movement>.details{margin-left:12px}}
+.service-title:focus-visible{outline:none}
+.communal-key{row-gap:0}.communal-key .he{margin-top:0}
+.seam .landmark-title{display:flex;flex-wrap:wrap;justify-content:center;align-items:baseline;column-gap:9px}
+.seam .landmark-title .he{display:block;margin:0}
+.control-row{flex-wrap:wrap}.control-row .daytype{flex:1 1 170px}.settings-toggle{flex:1 1 auto;max-width:100%}.settings-label{overflow-wrap:anywhere}
+/* The two pillars share one shape: each blurb language on its own line, so equal titles give equal blocks. */
+.movement.peak>button .blurb{flex-direction:column}
+.movement.peak>button .blurb .he{align-self:flex-end}
+body[data-language=both] .movement.peak>button{min-height:194px}
+/* The Torah reading is an event, not a prayer: square-cornered, ruled top and bottom, its stages in sequence. */
+.movement.event{border-width:4px 1px;border-color:var(--accent) var(--border);border-radius:5px;background:#fff;box-shadow:0 3px 10px #17324d12}
+.movement.event>button{grid-template-rows:minmax(64px,auto) auto;align-items:start;row-gap:10px;padding-block:10px 12px}
+.movement.event>button:before{grid-row:1;align-self:end;border-radius:7px}
+.movement.event>button:after{grid-column:3;grid-row:1;align-self:center}
+.movement.event .copy{align-self:center}
+.movement.event.communal>button>.communal-mark{top:7px;left:10px;width:1.3rem;height:1.3rem;padding:0;border:0;border-radius:0;background:none;color:var(--ink)}
+.stages{display:grid;grid-column:1/-1;grid-row:2;grid-template-columns:repeat(auto-fit,minmax(50px,1fr));gap:8px 4px;color:#2c4257;font-size:.72rem;font-weight:750;line-height:1.25}
+.stage{display:flex;flex-direction:column;min-width:0;overflow-wrap:anywhere;padding-top:5px;border-top:3px solid var(--border)}
+.stage .he{margin-top:2px}
+body[data-language=he] .stage{text-align:right}
+@media(max-width:360px){.movement.peak>button{min-height:172px}body[data-language=both] .movement.peak>button{min-height:241px}}
+/* Section breakdown: each entry opens its own section of text in place; groups open their entries. */
+.chips li.toc-entry,.blessing.toc-entry{padding:0}
+.toc-toggle,.toc-group{display:grid;grid-template-columns:minmax(0,1fr) 18px;align-items:center;column-gap:8px;width:100%;margin:0;padding:9px 11px;border:0;border-radius:inherit;background:none;color:inherit;font:inherit;text-align:start;cursor:pointer}
+.toc-toggle>*,.toc-group>*{grid-column:1}
+.toc-toggle:after,.toc-group:after{content:'+';grid-column:2;grid-row:1/span 3;justify-self:center;color:var(--accent,#164f78);font-size:1.15rem;line-height:1}
+.toc-toggle[aria-expanded=true]:after,.toc-group[aria-expanded=true]:after{content:'−'}
+.toc-toggle:focus-visible,.toc-group:focus-visible{outline:3px solid #155e8a;outline-offset:2px}
+.toc-toggle[aria-expanded=true]{font-weight:800}
+.section-text{padding:2px 11px 12px;border-top:1px solid #17324d1f;font-size:1rem;font-weight:400}
+.section-text .reader-section{margin-top:8px}
+.section-text .reader-status{margin:10px 0 2px;font-size:.8rem}
+.nested>.toc-group{padding:4px 2px;font-weight:800}
+.nested>.toc-group .nested-title{display:block}
+.toc-group-body{display:grid;gap:8px}
+.amidah-group{padding:4px}
+.amidah-group>.toc-group{padding:6px 8px;font-weight:800}
+.amidah-group .blessings{margin:2px 6px 6px}
+.blessing.toc-entry>.overlay,.blessing.toc-entry>.amen{margin-inline:10px}
+.blessing.toc-entry>.amen{margin-bottom:8px}
+.overlay.toc-entry{padding:0}
+.overlay .toc-toggle{padding:4px 7px;font-size:inherit}
+/* All Hebrew is bold, everywhere: UI, titles, chips, seams, headings, footer, About, credits and prayer text.
+   Noto Serif Hebrew is self-hosted at 700 only, so 700 is always a real face, never synthesized. */
+[data-lang=he],[data-lang=he] *,[lang=he],[lang=he] *{font-weight:700}
+.reader-he{font-synthesis:none}
