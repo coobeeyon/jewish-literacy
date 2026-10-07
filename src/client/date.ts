@@ -6,7 +6,18 @@
 // returns to today.
 import table from "../calendar.generated.json";
 import { addDays, civilDate, covered, dateFromSearch, fillNotes, fillSummary, hebrewDate, localToday, readingFor, sefariaUrl, showRef, type CalendarTable, type ReadingKind } from "../today";
+import { boxHead, calendarIconPaths, noteRules } from "../notes";
 import { bi, h } from "./dom";
+
+/** A calendar box opened from a template arrives empty: its icon, header and rule, as the build writes them (CalendarBox in src/view/map.tsx). */
+function buildBoxes(root: ParentNode) {
+  for (const box of root.querySelectorAll<HTMLElement>(".calendar-box:empty")) {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("class", "calendar-mark"); svg.setAttribute("aria-hidden", "true"); svg.setAttribute("viewBox", "0 0 16 16");
+    for (const d of calendarIconPaths) { const path = document.createElementNS("http://www.w3.org/2000/svg", "path"); path.setAttribute("fill", "currentColor"); path.setAttribute("d", d); svg.append(path); }
+    box.append(h("p", { class: "box-head" }, svg, bi(boxHead)), h("p", { class: "box-rule" }, bi(noteRules[box.dataset.note!])), h("p", { class: "box-verdict" }));
+  }
+}
 
 const calendar = table as unknown as CalendarTable;
 
@@ -41,6 +52,7 @@ function showReadings(root: ParentNode, date: string) {
 /** Word the notes and Torah readings under `root`, and the date line, for the date being prayed. */
 export function showDate(root: ParentNode) {
   const date = selectedDate(), today = localToday();
+  buildBoxes(root);
   fillNotes(calendar, root, date, today);
   showReadings(root, date);
   // The date line, once initDateLine has built it.

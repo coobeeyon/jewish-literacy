@@ -1,8 +1,10 @@
 ---
 // One prebuilt page per view of every map, each with its movement, prayer and section open, followed
 // by every map closed (so day and service switch in place; see allMaps in src/view/map.tsx). A deep
-// link's small inline script puts its target at the top before the first paint (see landingFor).
+// link's small inline script puts its target at the top before the first paint (see landingFor); one
+// that opens on a calendar box loads the script that writes its verdict first (src/notes-script.ts).
 import Page from "../layouts/Page.astro";
+import { notesScriptUrl } from "../notes-script";
 import { mapRoutes, type MapRoute } from "../routes";
 import { allMaps, renderMapPage } from "../view/map";
 
@@ -15,6 +17,7 @@ const page = renderMapPage(route);
 ---
 <Page title={page.title} opensOnText={page.opensOnText}>
   <Fragment set:html={page.main} />
+  {page.main.includes("data-note=") && <script is:inline src={notesScriptUrl()} />}
   {page.landing && <script is:inline set:html={`(function(s){for(var e of document.querySelectorAll(s))if(e.getClientRects().length){e.scrollIntoView({block:"start",behavior:"instant"});break}})(${JSON.stringify(page.landing)})`} />}
   <Fragment set:html={allMaps()} />
 </Page>

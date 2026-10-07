@@ -1,6 +1,7 @@
 // Build-time markup shared by every page. These are plain functions returning Preact VNodes,
 // rendered to static HTML by Astro; none of this code ships to the browser.
 import type { ComponentChildren, VNode } from "preact";
+import { calendarIconPaths } from "../notes";
 import type { Language, Localized } from "../types";
 
 export function LocalizedText(value: Localized, className?: string): VNode {
@@ -12,6 +13,11 @@ export function LocalizedText(value: Localized, className?: string): VNode {
 
 export function PeopleIcon(): VNode {
   return <svg className="communal-mark" aria-hidden="true" viewBox="0 0 16 16"><path fill="currentColor" d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5.784 6A2.24 2.24 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.3 6.3 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5" /></svg>;
+}
+
+/** Bootstrap Icons "calendar-event", the set the people icon comes from. */
+export function CalendarIcon(): VNode {
+  return <svg className="calendar-mark" aria-hidden="true" viewBox="0 0 16 16">{calendarIconPaths.map(d => <path fill="currentColor" d={d} />)}</svg>;
 }
 
 export function SettingsIcon(): VNode {

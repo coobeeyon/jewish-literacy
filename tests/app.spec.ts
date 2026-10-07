@@ -430,7 +430,7 @@ test("Torah cards show the week's reading from the site's own calendar, with lin
   await expect(reading("en")).toHaveText(["Noach", "Genesis 6:9–11:32"]);
   await page.goto("/weekday/shacharit/torah-reading");
   await expect(reading("en")).toHaveText(["Bereshit", "Genesis 1:1–6:8"]);
-  await expect(page.locator('#section-torah-reading [data-note="torah-weekday"] .note-rule [data-lang=en]')).toContainText("Monday and Thursday mornings");
+  await expect(page.locator('#section-torah-reading [data-note="torah-weekday"] .box-rule [data-lang=en]')).toContainText("Monday and Thursday mornings");
   // A festival Shabbat has its own reading; the Monday before it reads the next portion.
   await page.goto("/shabbat/shacharit/torah-service?date=2027-04-24");
   await expect(reading("en")).toHaveText(["Chol HaMoed Pesach", "Exodus 33:12–34:26", "Haftarah: Ezekiel 37:1–14"]);
@@ -516,7 +516,7 @@ test("seams are slim double-bordered bubbles with the minyan mark, title only", 
 test("caveats and conditions stay off the top level and appear when opened", async ({ page }) => {
   await page.goto("/weekday/shacharit");
   // (The map's date labels, "Today: said", are meant for the top level; the rules behind them are not.)
-  const caveats = ["community practice", "Without Tachanun", "Not said on", "community order varies", "Monday and Thursday mornings"];
+  const caveats = ["community practice", "Depends on the date", "is not said", "community order varies", "Monday and Thursday mornings"];
   for (const caveat of caveats) await expect(page.locator(".service-map").getByText(caveat)).toHaveCount(0);
   // Top-level movements carry a title and at most one short line per language.
   for (const blurb of await page.locator(".service-map>.movement>button .blurb [data-lang=en]").all()) {
@@ -527,8 +527,9 @@ test("caveats and conditions stay off the top level and appear when opened", asy
   await expect(page).toHaveURL(/\/weekday\/shacharit\/torah$/);
   await expect(page.locator("#movement-torah").getByText("Monday and Thursday · three aliyot")).toBeVisible();
   await page.locator("#section-half-kaddish-2 .landmark-toggle").click();
-  await expect(page.locator("#section-half-kaddish-2 .seam-note")).toContainText("without it, straight after the repetition");
-  await expect(page.locator("#section-half-kaddish-2 .seam-note .note-status")).toContainText("Today:");
+  // Its calendar box: the rule, then the verdict for the date with its reason.
+  await expect(page.locator("#section-half-kaddish-2 .calendar-box .box-rule")).toContainText("When Tachanun is not said, it comes straight after the leader’s repetition");
+  await expect(page.locator("#section-half-kaddish-2 .calendar-box .box-verdict [data-lang=en]")).toContainText("Today, ");
 });
 
 test("a movement opens into its prayers, each of which opens into its text", async ({ page }) => {

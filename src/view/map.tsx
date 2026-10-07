@@ -12,9 +12,9 @@ import { displayTitle, HEICHA, heichaAloud, layoutFor, type Movement } from "../
 import { corpus, routeFor, services, type MapRoute } from "../routes";
 import { textNusach } from "../sefaria";
 import type { AstNode, CalendarKind, ContentNode, DayType, Localized, Nusach, ServiceId, ServiceMap } from "../types";
-import { noteRules } from "../notes";
+import { boxHead, noteRules } from "../notes";
 import { partsOf, sourceOf, textUrl } from "../texts";
-import { LanguagePicker, LocalizedText, PeopleIcon, SettingsIcon } from "./common";
+import { CalendarIcon, LanguagePicker, LocalizedText, PeopleIcon, SettingsIcon } from "./common";
 import { Credit, PartText } from "./reader";
 
 /** What is open: movement and prayer ids, and the open prayer's open sections (by slug). */
@@ -85,14 +85,30 @@ function registerTemplate(view: View, id: string, content: (view: View) => Compo
 }
 
 /**
- * A date note: a calendar rule in plain words, then what it means for the date being prayed, which
- * the browser writes in (src/today.ts), one short line in room kept for it, so nothing moves. Fine
- * print, inside opened items only.
+ * A calendar box: a date-dependent rule, stated in full, then the verdict for the date being prayed
+ * with its reason ("Mon 12 Oct (1 Cheshvan): **not said** — it’s Rosh Chodesh."), written in by the
+ * browser (src/today.ts). At the top of the opened item, before its sections. A page that arrives
+ * with a box open has it complete and loads the small script that writes the verdict before the
+ * first paint (src/notes-script.ts), so nothing moves. The templates a box opens from carry it
+ * empty, and the browser builds it (src/client/date.ts), so every page stays light.
  */
-function CalendarNote(id: string): VNode {
+function CalendarBox(id: string, open = true): VNode {
   const rule = noteRules[id];
-  if (!rule) throw new Error(`No rule for the date note ${id}`);
-  return <span className="calendar-note" data-note={id}><span className="note-rule">{LocalizedText(rule)}</span><span className="note-status" /></span>;
+  if (!rule) throw new Error(`No rule for the calendar box ${id}`);
+  if (!open) return <div className="calendar-box" data-note={id} />;
+  return <div className="calendar-box" data-note={id}>
+    <p className="box-head">{CalendarIcon()}{LocalizedText(boxHead)}</p>
+    <p className="box-rule">{LocalizedText(rule)}</p>
+    <p className="box-verdict" />
+  </div>;
+}
+
+/** The calendar boxes an item opens with: one for each date-dependent rule its content marks (complete where the page arrives with it open). */
+function CalendarBoxes(node: ContentNode, open: boolean): VNode {
+  const ids: string[] = [];
+  const find = (nodes: AstNode[]) => { for (const n of nodes) if (n.type === "element") { const c = (n.attrs.class || "").split(/\s+/); if (c.includes("calendar-note")) ids.push(c.find(x => x.startsWith("note-"))!.slice(5)); else find(n.children); } };
+  find(node.details); find(node.boundary);
+  return <>{ids.map(id => CalendarBox(id, open))}</>;
 }
 
 const plainText = (node: AstNode): string => node.type === "text" ? node.value : node.children.map(plainText).join("");
@@ -157,7 +173,8 @@ function Ast(view: View, nodes: AstNode[]): VNode {
     if (node.type === "text") return node.value;
     const classes = (node.attrs.class || "").split(/\s+/);
     if (classes.includes("rite") && !classes.includes(view.nusach[0])) return null;
-    if (classes.includes("calendar-note")) return CalendarNote(classes.find(c => c.startsWith("note-"))!.slice("note-".length));
+    // A date-dependent rule: shown as its calendar box at the top of the opened item (see CalendarBoxes).
+    if (classes.includes("calendar-note")) return null;
     const props: Record<string, unknown> = { key };
     if (node.attrs.class) props.className = node.attrs.class;
     if (node.attrs["data-lang"]) props["data-lang"] = node.attrs["data-lang"];
@@ -334,7 +351,7 @@ function Card(view: View, node: ContentNode, movement?: Movement, parent?: strin
   const mark = movement ? markOf(place.map, node.id) : undefined;
   return <li id={`section-${node.id}`} className={`${className}${reader ? " reader-card" : ""}`} data-reader={readerData(node)} data-mark={mark}>
     <button type="button" aria-expanded={open} aria-controls={detailId} data-route={node.id} data-parent={parent}>{node.communal && PeopleIcon()}{movement ? MovementHead(movement) : <span className="copy"><h3 className="item-title" tabIndex={-1}>{LocalizedText(displayTitle(node))}</h3>{summary && Ast(view, node.summary)}</span>}{MarkLabel(mark)}</button>
-    {Region(view, detailId, "details", open, v => <>{movement && !reader && Ast(v, node.summary)}{reader ? ReaderDetails(v, node) : node.detailKind ? AmidahDetails(v, node) : Ast(v, node.details)}</>)}
+    {Region(view, detailId, "details", open, v => <>{CalendarBoxes(node, v.place.open.has(node.id))}{movement && !reader && Ast(v, node.summary)}{reader ? ReaderDetails(v, node) : node.detailKind ? AmidahDetails(v, node) : Ast(v, node.details)}</>)}
   </li>;
 }
 
@@ -404,11 +421,10 @@ const heichaKedushahHeading: Localized = { en: "Kedushah and Holiness of the Nam
 
 /** The fine print under a landmark's title in the source ("after the final aliyah", "community practice", a date note). */
 const landmarkNote = (node: ContentNode): AstNode | undefined => {
-  const hasNote = (n: AstNode): boolean => n.type === "element" && ((n.attrs.class || "").split(/\s+/).includes("calendar-note") || n.children.some(hasNote));
   const find = (nodes: AstNode[]): AstNode | undefined => {
     for (const n of nodes) {
       if (n.type !== "element") continue;
-      if (n.tag === "small") return plainText(n).trim() || hasNote(n) ? n : undefined;
+      if (n.tag === "small") return plainText(n).trim() ? n : undefined;
       const inner = find(n.children);
       if (inner) return inner;
     }
@@ -428,7 +444,7 @@ function Landmark(view: View, node: ContentNode, parent?: string): VNode {
   return <li id={`section-${node.id}`} className={`${className} landmark-reader`} data-open={open ? "true" : undefined} data-reader={readerData(node)} data-mark={mark}>
     {node.communal && PeopleIcon()}
     <button type="button" className="landmark-toggle" aria-expanded={open} aria-controls={detailId} data-route={node.id} data-parent={parent}><span className="landmark-title" tabIndex={-1}>{LocalizedText(node.title)}</span>{MarkLabel(mark)}</button>
-    {Region(view, detailId, "landmark-details", open, v => <>{note && <p className="seam-note">{note.type === "element" && Ast(v, note.children)}</p>}{PrayerReader(v, node)}</>)}
+    {Region(view, detailId, "landmark-details", open, v => <>{CalendarBoxes(node, v.place.open.has(node.id))}{note && <p className="seam-note">{note.type === "element" && Ast(v, note.children)}</p>}{PrayerReader(v, node)}</>)}
   </li>;
 }
 

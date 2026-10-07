@@ -204,17 +204,24 @@ main[data-arriving] .section-text:not([hidden]):not(:has(.reader-text, .reader-f
    stand-in font and then re-flows. Without a script it simply shows. */
 html[data-fonts=pending] .reader-text{visibility:hidden}
 
-/* Date notes: a calendar rule, then what it means for the date being prayed (src/today.ts). Fine
-   print, inside opened items only. The script writes the status in, one line per language shown, in
-   room kept for exactly that (every status fits one line at 320 px), so nothing moves. Without a
-   script it is not shown. */
-.calendar-note{display:block;margin-top:10px;color:#53697b;font-size:.78rem;font-weight:450;line-height:1.4}
-.calendar-note .he{margin-top:2px}
-.note-rule{display:block}
-.note-status{display:block;margin-top:4px;color:var(--ink);font-size:.74rem;font-weight:400}
-@media(max-width:420px){.minor.reader-card>.details{padding-inline:8px}}
-.note-status{min-height:1.4em}
-html:not([data-language=en]):not([data-language=he]) .note-status{min-height:calc(2.8em + 2px)}
+/* A calendar box: a yellow inscribed rectangle at the top of an opened item whose prayer depends on
+   the date, with the calendar icon and "Depends on the date", the rule, and the verdict for the date
+   with its reason (src/today.ts; the verdict is written before the box is drawn). */
+.calendar-box{position:relative;margin:2px 0 14px;padding:10px 12px 11px 40px;border:2px solid #c28b18;border-radius:12px;background:#fff6d6;color:var(--ink);font-size:.82rem;line-height:1.45;text-align:left}
+.calendar-box p{margin:0}
+.calendar-box .calendar-mark{position:absolute;top:11px;left:13px;width:1.15rem;height:1.15rem;color:#8a6110}
+.box-head{color:#8a6110;font-size:.72rem;font-weight:800;letter-spacing:.02em;text-transform:uppercase}
+.box-head .he{display:inline;margin:0 0 0 8px;text-transform:none}
+.calendar-box .box-rule{margin-top:4px}
+.calendar-box .box-verdict{margin-top:7px;padding-top:7px;border-top:1px solid #e3c87a}
+/* The verdict word: bold in English (Hebrew is bold throughout), and highlighted in both. */
+.box-verdict b{padding:0 3px;border-radius:4px;background:#ffe39a}
+.box-verdict [data-lang=en] b{font-weight:800}
+.calendar-box .he{margin-top:3px;text-align:right}
+html[data-language=he] .calendar-box{padding:10px 40px 11px 12px;text-align:right}
+html[data-language=he] .calendar-box .calendar-mark{left:auto;right:13px}
+html:not([data-js]) .box-verdict{display:none}
+@media(max-width:420px){.minor.reader-card>.details{padding-inline:8px}.calendar-box{padding-left:34px}.calendar-box .calendar-mark{left:10px}}
 /* The reading: in English its name, then its verses (then the haftarah on Shabbat morning); in Hebrew
    its name (then the haftarah). One line each. */
 .calendar-reading{min-height:2.8em}
@@ -227,9 +234,6 @@ html:not([data-language=en]):not([data-language=he]) .calendar-reading.with-haft
 .calendar-reading>span{display:block}
 .calendar-reading .he{margin-top:0}
 html:not([data-js]) .calendar-reading{display:none}
-html:not([data-js]) .note-status{display:none}
-.seam-note .calendar-note{margin-top:2px}
-html[data-language=he] .calendar-note{text-align:right}
 
 /* The date line under the service heading (src/client/date.ts builds it, in an empty line whose height
    is kept, so nothing below moves); without a script it is hidden. */
@@ -263,17 +267,26 @@ main[data-day] .communal-key{margin-top:4px}
 /* What the date turns on or off on the map: a label kept on each such item, one line (in Hebrew when
    Hebrew alone is shown, otherwise in English, so the map's sizes hold), and, when off, the item dimmed
    with a dashed edge; when on (only today), an outline. Nothing is hidden. */
-.today-mark{display:block;grid-column:1/-1;min-height:1.2em;color:var(--ink);font-size:.74rem;font-weight:400;line-height:1.2;text-align:start}
+.today-mark{display:block;grid-column:1/-1;min-height:1.2em;color:var(--ink);font-size:.72rem;font-weight:400;line-height:1.2;text-align:start}
 html:not([data-language=he]) .today-mark [data-lang=he]{display:none}
 .today-mark>span{display:block}
 .today-mark .he{margin-top:0;text-align:right}
+/* The tag itself: a small yellow label, in the calendar box's colors, that adds no height to its line. */
+.today-mark>span:not(:empty){display:table;padding:0 4px;border-radius:4px;background:#fff2c4;box-shadow:0 0 0 1px #c28b18}
+.today-mark>.he:not(:empty){margin-left:auto}
+.landmark-toggle .today-mark>span{margin-inline:auto}
 html[data-language=he] .today-mark{text-align:right}
 html:not([data-js]) .today-mark{display:none}
 .landmark-toggle .today-mark{text-align:center}
 .landmark-toggle .today-mark .he{text-align:center}
 .movement>button>.today-mark,.card>button>.today-mark{grid-row:2}
 .movement.event>button>.today-mark{grid-row:3;margin-top:-10px}
-.service-map>li[data-today=off]:not([data-mark=omer]),.members>li[data-today=off],.chips>li[data-today=off]{opacity:.55;border-style:dashed}
+/* Dimmed only while closed: an opened item is at full contrast. */
+.service-map>li[data-today=off]:not([data-mark=omer]),.members>li[data-today=off],.chips>li[data-today=off]{border-style:dashed}
+:is(.service-map,.members)>li[data-today=off]:not([data-mark=omer]):not([data-open]):not(:has(>button[aria-expanded=true])),.chips>li[data-today=off]{opacity:.55}
+/* The map's spine runs behind its items, never over an opened one. */
+.service-map{isolation:isolate}
+.service-map:before{z-index:-1}
 .service-map>li[data-today=on],.chips>li[data-today=on]{outline:3px solid var(--ink);outline-offset:2px}
 [data-today=on]>button .today-mark{font-weight:750}
 /* A marked seam has a fixed width, so its label's length never moves it. */

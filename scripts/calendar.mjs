@@ -153,7 +153,7 @@ const monthList = [];
 for (let d = new HDate(before); ; ) {
   const first = new HDate(1, d.getMonth(), d.getFullYear());
   if (first.greg() > after) break;
-  monthList.push([iso(first.greg()), first.getMonthName().replace(/'/g, "’"), first.renderGematriya(true).split(" ")[1], first.getFullYear(), gematriya(first.getFullYear())]);
+  monthList.push([iso(first.greg()), first.getMonthName().replace(/'/g, "’"), first.renderGematriya(true).split(" ").slice(1, -1).join(" ").replace(/^חשון$/, "חשוון").replace(/^סיון$/, "סיוון"), first.getFullYear(), gematriya(first.getFullYear())]);
   d = new HDate(first.abs() + first.daysInMonth());
 }
 const omer = [];
