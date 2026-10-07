@@ -3,7 +3,7 @@
 import { chromium } from "@playwright/test";
 
 const [base, prefix, ...paths] = process.argv.slice(2);
-const out = process.env.OUT || "/workspace/mybuddy-data/jewish-literacy/proof/movements";
+const out = process.env.OUT || `${process.env.JL_PROOF_DIR || "proof"}/movements`;
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
 for (const entry of paths) {

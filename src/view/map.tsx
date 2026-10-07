@@ -10,7 +10,7 @@ import type { ComponentChildren, VNode } from "preact";
 import { renderToString } from "preact-render-to-string";
 import { displayTitle, HEICHA, heichaAloud, layoutFor, type Movement } from "../movements";
 import { planUrl } from "../plans";
-import { routeFor, services, type MapRoute } from "../routes";
+import { corpus, routeFor, services, type MapRoute } from "../routes";
 import { textNusach } from "../sefaria";
 import type { AstNode, ContentNode, DayType, Localized, Nusach, ServiceId, ServiceMap } from "../types";
 import { LanguagePicker, LocalizedText, PeopleIcon, SettingsIcon } from "./common";
@@ -218,18 +218,21 @@ function AmidahDetails(view: View, node: ContentNode, part?: HeichaPart): VNode 
 const dayLabels: Record<DayType, Localized> = { weekday: { en: "Weekday", he: "חול" }, shabbat: { en: "Shabbat", he: "שבת" } };
 const serviceLabels: Record<ServiceId, Localized> = { shacharit: { en: "Shacharit", he: "שחרית" }, mincha: { en: "Mincha", he: "מנחה" }, maariv: { en: "Maariv", he: "ערבית" }, musaf: { en: "Musaf", he: "מוסף" } };
 
-/** Day and service always show; language and nusach sit behind one small settings control. */
+/**
+ * Day and service always show; language and nusach sit behind one small settings control. Day and
+ * service are links to their maps, so they work without a script; the script switches in place.
+ */
 function Controls(day: DayType, service: ServiceId): VNode {
   return <div className="controls">
     <div className="control-row">
-      <div className="picker daytype" role="group" aria-label="Day type">{(["weekday", "shabbat"] as const).map(v => <button key={v} data-day-choice={v} aria-pressed={day === v}>{LocalizedText(dayLabels[v])}</button>)}</div>
+      <nav className="picker daytype" aria-label="Day type">{(["weekday", "shabbat"] as const).map(v => <a key={v} href={routeFor({ day: v, id: v === day ? service : "shacharit" })} data-day-choice={v} aria-current={day === v ? "true" : undefined}>{LocalizedText(dayLabels[v])}</a>)}</nav>
       <button type="button" className="settings-toggle" aria-expanded={false} aria-controls="display-settings">{SettingsIcon()}<span className="settings-label">{LocalizedText({ en: "Language · Nusach", he: "שפה · נוסח" })}</span></button>
     </div>
     <div id="display-settings" className="settings" hidden>
       {LanguagePicker()}
       <div className="picker nusach" role="group" aria-label="Prayer rite">{nusachs.map(v => <button key={v} data-nusach-choice={v} aria-pressed={v === "ashkenaz"}>{LocalizedText({ en: `Nusach ${v === "ashkenaz" ? "Ashkenaz" : "Sefard"}`, he: `נוסח ${v === "ashkenaz" ? "אשכנז" : "ספרד"}` })}</button>)}</div>
     </div>
-    <div className={`picker service ${day}`} role="group" aria-label="Service">{services[day].map(v => <button key={v} data-service-choice={v} aria-pressed={service === v}>{LocalizedText(serviceLabels[v])}</button>)}</div>
+    <nav className={`picker service ${day}`} aria-label="Service">{services[day].map(v => <a key={v} href={routeFor({ day, id: v })} data-service-choice={v} aria-current={service === v ? "true" : undefined}>{LocalizedText(serviceLabels[v])}</a>)}</nav>
   </div>;
 }
 
@@ -444,5 +447,34 @@ export function renderMapPage(route: MapRoute): { title: string; main: string; t
     checked.add(route.map);
   }
   const page = render("ashkenaz", placeFor(route));
-  return { title: `${route.map.title.en} — Jewish Literacy Project`, main: page.main, templates: [...page.templates.values()].join(""), path: routeFor(route.map, route.section, route.part, route.sub) };
+  const templates = [...page.templates.values()].join("");
+  // Every view of a map opens and closes from the same templates (those of the map, closed).
+  const closed = mapTemplates().get(route.map);
+  if (closed && closed !== templates) throw new Error(`${routeFor(route.map, route.section, route.part, route.sub)}: its templates differ from its map's`);
+  return { title: `${route.map.title.en} — Jewish Literacy Project`, main: page.main, templates, path: routeFor(route.map, route.section, route.part, route.sub) };
+}
+
+const attr = (value: string) => value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+let maps: Map<ServiceMap, string> | undefined;
+let store: string | undefined;
+
+/** Each map's closed-state templates, rendered once. */
+function mapTemplates(): Map<ServiceMap, string> {
+  if (maps) return maps;
+  maps = new Map();
+  for (const map of corpus.services) maps.set(map, renderMapPage({ map }).templates);
+  return maps;
+}
+
+/**
+ * Every map, closed, for the browser to switch day and service in place without a request: one
+ * <template data-map="<day>/<service>"> per map, holding its closed <main> and the templates its
+ * regions open from. Template content is inert, so its ids never clash with the live page's. The
+ * same markup ends every map page, so the live map's own templates are found here too.
+ */
+export function allMaps(): string {
+  return store ??= corpus.services.map(map => {
+    const page = renderMapPage({ map });
+    return `<template data-map="${map.day}/${map.id}" data-title="${attr(page.title)}">${page.main}${page.templates}</template>`;
+  }).join("");
 }

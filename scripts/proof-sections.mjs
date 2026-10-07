@@ -1,7 +1,9 @@
-// v3 proof: a prayer opened with one section expanded in place (390px), from the live head.
+// v3 proof: a prayer opened with one section expanded in place (390px).
+//   node scripts/proof-sections.mjs <base URL of a running site>   (writes to $JL_PROOF_DIR/movements/v3, or proof/…)
 import { chromium } from "@playwright/test";
-const base = process.argv[2] || "http://100.92.13.95:8787";
-const out = "/workspace/mybuddy-data/jewish-literacy/proof/movements/v3";
+const base = process.argv[2] || process.env.JL_BASE;
+if (!base) throw new Error("usage: node scripts/proof-sections.mjs <base URL>");
+const out = `${process.env.JL_PROOF_DIR || "proof"}/movements/v3`;
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
 const shots = [

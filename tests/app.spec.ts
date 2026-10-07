@@ -37,8 +37,8 @@ for (const [day, service] of services) {
         await page.goto(`/${day}/${service}`);
         await expect(page.locator("#service-heading")).toBeVisible();
         await expect(page.locator(".service-map>.movement").first()).toBeVisible();
-        await expect(page.locator('[data-day-choice="' + day + '"]')).toHaveAttribute("aria-pressed", "true");
-        await expect(page.locator('[data-service-choice="' + service + '"]')).toHaveAttribute("aria-pressed", "true");
+        await expect(page.locator('[data-day-choice="' + day + '"]')).toHaveAttribute("aria-current", "true");
+        await expect(page.locator('[data-service-choice="' + service + '"]')).toHaveAttribute("aria-current", "true");
         if (language === "en") await expect(page.locator('[data-lang="he"]:visible')).toHaveCount(0);
         if (language === "he") await expect(page.locator('[data-lang="en"]:visible')).toHaveCount(0);
         if (language === "both") { expect(await page.locator('[data-lang="en"]:visible').count()).toBeGreaterThan(0); expect(await page.locator('[data-lang="he"]:visible').count()).toBeGreaterThan(0); }
@@ -53,9 +53,9 @@ test("routes, history, preferences, and about are addressable", async ({ page })
   await page.getByRole("button", { name: /Pesukei/ }).click();
   await expect(page).toHaveURL(/\/weekday\/shacharit\/pesukei-dzimra$/);
   await expect(page.locator('.card [aria-expanded="true"]')).toHaveCount(1);
-  await page.getByRole("button", { name: /Shabbat שבת/ }).click();
+  await page.getByRole("link", { name: /Shabbat שבת/ }).click();
   await expect(page).toHaveURL(/\/shabbat\/shacharit$/);
-  await page.getByRole("button", { name: /Musaf מוסף/ }).click();
+  await page.getByRole("link", { name: /Musaf מוסף/ }).click();
   await expect(page).toHaveURL(/\/shabbat\/musaf$/);
   const before = page.url();
   await openSettings(page);

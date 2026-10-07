@@ -1,5 +1,6 @@
-// The map's controls: day and service open another map (another page); language and nusach sit
-// behind one small settings toggle. Each day remembers its last service for the visit.
+// The map's controls: day and service are links to other maps, which src/client/switch.ts shows in
+// place; language and nusach sit behind one small settings toggle. Each day remembers its last
+// service for the visit.
 import { services } from "../paths";
 import type { DayType, ServiceId } from "../types";
 
@@ -12,18 +13,16 @@ const remembered = (day: DayType): ServiceId => {
 export function initControls(main: HTMLElement) {
   const day = main.dataset.day as DayType;
   const toggle = main.querySelector<HTMLElement>(".settings-toggle")!;
-  const settings = document.getElementById("display-settings")!;
+  const settings = main.querySelector<HTMLElement>("#display-settings")!;
   const setOpen = (open: boolean) => { toggle.setAttribute("aria-expanded", String(open)); settings.hidden = !open; };
   toggle.addEventListener("click", () => setOpen(toggle.getAttribute("aria-expanded") !== "true"));
   main.querySelector(".controls")!.addEventListener("keydown", event => {
     if ((event as KeyboardEvent).key === "Escape") { setOpen(false); toggle.focus(); }
   });
-  for (const button of main.querySelectorAll<HTMLElement>("[data-day-choice]")) {
-    const next = button.dataset.dayChoice as DayType;
-    button.addEventListener("click", () => location.assign(`/${next}/${remembered(next)}`));
-  }
-  for (const button of main.querySelectorAll<HTMLElement>("[data-service-choice]")) {
-    button.addEventListener("click", () => location.assign(`/${day}/${button.dataset.serviceChoice}`));
+  // Each day's link goes to the service last seen there.
+  for (const link of main.querySelectorAll<HTMLAnchorElement>("[data-day-choice]")) {
+    const next = link.dataset.dayChoice as DayType;
+    link.href = `/${next}/${remembered(next)}`;
   }
   // About's back link returns to this map.
   main.querySelector(".about-link")!.addEventListener("click", () => {

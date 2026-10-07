@@ -1,15 +1,15 @@
 // Visual parity: screenshot the same views from two builds and diff them.
-//   node scripts/parity.mjs <other checkout with a built dist, e.g. /tmp/jl-main> [out dir]
+//   node scripts/parity.mjs <other checkout with a built dist, e.g. a worktree of main> [out dir]
 // Both sites are served by their own server.mjs on private 127.0.0.1 ports, with Sefaria answered
 // offline from the pinned plans. Writes <name>-main.png, <name>-astro.png, <name>-diff.png and
-// results.json under the out dir (default /workspace/mybuddy-data/jewish-literacy/proof/astro).
+// results.json under the out dir (default $JL_PROOF_DIR/astro, or proof/astro here).
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { chromium } from "@playwright/test";
 import pixelmatch from "pixelmatch";
 import { PNG } from "pngjs";
 import { corpus, mockSefaria, serve, settle } from "./proof-lib.mjs";
 
-const [other, out = "/workspace/mybuddy-data/jewish-literacy/proof/astro"] = process.argv.slice(2);
+const [other, out = `${process.env.JL_PROOF_DIR || "proof"}/astro`] = process.argv.slice(2);
 if (!other) throw new Error("usage: node scripts/parity.mjs <other checkout> [out dir]");
 const here = new URL("..", import.meta.url).pathname.replace(/\/$/, "");
 /** Pixels that may differ (anti-aliasing aside) before a pair counts as different: 0.05%. */

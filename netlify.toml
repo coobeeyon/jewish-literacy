@@ -4,6 +4,9 @@
 command = "npm run build"
 publish = "dist"
 
+[build.environment]
+NODE_VERSION = "22"
+
 [[redirects]]
 from = "/"
 to = "/weekday/shacharit"
@@ -43,3 +46,21 @@ Cache-Control = "public, max-age=31536000, immutable"
 for = "/plans/*"
 [headers.values]
 Cache-Control = "public, max-age=31536000, immutable"
+
+# Pages are revalidated on every visit, so a new build shows at once; Netlify sends a strong ETag
+# and answers a matching If-None-Match with a 304, so an unchanged page costs only headers (as
+# server.mjs does). Hashed assets above are cached for good.
+[[headers]]
+for = "/weekday/*"
+[headers.values]
+Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+for = "/shabbat/*"
+[headers.values]
+Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+for = "/about/*"
+[headers.values]
+Cache-Control = "public, max-age=0, must-revalidate"

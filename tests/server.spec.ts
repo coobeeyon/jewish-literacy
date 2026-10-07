@@ -1,3 +1,4 @@
+import { request as httpRequest, Agent } from "node:http";
 import { expect, test } from "@playwright/test";
 
 // server.mjs is the test web server (see playwright.config.ts); these check its encodings directly.
@@ -44,6 +45,54 @@ test.describe("server.mjs", () => {
     expect(response.headers()["cache-control"]).toBe("public, max-age=31536000, immutable");
     expect(Number(response.headers()["content-length"])).toBeLessThan(2000);
     expect((await response.json()).source.id).toBe("weekday/mincha/ashrei:ashkenaz");
+  });
+
+  test("every file has a strong ETag and Last-Modified, and an unchanged one is a bodiless 304", async ({ request }) => {
+    const html = await request.get("/weekday/shacharit", { headers: { "Accept-Encoding": "gzip" } });
+    const etag = html.headers()["etag"], modified = html.headers()["last-modified"];
+    expect(etag).toMatch(/^"[\w-]{20,}"$/);
+    expect(new Date(modified).getTime()).toBeGreaterThan(0);
+    // Pages are still revalidated every time, so a new build shows at once; it just costs a 304.
+    expect(html.headers()["cache-control"]).toBe("no-cache");
+    for (const headers of [{ "If-None-Match": etag }, { "If-None-Match": `"other", W/${etag}` }, { "If-Modified-Since": modified }]) {
+      const again = await request.get("/weekday/shacharit", { headers: { "Accept-Encoding": "gzip", ...headers } });
+      expect(again.status(), JSON.stringify(headers)).toBe(304);
+      expect(again.headers()["etag"]).toBe(etag);
+      expect(again.headers()["cache-control"]).toBe("no-cache");
+      expect((await again.body()).length).toBe(0);
+    }
+    // Each encoding is its own representation, with its own tag; a changed page is sent whole.
+    const br = await request.get("/weekday/shacharit", { headers: { "Accept-Encoding": "br" } });
+    expect(br.headers()["etag"]).not.toBe(etag);
+    expect((await request.get("/weekday/shacharit", { headers: { "Accept-Encoding": "br", "If-None-Match": etag } })).status()).toBe(200);
+    expect((await request.get("/weekday/shacharit", { headers: { "Accept-Encoding": "gzip", "If-Modified-Since": new Date(Date.parse(modified) - 1000).toUTCString() } })).status()).toBe(200);
+    // Hashed assets: tagged too, and still cached for good.
+    const script = (await html.text()).match(/src="(\/_astro\/[^"]+\.js)"/)![1];
+    const js = await request.get(script, { headers: { "Accept-Encoding": "br" } });
+    expect(js.headers()["cache-control"]).toBe("public, max-age=31536000, immutable");
+    expect((await request.get(script, { headers: { "Accept-Encoding": "br", "If-None-Match": js.headers()["etag"] } })).status()).toBe(304);
+    // Not-found pages are never a 304.
+    const missing = await request.get("/nope");
+    expect(missing.status()).toBe(404);
+    expect(missing.headers()["etag"]).toBeUndefined();
+  });
+
+  test("an idle connection stays open, so a request after a pause needs no new connection", async ({ baseURL }) => {
+    test.setTimeout(30_000);
+    const agent = new Agent({ keepAlive: true, maxSockets: 1 });
+    const get = () => new Promise<{ reused: boolean; keepAlive?: string }>((resolve, reject) => {
+      const request = httpRequest(`${baseURL}/weekday/shacharit`, { agent, headers: { "Accept-Encoding": "gzip" } }, response => {
+        response.resume();
+        response.on("end", () => resolve({ reused: request.reusedSocket, keepAlive: response.headers["keep-alive"] }));
+      }).on("error", reject);
+      request.end();
+    });
+    const first = await get();
+    expect(first.reused).toBe(false);
+    expect(first.keepAlive).toBe("timeout=120");
+    await new Promise(resolve => setTimeout(resolve, 10_000));
+    expect((await get()).reused).toBe(true);
+    agent.destroy();
   });
 
   test("old URLs redirect, and unknown paths are a real 404 with the not-found page", async ({ request }) => {

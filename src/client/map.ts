@@ -6,7 +6,9 @@
 // - an openable item's button has data-route (its route segment), data-parent (its movement, if a
 //   member) and aria-controls (its region: a container that is empty while closed);
 // - each region's content is in <template id="t:<region id>"> (or "t:<id>:<nusach>" where the
-//   nusach changes it); a member prayer's summary is in "t:summary-<prayer id>";
+//   nusach changes it), inside the map's own <template data-map="<day>/<service>">, which also holds
+//   the closed map that day and service switches show (see src/client/switch.ts); a member
+//   prayer's summary is in "t:summary-<prayer id>";
 // - a section toggle has data-section (its slug) and its text box (.section-text, data-part) beside it;
 //   a group toggle has data-group and data-sections (the slugs of the sections it holds);
 // - a multi-prayer movement lists its members in data-members; a prayer with text has data-reader.
@@ -14,11 +16,18 @@ import { nusach } from "./preferences";
 import { HEICHA } from "../paths";
 import { hideCredit, release, showCalendar, showCredit, showPrayer, showSection, type ReaderInfo } from "./reader";
 
-type NavState = { sections?: string[]; closed?: string; closedSection?: string; switched?: boolean };
-type Navigation = "initial" | "push" | "replace" | "pop";
+/** A history entry's state; `y` is where the page was scrolled when a switch left it for another map. */
+export type NavState = { sections?: string[]; closed?: string; closedSection?: string; switched?: boolean; y?: number };
+export type Navigation = "initial" | "push" | "replace" | "pop";
+/** A map on the page: `pop` follows Back or Forward within it; `dispose` lets it go when another map replaces it. */
+export type MapView = { pop: () => void; dispose: () => void };
 
-export function initMap(main: HTMLElement) {
-  const base = `/${main.dataset.day}/${main.dataset.service}`;
+/** Bring a map into play: on load ("initial"), or swapped in by a switch ("push") or Back/Forward ("pop"). */
+export function initMap(main: HTMLElement, arrival: Navigation = "initial"): MapView {
+  const key = `${main.dataset.day}/${main.dataset.service}`;
+  const base = `/${key}`;
+  const store = document.querySelector<HTMLTemplateElement>(`template[data-map="${key}"]`)!.content;
+  const listening = new AbortController();
   /** Ends the initial deep link's hold on its target (see holdInView). */
   let stopHolding: (() => void) | undefined;
   /** Groups opened or closed by hand, per open prayer (by its item's id); forgotten when the prayer closes. */
@@ -58,8 +67,9 @@ export function initMap(main: HTMLElement) {
   };
   const templateKey = (region: HTMLElement) => region.dataset.mode ? `${region.id}~${region.dataset.mode}` : region.id;
 
+  const stored = (id: string) => store.getElementById(id) as HTMLTemplateElement | null;
   function template(key: string): DocumentFragment | undefined {
-    const found = (byId(`t:${key}:${nusach()}`) || byId(`t:${key}`)) as HTMLTemplateElement | null;
+    const found = stored(`t:${key}:${nusach()}`) || stored(`t:${key}`);
     return found?.content.cloneNode(true) as DocumentFragment | undefined;
   }
 
@@ -273,19 +283,17 @@ export function initMap(main: HTMLElement) {
     else if (button.dataset.group) toggleGroup(button);
     else if (button.dataset.patternChoice) choosePattern(button);
   });
-  addEventListener("popstate", () => { sync(); settle("pop"); });
-
   // A nusach change refills every open region whose content differs by nusach, then the texts.
   document.addEventListener("nusachchange", () => {
     for (const button of main.querySelectorAll<HTMLElement>('button[data-route][aria-expanded="true"]')) {
       const region = byId(button.getAttribute("aria-controls")!)!;
-      if (button.isConnected && byId(`t:${templateKey(region)}:sefard`)) setOpen(button, false, true);
+      if (button.isConnected && stored(`t:${templateKey(region)}:sefard`)) setOpen(button, false, true);
     }
     for (const button of main.querySelectorAll<HTMLElement>('button[data-route][aria-expanded="false"]')) {
-      if (byId(`t:summary-${button.dataset.route}:sefard`)) setOpen(button, false, true);
+      if (stored(`t:summary-${button.dataset.route}:sefard`)) setOpen(button, false, true);
     }
     sync();
-  });
+  }, { signal: listening.signal });
 
   // The HTML holds both nusachs' versions of whatever is open and differs by nusach; keep the saved one.
   for (const version of main.querySelectorAll<HTMLElement>("[data-nusach-only]")) {
@@ -294,5 +302,9 @@ export function initMap(main: HTMLElement) {
   }
   try { sessionStorage.setItem(`service:${main.dataset.day}`, main.dataset.service!); } catch { /* optional */ }
   sync();
-  settle("initial");
+  settle(arrival);
+  return {
+    pop: () => { sync(); settle("pop"); },
+    dispose: () => { stopHolding?.(); listening.abort(); },
+  };
 }

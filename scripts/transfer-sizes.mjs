@@ -4,7 +4,7 @@
 //   3. opening one prayer on a loaded map (Ashrei at Weekday Mincha, which shows its text at once).
 // Each same-origin URL the browser requested is fetched again with gzip and with brotli, and the
 // compressed bodies are summed by kind.
-//   node scripts/transfer-sizes.mjs <other checkout with a built dist, e.g. /tmp/jl-main>
+//   node scripts/transfer-sizes.mjs <other checkout with a built dist, e.g. a worktree of main>
 import { chromium } from "@playwright/test";
 import { mockSefaria, serve, settle } from "./proof-lib.mjs";
 

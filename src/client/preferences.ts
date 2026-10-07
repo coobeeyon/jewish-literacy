@@ -13,8 +13,8 @@ const write = (key: string, value: string) => {
   try { localStorage.setItem(key, value); } catch { /* storage is optional */ }
 };
 
-/** aria-pressed follows <html>; CSS already shows the pressed choice from the same attributes. */
-function reflect() {
+/** aria-pressed follows <html>; CSS already shows the pressed choice from the same attributes. Also run for a map switched in. */
+export function reflect() {
   for (const button of document.querySelectorAll<HTMLElement>("[data-language-choice]")) button.setAttribute("aria-pressed", String(button.dataset.languageChoice === language()));
   for (const button of document.querySelectorAll<HTMLElement>("[data-nusach-choice]")) button.setAttribute("aria-pressed", String(button.dataset.nusachChoice === nusach()));
 }
