@@ -46,6 +46,8 @@ export function clean(raw: string, lang: Lang, rubric: boolean): string {
     if (!rubric && /[A-Za-z]/.test(withoutHebrew)) text = withoutHebrew;
   }
   if (lang === "en") text = text.replace(/\b(Leader:)(?:\s*Leader:)+/g, "$1"); // "Leader:Leader:" in Koren's Kedushah
+  // Metsudah's English transliterates the Name in old Ashkenazi pronunciation; Mike prefers "LORD", as Koren prints it.
+  if (lang === "en") text = text.replace(/\bAdonoy\b/g, "LORD");
   if (rubric) text = text // drop printed-page cross references, which mean nothing here
     .replace(/\s*\(?\s*see laws? [\d–-]+\s*\)?\.?/gi, "")
     .replace(/,?\s*\(?\s*(?:(?:found|see|turn to|is)\s+)?(?:on\s+)?(?:(?:the\s+)?(?:next|previous|following)\s+)?(?:pp?\.|pages?)(?:\s*[\d–-]+)?\s*\)?/gi, "")

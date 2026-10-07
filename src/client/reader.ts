@@ -61,9 +61,10 @@ function loadPart(part: TextPart, editions: Plan["editions"]): Promise<RenderedP
 function Credit(plan: Plan, fellBack: boolean): HTMLElement {
   const { source } = plan;
   const editions = [...new Set(source.parts.flatMap(p => p.sections.map(s => s.edition)))].map(id => plan.editions[id]);
+  const renamesName = editions.some(edition => edition.id.startsWith("metsudah"));
   return h("p", { class: "reader-credit" },
-    h("span", { "data-lang": "en" }, "Text from ", h("a", { href: source.fallbackUrl }, "Sefaria"), ". ", editions.map((edition, i) => h("span", {}, i > 0 && "; ", h("cite", {}, edition.cite.en), " (", h("a", { href: edition.he.source }, edition.sourceLabel.en), "), license reported by Sefaria: ", licenseOf(edition).en)), ".", fellBack && " Nusach Sefard text for this prayer isn’t available on Sefaria, so the Ashkenaz text is shown."),
-    h("span", { class: "he", "data-lang": "he" }, "הטקסט מתוך ", h("a", { href: source.fallbackUrl }, "ספריא"), ". ", editions.map((edition, i) => h("span", {}, i > 0 && "; ", h("cite", {}, edition.cite.he), " (", h("a", { href: edition.he.source }, edition.sourceLabel.he), "), הרישיון המדווח בספריא: ", licenseOf(edition).he)), ".", fellBack && " נוסח ספרד של תפילה זו אינו זמין בספריא, ולכן מוצג נוסח אשכנז."),
+    h("span", { "data-lang": "en" }, "Text from ", h("a", { href: source.fallbackUrl }, "Sefaria"), ". ", editions.map((edition, i) => h("span", {}, i > 0 && "; ", h("cite", {}, edition.cite.en), " (", h("a", { href: edition.he.source }, edition.sourceLabel.en), "), license reported by Sefaria: ", licenseOf(edition).en)), ".", renamesName && " The English shows the Name as “LORD”.", fellBack && " Nusach Sefard text for this prayer isn’t available on Sefaria, so the Ashkenaz text is shown."),
+    h("span", { class: "he", "data-lang": "he" }, "הטקסט מתוך ", h("a", { href: source.fallbackUrl }, "ספריא"), ". ", editions.map((edition, i) => h("span", {}, i > 0 && "; ", h("cite", {}, edition.cite.he), " (", h("a", { href: edition.he.source }, edition.sourceLabel.he), "), הרישיון המדווח בספריא: ", licenseOf(edition).he)), ".", renamesName && " באנגלית השם מוצג כ־LORD.", fellBack && " נוסח ספרד של תפילה זו אינו זמין בספריא, ולכן מוצג נוסח אשכנז."),
   );
 }
 
