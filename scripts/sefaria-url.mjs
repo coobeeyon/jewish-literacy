@@ -7,4 +7,7 @@ export const apiUrl = (ref, edition) => {
   return `https://www.sefaria.org/api/v3/texts/${refPath(ref)}?${version("hebrew", edition.he)}&${version("english", edition.en)}`;
 };
 
+/** The same text as plain text, which scripts/pin-sefaria.mjs reads to find anchors and tell prayer text from rubrics. */
+export const plainTextUrl = (ref, edition) => `${apiUrl(ref, edition)}&return_format=text_only`;
+
 export const pageUrl = ref => `https://www.sefaria.org/${refPath(ref).replace(/%3A/g, ".")}`;

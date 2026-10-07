@@ -35,6 +35,8 @@ const deepLinks = [
   "/shabbat/musaf/rabbis-kaddish",
   "/shabbat/mincha/half-kaddish-2",
   `/shabbat/mincha/silent-shabbat-amidah/${firstSlug("shabbat", "mincha", "silent-shabbat-amidah")}`,
+  "/weekday/mincha/amidah/heicha-kedushah",
+  "/shabbat/mincha/amidah/heicha-kedushah/kedushah-in-the-repetition-in-place-of-gods-holiness",
 ];
 
 const shots = [];

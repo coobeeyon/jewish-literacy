@@ -11,7 +11,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { acceptedLicenses, cards, editions, unfilled } from "./sefaria-spec.mjs";
-import { apiUrl, pageUrl } from "./sefaria-url.mjs";
+import { pageUrl, plainTextUrl } from "./sefaria-url.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const cacheDir = resolve(here, "../node_modules/.cache/sefaria");
@@ -105,7 +105,9 @@ function plan(section, heText, enText, layout, label) {
 export async function resolveSection(section, { fresh = false } = {}) {
   const edition = editions[section.ed];
   if (!edition) throw new Error(`Unknown edition ${section.ed}`);
-  const url = apiUrl(section.ref, edition);
+  // Plain text: the anchors and the rubric/commentary rules were written against it, and the
+  // formatted text's footnote bodies would break both. The segments are the same either way.
+  const url = plainTextUrl(section.ref, edition);
   const data = await getJson(url, { fresh });
   if (data.error) throw new Error(`${section.ref}: ${data.error}`);
   if (!Array.isArray(data.warnings) || data.warnings.length) throw new Error(`${section.ref}: warnings ${JSON.stringify(data.warnings)}`);

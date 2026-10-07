@@ -34,7 +34,8 @@ export function sefariaResponse(url) {
   const version = lang => ({
     language: lang, versionTitle: edition[lang].title, license: edition[lang].license, versionSource: edition[lang].source,
     actualLanguage: edition[lang].language, direction: edition[lang].direction,
-    text: Array.from({ length: section.count[lang] }, (_, i) => lang === "he" ? `טֶקְסְט ${i + 1} ${section.ref}` : `English segment ${i + 1} of ${section.ref}`),
+    // With some of the editions' own markup, so their formatting is compared too.
+    text: Array.from({ length: section.count[lang] }, (_, i) => lang === "he" ? `<b>טֶקְסְט</b> ${i + 1}<br>${section.ref}` : `English segment ${i + 1} of the <small>LORD</small>,<br><i>${section.ref}</i>`),
   });
   return { ref: section.ref, warnings: [], versions: [version("he"), version("en")] };
 }
