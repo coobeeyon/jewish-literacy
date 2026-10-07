@@ -34,6 +34,26 @@ other text opens from a small file per prayer (`/texts/…json`); once a page ha
 for a second, the browser prefetches every prayer on its map, so an open shows the text at once.
 `node scripts/text-timing.mjs` measures tap-to-text on a slow link and what the prefetch costs.
 
+## Date notes
+
+Notes such as "Today: not said — Rosh Chodesh" or "Tonight: count day 23 of the Omer" sit inside opened
+items (Tachanun, the weekday Torah reading, the psalms after Shacharit, the Omer, Tzidkatcha, and the
+Kaddish after Tachanun and after Tzidkatcha). Each shows what its rule means for the date being prayed,
+then the rule itself. The date is today, or one dialled in on the line under the service heading, which
+puts it in the URL (`?date=2026-10-21`) so a link reproduces it. Shacharit and Mincha read that day;
+Maariv reads its evening, which belongs to the next Hebrew day; the Shabbat maps read the coming (or
+current) Shabbat. The rules follow standard Ashkenaz practice outside Israel; their sources are in
+`scripts/calendar.mjs`.
+
+The browser looks the date up in a small table, `src/calendar.generated.json`, which
+`npm run calendar` computes with [@hebcal/core](https://github.com/hebcal/hebcal-es6). That package is
+GPL-licensed and is a build-time devDependency only: it runs in that script, and nothing of it ships to
+the browser or runs in `npm run build`.
+
+**The table covers 1 September 2026 to 31 October 2028.** Run `npm run calendar` (after moving its
+range forward in `scripts/calendar.mjs`) and rebuild before then: dates past the table show only the
+rule and "not in the calendar", and `npm run build` fails once the table has fewer than 60 days left.
+
 ## Test
 
 ```sh

@@ -12,6 +12,7 @@ import { displayTitle, HEICHA, heichaAloud, layoutFor, type Movement } from "../
 import { corpus, routeFor, services, type MapRoute } from "../routes";
 import { textNusach } from "../sefaria";
 import type { AstNode, ContentNode, DayType, Localized, Nusach, ServiceId, ServiceMap } from "../types";
+import { noteRules } from "../notes";
 import { partsOf, sourceOf, textUrl } from "../texts";
 import { LanguagePicker, LocalizedText, PeopleIcon, SettingsIcon } from "./common";
 import { Credit, PartText } from "./reader";
@@ -83,6 +84,18 @@ function registerTemplate(view: View, id: string, content: (view: View) => Compo
   view.templates.set(id, "same" in versions ? template(id, versions.same) : nusachs.map(n => template(`${id}:${n}`, versions[n])).join(""));
 }
 
+/**
+ * A date note: a calendar rule in plain words, then what it means for the date being prayed, which
+ * the browser writes in (src/today.ts). Fine print, inside opened items only. A note opened in place
+ * is written in before it is drawn; one the page arrives with (`arriving`) keeps room for its status,
+ * so nothing moves when the script writes it.
+ */
+function CalendarNote(id: string, arriving: boolean): VNode {
+  const rule = noteRules[id];
+  if (!rule) throw new Error(`No rule for the date note ${id}`);
+  return <span className="calendar-note" data-note={id}><span className="note-rule">{LocalizedText(rule)}</span><span className="note-status" data-note-status="" data-reserve={arriving ? "" : undefined} /></span>;
+}
+
 const plainText = (node: AstNode): string => node.type === "text" ? node.value : node.children.map(plainText).join("");
 const slugOf = (value: string) => value.toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "").replace(/[’']/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
@@ -145,6 +158,7 @@ function Ast(view: View, nodes: AstNode[]): VNode {
     if (node.type === "text") return node.value;
     const classes = (node.attrs.class || "").split(/\s+/);
     if (classes.includes("rite") && !classes.includes(view.nusach[0])) return null;
+    if (classes.includes("calendar-note")) return CalendarNote(classes.find(c => c.startsWith("note-"))!.slice("note-".length), view.place.open.size > 0);
     const props: Record<string, unknown> = { key };
     if (node.attrs.class) props.className = node.attrs.class;
     if (node.attrs["data-lang"]) props["data-lang"] = node.attrs["data-lang"];
@@ -233,6 +247,13 @@ function AmidahDetails(view: View, node: ContentNode, part?: HeichaPart): VNode 
   const groups = [["Praise", "שבח", 0, 3], ["Sanctity of the day", "קדושת היום", 3, 4], ["Thanksgiving and peace", "הודאה ושלום", 4, 7]] as const;
   return <div className="amidah-groups">{groups.slice(from).map(([en, he, start, end]) => AmidahGroup(view, en, he, range(start, end), blessings.slice(start, end).map((b, i) => { const n = start + i + 1; return Blessing(view, n, `amidah:${n}`, b, repetition, repetition && n === 3 ? kedushah(view) : undefined); })))}{!repetition && Blessing(view, 0, "amidah:conclusion", ["Personal conclusion and steps back", "סיום אישי ופסיעות לאחור"], false)}</div>;
 }
+
+/**
+ * The date the notes speak of: today unless another is dialled in (?date=YYYY-MM-DD), with its Hebrew
+ * date, a step back and forward, and a way back to today. The browser builds it (src/client/date.ts)
+ * in room kept for it, so nothing moves; without a script it is hidden.
+ */
+const DateLine = (): VNode => <div className="date-line" />;
 
 const dayLabels: Record<DayType, Localized> = { weekday: { en: "Weekday", he: "חול" }, shabbat: { en: "Shabbat", he: "שבת" } };
 const serviceLabels: Record<ServiceId, Localized> = { shacharit: { en: "Shacharit", he: "שחרית" }, mincha: { en: "Mincha", he: "מנחה" }, maariv: { en: "Maariv", he: "ערבית" }, musaf: { en: "Musaf", he: "מוסף" } };
@@ -350,12 +371,13 @@ function ReaderDetails(view: View, node: ContentNode, heicha?: HeichaPart): VNod
 
 const heichaKedushahHeading: Localized = { en: "Kedushah and Holiness of the Name", he: "קדושה וקדושת השם" };
 
-/** The fine print under a landmark's title in the source ("after the final aliyah", "community practice"). */
+/** The fine print under a landmark's title in the source ("after the final aliyah", "community practice", a date note). */
 const landmarkNote = (node: ContentNode): AstNode | undefined => {
+  const hasNote = (n: AstNode): boolean => n.type === "element" && ((n.attrs.class || "").split(/\s+/).includes("calendar-note") || n.children.some(hasNote));
   const find = (nodes: AstNode[]): AstNode | undefined => {
     for (const n of nodes) {
       if (n.type !== "element") continue;
-      if (n.tag === "small") return plainText(n).trim() ? n : undefined;
+      if (n.tag === "small") return plainText(n).trim() || hasNote(n) ? n : undefined;
       const inner = find(n.children);
       if (inner) return inner;
     }
@@ -438,7 +460,7 @@ function ServiceView(view: View): VNode {
   const { map } = view.place;
   const layout = layoutFor(map);
   // A view with something open has just arrived: its prayer text keeps a screen's room while it loads (styles.css).
-  return <main data-day={map.day} data-service={map.id} data-arriving={view.place.open.size ? "" : undefined}><header><h1>{LocalizedText({ en: "Jewish Literacy Project", he: "מיזם האוריינות היהודית" })}</h1><a className="about-link" href="/about">{LocalizedText({ en: "About Jewish Literacy", he: "על מיזם האוריינות היהודית" })}</a>{Controls(map.day, map.id)}<h2 id="service-heading" className="service-title" tabIndex={-1}>{LocalizedText(map.title)}</h2><div className="communal-key">{PeopleIcon()}{LocalizedText({ en: "Requires a minyan (prayer quorum)", he: "נדרש מניין (ציבור לתפילה)" })}</div></header>
+  return <main data-day={map.day} data-service={map.id} data-arriving={view.place.open.size ? "" : undefined}><header><h1>{LocalizedText({ en: "Jewish Literacy Project", he: "מיזם האוריינות היהודית" })}</h1><a className="about-link" href="/about">{LocalizedText({ en: "About Jewish Literacy", he: "על מיזם האוריינות היהודית" })}</a>{Controls(map.day, map.id)}<h2 id="service-heading" className="service-title" tabIndex={-1}>{LocalizedText(map.title)}</h2>{DateLine()}<div className="communal-key">{PeopleIcon()}{LocalizedText({ en: "Requires a minyan (prayer quorum)", he: "נדרש מניין (ציבור לתפילה)" })}</div></header>
     <ol className="service-map">{layout.items.map(item => item.kind === "seam"
       ? Landmark(view, item.node)
       : item.movement.single

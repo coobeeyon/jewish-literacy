@@ -7,6 +7,7 @@
 import { services } from "../paths";
 import type { DayType, ServiceId } from "../types";
 import { initControls } from "./controls";
+import { initDateLine, withDate } from "./date";
 import { initMap, type MapView, type NavState, type Navigation } from "./map";
 import { reflect } from "./preferences";
 import { animateSwitch } from "./transition";
@@ -27,6 +28,7 @@ function mount(next: HTMLElement, arrival: Navigation) {
   main = next;
   view = initMap(main, arrival);
   initControls(main);
+  initDateLine(main);
   reflect();
 }
 
@@ -60,7 +62,7 @@ export function initSwitching(first: HTMLElement) {
     if (!link || !main.contains(link) || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
     const url = new URL(link.href).pathname;
-    if (url !== location.pathname) show(keyOf(url), "push", url);
+    if (url !== location.pathname) show(keyOf(url), "push", withDate(url));
   });
   addEventListener("popstate", event => {
     const key = keyOf(location.pathname);

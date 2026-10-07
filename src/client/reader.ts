@@ -192,16 +192,18 @@ export function hideCredit(details: HTMLElement) {
 
 // ───────────── This week's Torah reading, from Sefaria's calendar ─────────────
 
-const loadReading = (kind: CalendarKind) => {
-  const url = calendarUrl(kind);
+const loadReading = (kind: CalendarKind, date: string) => {
+  const [y, m, d] = date.split("-").map(Number);
+  const url = calendarUrl(kind, new Date(y, m - 1, d, 12));
   return cached(readings, url, () => getJson(url, 15000).then(data => parseCalendar(data as Parameters<typeof parseCalendar>[0])));
 };
 
-export function showCalendar(el: HTMLElement) {
+/** The week's Torah reading for the date being prayed (YYYY-MM-DD), from Sefaria's calendar. */
+export function showCalendar(el: HTMLElement, date: string) {
   const kind = el.dataset.calendar as CalendarKind;
   const live = claim(el);
   el.replaceChildren(h("p", { role: "status" }, bi({ en: "Loading this week’s Torah reading…", he: "קריאת התורה של השבוע נטענת…" })));
-  loadReading(kind).then(reading => {
+  loadReading(kind, date).then(reading => {
     if (!live()) return;
     const intro = calendarIntro[kind];
     const haftarah = kind === "shabbat" && reading.haftarah;

@@ -77,7 +77,7 @@ export function parseCalendar(data: { calendar_items?: Array<Record<string, any>
 }
 
 export const calendarIntro: Record<CalendarKind, Localized> = {
-  weekday: { en: "Monday and Thursday mornings read the opening of the coming Shabbat’s portion; holidays, fast days and Rosh Chodesh have their own readings. Coming Shabbat or holiday reading (Sefaria calendar, outside Israel):", he: "בבוקר ימי שני וחמישי קוראים את תחילת פרשת השבת הקרובה; לחגים, לתעניות ולראש חודש יש קריאות משלהם. הקריאה של השבת או החג הקרובים (לוח ספריא, חוץ לארץ):" },
+  weekday: { en: "The coming Shabbat or holiday reading (Sefaria calendar, outside Israel):", he: "הקריאה של השבת או החג הקרובים (לוח ספריא, חוץ לארץ):" },
   shabbat: { en: "This Shabbat’s reading (Sefaria calendar, outside Israel):", he: "הקריאה של שבת זו (לוח ספריא, חוץ לארץ):" },
   mincha: { en: "Shabbat afternoon reads the opening of the following week’s portion (Sefaria calendar, outside Israel):", he: "במנחה של שבת קוראים את תחילת פרשת השבוע הבא (לוח ספריא, חוץ לארץ):" },
 };

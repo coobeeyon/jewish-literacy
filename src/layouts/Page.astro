@@ -31,7 +31,7 @@ const { title, opensOnText } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#f7fafc" />
     <title>{title}</title>
-    <script is:inline>(function(){var r=document.documentElement,l,n;try{l=localStorage.getItem("weekday-shacharit-language");n=localStorage.getItem("weekday-shacharit-nusach")}catch(e){}l=l==="en"||l==="he"?l:"both";r.setAttribute("data-language",l);r.setAttribute("data-nusach",n==="sefard"?"sefard":"ashkenaz");r.lang=l==="he"?"he":"en";r.dir="ltr"})()</script>
+    <script is:inline>(function(){var r=document.documentElement,l,n;try{l=localStorage.getItem("weekday-shacharit-language");n=localStorage.getItem("weekday-shacharit-nusach")}catch(e){}l=l==="en"||l==="he"?l:"both";r.setAttribute("data-language",l);r.setAttribute("data-nusach",n==="sefard"?"sefard":"ashkenaz");r.lang=l==="he"?"he":"en";r.dir="ltr";r.setAttribute("data-js","")})()</script>
     {opensOnText && [hebrew, hebrewLatin, english].map(href => <link rel="preload" href={href} as="font" type="font/woff2" crossorigin />)}
     <link rel="icon" href={iconSvg} type="image/svg+xml" />
     <link rel="icon" href={icon32} type="image/png" sizes="32x32" />

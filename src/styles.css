@@ -203,3 +203,33 @@ main[data-arriving] .section-text:not([hidden]):not(:has(.reader-text, .reader-f
    three seconds; see Page.astro), the text keeps its place but is not drawn, so it never shows in a
    stand-in font and then re-flows. Without a script it simply shows. */
 html[data-fonts=pending] .reader-text{visibility:hidden}
+
+/* Date notes: a calendar rule, then what it means for the date being prayed (src/today.ts). Fine
+   print, inside opened items only. The script writes the status in; in a page that arrives with the
+   note open, room is kept for it (two lines in each language shown; every status fits), so nothing
+   moves. Without a script it is not shown. */
+.calendar-note{display:block;margin-top:10px;color:#53697b;font-size:.78rem;font-weight:450;line-height:1.4}
+.calendar-note .he{margin-top:2px}
+.note-rule{display:block}
+.note-status{display:block;margin-top:4px;color:var(--ink);font-weight:750}
+.note-status[data-reserve]{min-height:2.8em}
+html:not([data-language=en]):not([data-language=he]) .note-status[data-reserve]{min-height:calc(5.6em + 2px)}
+html:not([data-js]) .note-status{display:none}
+.seam-note .calendar-note{margin-top:2px}
+html[data-language=he] .calendar-note{text-align:right}
+
+/* The date line under the service heading (src/client/date.ts builds it, in an empty line whose height
+   is kept, so nothing below moves); without a script it is hidden. */
+.date-line{display:flex;align-items:center;justify-content:center;gap:2px;width:min(440px,100%);height:34px;margin:6px auto 0;color:var(--muted);font-size:.74rem;font-weight:700;line-height:1.3}
+html:not([data-js]) .date-line{display:none}
+.date-step{flex:none;width:28px;height:34px;padding:0;border:0;border-radius:9px;background:none;color:var(--ink);font:800 1.15rem/1 system-ui,sans-serif;cursor:pointer}
+.date-step:disabled{opacity:.3;cursor:default}
+.date-pick{position:relative;min-width:0;cursor:pointer;text-align:center}
+.date-text,.date-text>span{display:block}
+.date-text>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.date-text .he{margin-top:0}
+.date-input{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:0;opacity:0;cursor:pointer}
+.date-today{flex:none;height:30px;margin-inline-start:2px;padding:0 7px;border:1px solid #b8c5d0;border-radius:9px;background:#fff;color:var(--ink);font:750 .74rem system-ui,sans-serif;cursor:pointer}
+.date-today[data-off]{display:none}
+.date-today .he{margin:0}
+html:not([data-language=he]) .date-today [data-lang=he]{display:none}

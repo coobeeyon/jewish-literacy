@@ -1830,7 +1830,7 @@
                   "children": [
                     {
                       "type": "text",
-                      "value": "Supplication · longer Monday–Thursday form"
+                      "value": "Supplication"
                     }
                   ]
                 },
@@ -1844,7 +1844,7 @@
                   "children": [
                     {
                       "type": "text",
-                      "value": "תחנונים · נוסח ארוך בשני ובחמישי"
+                      "value": "תחנונים"
                     }
                   ]
                 }
@@ -2005,36 +2005,9 @@
               "type": "element",
               "tag": "span",
               "attrs": {
-                "class": "badge bi"
+                "class": "calendar-note note-tachanun-shacharit"
               },
-              "children": [
-                {
-                  "type": "element",
-                  "tag": "span",
-                  "attrs": {
-                    "data-lang": "en"
-                  },
-                  "children": [
-                    {
-                      "type": "text",
-                      "value": "calendar conditions"
-                    }
-                  ]
-                },
-                {
-                  "type": "element",
-                  "tag": "span",
-                  "attrs": {
-                    "data-lang": "he"
-                  },
-                  "children": [
-                    {
-                      "type": "text",
-                      "value": "תנאי לוח השנה"
-                    }
-                  ]
-                }
-              ]
+              "children": []
             }
           ],
           "boundary": [],
@@ -2131,12 +2104,7 @@
                       "attrs": {
                         "data-lang": "en"
                       },
-                      "children": [
-                        {
-                          "type": "text",
-                          "value": "after Amidah if Tachanun is omitted"
-                        }
-                      ]
+                      "children": []
                     },
                     {
                       "type": "element",
@@ -2145,12 +2113,15 @@
                         "class": "he",
                         "data-lang": "he"
                       },
-                      "children": [
-                        {
-                          "type": "text",
-                          "value": "לאחר העמידה אם אין תחנון"
-                        }
-                      ]
+                      "children": []
+                    },
+                    {
+                      "type": "element",
+                      "tag": "span",
+                      "attrs": {
+                        "class": "calendar-note note-kaddish-after-tachanun"
+                      },
+                      "children": []
                     }
                   ]
                 }
@@ -2207,7 +2178,7 @@
                   "children": [
                     {
                       "type": "text",
-                      "value": "Monday and Thursday · three aliyot · special days vary"
+                      "value": "Monday and Thursday · three aliyot"
                     }
                   ]
                 },
@@ -2221,7 +2192,7 @@
                   "children": [
                     {
                       "type": "text",
-                      "value": "שני וחמישי · שלוש עליות · ימים מיוחדים משתנים"
+                      "value": "שני וחמישי · שלוש עליות"
                     }
                   ]
                 }
@@ -2307,6 +2278,14 @@
                   ]
                 }
               ]
+            },
+            {
+              "type": "element",
+              "tag": "span",
+              "attrs": {
+                "class": "calendar-note note-torah-weekday"
+              },
+              "children": []
             }
           ],
           "boundary": [],
@@ -2999,6 +2978,14 @@
                   ]
                 }
               ]
+            },
+            {
+              "type": "element",
+              "tag": "span",
+              "attrs": {
+                "class": "calendar-note note-daily-psalms"
+              },
+              "children": []
             }
           ],
           "boundary": [],
@@ -3713,7 +3700,7 @@
                   "children": [
                     {
                       "type": "text",
-                      "value": "Supplication · omitted on designated days"
+                      "value": "Supplication"
                     }
                   ]
                 },
@@ -3727,7 +3714,7 @@
                   "children": [
                     {
                       "type": "text",
-                      "value": "תחנונים · אינו נאמר בימים מסוימים"
+                      "value": "תחנונים"
                     }
                   ]
                 }
@@ -3818,36 +3805,9 @@
               "type": "element",
               "tag": "span",
               "attrs": {
-                "class": "badge bi"
+                "class": "calendar-note note-tachanun-mincha"
               },
-              "children": [
-                {
-                  "type": "element",
-                  "tag": "span",
-                  "attrs": {
-                    "data-lang": "en"
-                  },
-                  "children": [
-                    {
-                      "type": "text",
-                      "value": "calendar conditions"
-                    }
-                  ]
-                },
-                {
-                  "type": "element",
-                  "tag": "span",
-                  "attrs": {
-                    "data-lang": "he"
-                  },
-                  "children": [
-                    {
-                      "type": "text",
-                      "value": "תנאי לוח השנה"
-                    }
-                  ]
-                }
-              ]
+              "children": []
             }
           ],
           "boundary": [],
@@ -5385,7 +5345,7 @@
                   "children": [
                     {
                       "type": "text",
-                      "value": "Aleinu · seasonal and local additions"
+                      "value": "Aleinu · Counting the Omer in its season"
                     }
                   ]
                 },
@@ -5399,7 +5359,7 @@
                   "children": [
                     {
                       "type": "text",
-                      "value": "עלינו · תוספות עונתיות ומקומיות"
+                      "value": "עלינו · ספירת העומר בעונתה"
                     }
                   ]
                 }
@@ -5485,6 +5445,14 @@
                   ]
                 }
               ]
+            },
+            {
+              "type": "element",
+              "tag": "span",
+              "attrs": {
+                "class": "calendar-note note-omer"
+              },
+              "children": []
             }
           ],
           "boundary": [],
@@ -10741,7 +10709,7 @@
                   "children": [
                     {
                       "type": "text",
-                      "value": "Shabbat supplication · omitted on designated dates"
+                      "value": "Shabbat supplication"
                     }
                   ]
                 },
@@ -10755,7 +10723,7 @@
                   "children": [
                     {
                       "type": "text",
-                      "value": "תחינת שבת · אינה נאמרת במועדים מסוימים"
+                      "value": "תחינת שבת"
                     }
                   ]
                 }
@@ -10767,36 +10735,9 @@
               "type": "element",
               "tag": "span",
               "attrs": {
-                "class": "badge bi"
+                "class": "calendar-note note-tzidkatcha"
               },
-              "children": [
-                {
-                  "type": "element",
-                  "tag": "span",
-                  "attrs": {
-                    "data-lang": "en"
-                  },
-                  "children": [
-                    {
-                      "type": "text",
-                      "value": "calendar conditions"
-                    }
-                  ]
-                },
-                {
-                  "type": "element",
-                  "tag": "span",
-                  "attrs": {
-                    "data-lang": "he"
-                  },
-                  "children": [
-                    {
-                      "type": "text",
-                      "value": "תנאי לוח השנה"
-                    }
-                  ]
-                }
-              ]
+              "children": []
             }
           ],
           "boundary": [],
@@ -10870,27 +10811,9 @@
                       "type": "element",
                       "tag": "span",
                       "attrs": {
-                        "data-lang": "en"
+                        "class": "calendar-note note-kaddish-after-tzidkatcha"
                       },
-                      "children": [
-                        {
-                          "type": "text",
-                          "value": "after repetition when Tzidkatcha is omitted"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "element",
-                      "tag": "span",
-                      "attrs": {
-                        "data-lang": "he"
-                      },
-                      "children": [
-                        {
-                          "type": "text",
-                          "value": "לאחר החזרה כאשר צדקתך אינה נאמרת"
-                        }
-                      ]
+                      "children": []
                     }
                   ]
                 }

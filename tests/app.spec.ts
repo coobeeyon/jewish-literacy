@@ -419,7 +419,9 @@ test("Torah cards show this week's reading from Sefaria's calendar", async ({ pa
   await expect(calendar.getByRole("link", { name: "Bereshit" })).toHaveAttribute("href", "https://www.sefaria.org/Genesis.1.1-6.8");
   await expect(calendar.getByRole("link", { name: "Isaiah 42:5-43:10" }).first()).toBeVisible();
   await page.goto("/weekday/shacharit/torah-reading");
-  await expect(page.locator(".reader-calendar [data-lang=en]")).toContainText("Monday and Thursday");
+  await expect(page.locator(".reader-calendar [data-lang=en]")).toContainText("The coming Shabbat or holiday reading");
+  // Which days read, and what, is the card's date note.
+  await expect(page.locator('#section-torah-reading [data-note="torah-weekday"] .note-rule [data-lang=en]')).toContainText("Monday and Thursday mornings");
   await openFirstSection(page.locator("#section-torah-reading"));
   await expect(page.locator(".reader-section").first()).toBeVisible();
 });
@@ -490,7 +492,7 @@ test("seams are slim double-bordered bubbles with the minyan mark, title only", 
 
 test("caveats and conditions stay off the top level and appear when opened", async ({ page }) => {
   await page.goto("/weekday/shacharit");
-  const caveats = ["community practice", "after Amidah if Tachanun is omitted", "special days vary", "community order varies", "Monday and Thursday"];
+  const caveats = ["community practice", "Without Tachanun", "Not said on", "Today:", "community order varies", "Monday and Thursday"];
   for (const caveat of caveats) await expect(page.locator(".service-map").getByText(caveat)).toHaveCount(0);
   // Top-level movements carry a title and at most one short line per language.
   for (const blurb of await page.locator(".service-map>.movement>button .blurb [data-lang=en]").all()) {
@@ -499,9 +501,10 @@ test("caveats and conditions stay off the top level and appear when opened", asy
   }
   await page.locator("#movement-torah>button").click();
   await expect(page).toHaveURL(/\/weekday\/shacharit\/torah$/);
-  await expect(page.locator("#movement-torah").getByText("Monday and Thursday · three aliyot · special days vary")).toBeVisible();
+  await expect(page.locator("#movement-torah").getByText("Monday and Thursday · three aliyot")).toBeVisible();
   await page.locator("#section-half-kaddish-2 .landmark-toggle").click();
-  await expect(page.locator("#section-half-kaddish-2 .seam-note")).toContainText("after Amidah if Tachanun is omitted");
+  await expect(page.locator("#section-half-kaddish-2 .seam-note")).toContainText("Without Tachanun it follows the leader’s repetition");
+  await expect(page.locator("#section-half-kaddish-2 .seam-note [data-note-status]")).toContainText("Today:");
 });
 
 test("a movement opens into its prayers, each of which opens into its text", async ({ page }) => {

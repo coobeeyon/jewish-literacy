@@ -16,8 +16,9 @@ import { serve } from "./proof-lib.mjs";
 // (src/texts.ts), so its size budget applies to the page without the text: the text is what the
 // reader asked for, and the longest sections run to tens of kilobytes on their own.
 const budget = { lcp: 1500, fcp: 1200, cls: 0.02, tbt: 50, pageGzip: 50 * 1024 };
-// Map pages, and deep links to a movement, a prayer and a section. PATHS=/a,/b checks others.
-const paths = process.env.PATHS ? process.env.PATHS.split(",") : ["/weekday/maariv", "/shabbat/musaf", "/weekday/shacharit/closing", "/weekday/mincha/ashrei", "/weekday/shacharit/tachanun/falling-on-the-face"];
+// Map pages, deep links to a movement, a prayer and a section, and one that opens on a date note.
+// PATHS=/a,/b checks others.
+const paths = process.env.PATHS ? process.env.PATHS.split(",") : ["/weekday/maariv", "/shabbat/musaf", "/weekday/shacharit/closing", "/weekday/mincha/ashrei", "/weekday/shacharit/tachanun/falling-on-the-face", "/weekday/shacharit/tachanun"];
 
 const target = process.argv[2];
 const site = target ? { base: target.replace(/\/$/, ""), stop() {} } : await serve(new URL("..", import.meta.url).pathname);
