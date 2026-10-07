@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { createElement, useEffect, useState, type ReactNode } from "react";
 import corpusJson from "./corpus.generated.json";
+import { formatSegment, plainOf, type Inline, type Lang } from "./format";
 import { usePreferences } from "./preferences";
 import type { CalendarKind, ContentNode, Corpus, Edition, Localized, TextPart, TextSection, TextSource, TextSources } from "./types";
 
@@ -11,9 +12,8 @@ const loadSources = () => {
   sourcesPromise.catch(() => { sourcesPromise = undefined; });
   return sourcesPromise;
 };
-type Lang = "en" | "he";
 type Texts = Record<Lang, string[]>;
-type Paragraph = { text: string; rubric: boolean };
+type Paragraph = { nodes: Inline[]; rubric: boolean };
 type RenderedPart = { heading?: Localized; en: Paragraph[]; he: Paragraph[] };
 
 function Bi({ value }: { value: Localized }) {
@@ -59,36 +59,6 @@ function validateSection(data: unknown, section: TextSection, edition: Edition):
   return out as Texts;
 }
 
-const entities: Record<string, string> = { nbsp: " ", amp: "&", quot: "\"", apos: "'", lt: "<", gt: ">", thinsp: " " };
-function clean(raw: string, lang: Lang, rubric: boolean): string {
-  let text = raw
-    .replace(/<[^>]*>/g, " ")
-    .replace(/&(nbsp|amp|quot|apos|lt|gt|thinsp);/g, (_, name: string) => entities[name])
-    .replace(/\{[פס]\}/g, "")
-    .replace(/[◂▸▾▴°❖]/g, "");
-  if (lang === "he") {
-    // Koren's Hebrew on Sefaria carries a few English stage words.
-    text = text.replace(/\bQuietly:\s*/g, "בלחש: ").replace(/\s+then\s+/g, " ואחריו ");
-  }
-  if (lang === "en") {
-    text = text
-      .replace(/[<>]/g, "") // stray markup characters in Koren's English
-      .replace(/([a-z\]])\d{1,3}(?=[\s,.;:!?)]|$)/g, "$1"); // stray footnote numbers ("Blessed13")
-    // Koren prints the Hebrew opening words inside its translation ("Leader: יִתְגַּדַּל Magnified…");
-    // the Hebrew is already shown above, so the English keeps only the translation.
-    const withoutHebrew = text.replace(/[\u0590-\u05FF][\u0590-\u05FF\s״׳"'־]*(?=\s|$)/g, " ");
-    if (!rubric && /[A-Za-z]/.test(withoutHebrew)) text = withoutHebrew;
-  }
-  if (lang === "en") text = text.replace(/\b(Leader:)(?:\s*Leader:)+/g, "$1"); // "Leader:Leader:" in Koren's Kedushah
-  // Metsudah's English transliterates the Name in old Ashkenazi pronunciation; Mike prefers "LORD", as Koren prints it.
-  if (lang === "en") text = text.replace(/\bAdonoy\b/g, "LORD");
-  if (rubric) text = text // drop printed-page cross references, which mean nothing here
-    .replace(/\s*\(?\s*see laws? [\d–-]+\s*\)?\.?/gi, "")
-    .replace(/,?\s*\(?\s*(?:(?:found|see|turn to|is)\s+)?(?:on\s+)?(?:(?:the\s+)?(?:next|previous|following)\s+)?(?:pp?\.|pages?)(?:\s*[\d–-]+)?\s*\)?/gi, "")
-    .replace(/\s*\(\s*\)/g, "").replace(/\s+([.,;:])/g, "$1");
-  return text.replace(/\s+/g, " ").trim();
-}
-
 function renderSection(section: TextSection, texts: Texts, out: RenderedPart) {
   for (const item of section.items.split(",")) {
     const match = item.match(/^(\d+)(?:-(\d+))?(t|h|r|rh|re)$/);
@@ -97,9 +67,9 @@ function renderSection(section: TextSection, texts: Texts, out: RenderedPart) {
     const rubric = kind.startsWith("r");
     const langs: Lang[] = kind === "t" || kind === "r" ? ["en", "he"] : kind === "h" || kind === "rh" ? ["he"] : ["en"];
     for (const lang of langs) {
-      const pieces = texts[lang].slice(from - 1, to).map(segment => clean(segment, lang, rubric));
-      if (pieces.length !== to - from + 1 || pieces.some(piece => !piece)) throw new Error("Pinned Sefaria text is missing");
-      out[lang].push({ text: pieces.join(" "), rubric });
+      const pieces = texts[lang].slice(from - 1, to).map(segment => formatSegment(segment, lang, rubric));
+      if (pieces.length !== to - from + 1 || pieces.some(piece => !plainOf(piece).trim())) throw new Error("Pinned Sefaria text is missing");
+      out[lang].push({ nodes: pieces.flatMap((piece, i) => i ? [" ", ...piece] : piece), rubric });
     }
   }
 }
@@ -111,6 +81,11 @@ function loadPart(part: TextPart): Promise<RenderedPart> {
     if (!out.he.some(p => !p.rubric)) throw new Error("No prayer text");
     return out;
   });
+}
+
+/** An edition's own formatting, as React elements: line breaks, bold, italics, small, big, superscript. */
+function Formatted({ nodes }: { nodes: Inline[] }): ReactNode {
+  return nodes.map((node, i) => typeof node === "string" ? node : "br" in node ? <br key={i} /> : createElement(node.tag, { key: i }, <Formatted nodes={node.children} />));
 }
 
 /** The id of a part's anchor inside an open card; the card's breakdown links point here. */
@@ -142,8 +117,8 @@ function Credit({ source, fellBack }: { source: TextSource; fellBack: boolean })
 function PartText({ node, index, part, heading }: { node: ContentNode; index: number; part: RenderedPart; heading: boolean }) {
   return <div className="reader-section" id={partAnchor(node, index)} tabIndex={-1}>
     {heading && part.heading && <h3 className="reader-heading"><Bi value={part.heading} /></h3>}
-    <div className="reader-text reader-he" data-lang="he" lang="he" dir="rtl">{part.he.map((p, j) => <p key={j} className={p.rubric ? "rubric" : undefined}>{p.text}</p>)}</div>
-    {part.en.length > 0 && <div className="reader-text reader-en" data-lang="en" lang="en" dir="ltr">{part.en.map((p, j) => <p key={j} className={p.rubric ? "rubric" : undefined}>{p.text}</p>)}</div>}
+    <div className="reader-text reader-he" data-lang="he" lang="he" dir="rtl">{part.he.map((p, j) => <p key={j} className={p.rubric ? "rubric" : undefined}><Formatted nodes={p.nodes} /></p>)}</div>
+    {part.en.length > 0 && <div className="reader-text reader-en" data-lang="en" lang="en" dir="ltr">{part.en.map((p, j) => <p key={j} className={p.rubric ? "rubric" : undefined}><Formatted nodes={p.nodes} /></p>)}</div>}
   </div>;
 }
 

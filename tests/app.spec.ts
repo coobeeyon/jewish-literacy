@@ -788,3 +788,36 @@ test("Heicha Kedushah deep links work, and Back/Forward step through the pattern
   await expect(page).toHaveURL(/\/amidah\/heicha-kedushah$/);
   await expect(amidah.locator('.toc-toggle[data-section="ancestors-avot"]')).toBeFocused();
 });
+
+test("each edition's own formatting is kept: Koren's line breaks and small caps, safely, with the glitch fixes", async ({ page }) => {
+  const lines = Array.from({ length: 21 }, (_, i) => `שׁוּרָה ${i + 1}`);
+  await page.route("https://www.sefaria.org/api/v3/texts/**", route => {
+    const body = sefariaResponse(route.request().url())!;
+    const [he, en] = body.versions;
+    he.text[0] = "<b>אַשְׁרֵי</b> יוֹשְׁבֵי בֵיתֶֽךָ<br>אַשְׁרֵי הָעָם";
+    he.text[1] = ["תְּהִלָּה לְדָוִד", ...lines].join("<br>");
+    he.text[2] = "<i class=\"instruction\">Quietly:</i> בָּרוּךְ<script>bad()</script><br>";
+    en.text[0] = "<i class=\"instruction\" style=\"color:red\" onclick=\"alert(1)\">Leader:</i> <small><i class=\"instruction\">Leader:</i></small>אַשְׁרֵי Happy13 are those<br>whose God is the <small>LORD</small>. Adonoy <span data-x=\"1\">kept</span><sup class=\"footnote-marker\">1</sup><i class=\"footnote\">NOTE BODY</i>";
+    return route.fulfill({ contentType: "application/json", body: JSON.stringify(body) });
+  });
+  await page.goto("/weekday/mincha/ashrei");
+  const he = page.locator("#section-ashrei .reader-he>p"), en = page.locator("#section-ashrei .reader-en>p");
+  await expect(he).toHaveCount(3);
+  // One line per <br>: the opening line and the verses after it.
+  await expect(he.nth(1).locator("br")).toHaveCount(21);
+  expect((await he.nth(1).innerText()).split("\n").map(line => line.trim())).toEqual(["תְּהִלָּה לְדָוִד", ...lines]);
+  expect(await he.nth(0).evaluate(p => getComputedStyle(p).textAlign)).toBe("right");
+  expect(await he.nth(0).locator("b").evaluate(b => getComputedStyle(b).fontWeight)).toBe("700");
+  // Koren's small "LORD" renders small.
+  const small = en.nth(0).locator("small", { hasText: "LORD" });
+  await expect(small).toHaveCount(1);
+  const sizes = await small.evaluate(el => [parseFloat(getComputedStyle(el).fontSize), parseFloat(getComputedStyle(el.parentElement!).fontSize)]);
+  expect(sizes[0]).toBeLessThan(sizes[1]);
+  // No raw tags, attributes, scripts, footnotes or unknown elements reach the page.
+  const text = page.locator("#section-ashrei .reader-texts");
+  await expect(text.locator("script, span, sup, [style], [onclick], [class=instruction], [data-x]")).toHaveCount(0);
+  for (const p of await text.locator("p").all()) expect(await p.textContent()).not.toMatch(/[<>]|NOTE BODY|bad\(\)/);
+  // The glitch fixes still apply, on text inside the formatting.
+  expect(await en.nth(0).innerText()).toBe("Leader: Happy are those\nwhose God is the LORD. LORD kept");
+  await expect(he.nth(2)).toHaveText("בלחש: בָּרוּךְ");
+});

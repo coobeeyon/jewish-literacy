@@ -162,3 +162,7 @@ body[data-language=he] .stage{text-align:right}
 .members>.heicha-part.communal>.heicha-head{padding-left:40px}
 .members>.heicha-part.communal>.communal-mark{top:9px;left:9px;width:1.4rem;height:1.4rem}
 .heicha-part .card-toc{margin-bottom:4px}
+/* Each edition's own formatting: its line breaks, small caps (Koren's small "LORD"), bold and italics. */
+.reader-text small{font-size:.8em;letter-spacing:.02em}
+.reader-text big{font-size:1.12em}
+.reader-en{font-synthesis:none}
