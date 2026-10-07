@@ -681,3 +681,80 @@ test("Hebrew text is bold everywhere", async ({ page }) => {
   await page.getByRole("button", { name: "עברית" }).click();
   await check("Hebrew-only mode");
 });
+
+test("Hebrew body text is flush right; centered Hebrew titles stay centered", async ({ page }) => {
+  /** Visible block-level Hebrew inside body text, with its computed alignment. */
+  const bodyHebrew = () => page.evaluate(() => {
+    const containers = ".reader, .details, .landmark-details, .members>.card>button, .about-section, .about .lead, .not-found";
+    const out: Array<{ text: string; align: string }> = [];
+    for (const el of document.querySelectorAll<HTMLElement>("[data-lang=he], .reader-he p")) {
+      const style = getComputedStyle(el);
+      if (!el.checkVisibility() || style.display === "inline" || !el.closest(containers) || el.closest(".boundary")) continue;
+      out.push({ text: (el.textContent || "").trim().slice(0, 30), align: style.textAlign });
+    }
+    return out;
+  });
+  const check = async (where: string) => {
+    const found = await bodyHebrew();
+    expect(found.length, where).toBeGreaterThan(0);
+    expect(found.filter(f => f.align !== "right"), where).toEqual([]);
+  };
+  // Prayer text, whole and section by section.
+  await page.goto("/weekday/mincha/ashrei");
+  await expect(page.locator(".reader-he p").first()).toBeVisible();
+  for (const selector of [".reader-he", ".reader-he p"]) expect(await page.locator(selector).first().evaluate(el => getComputedStyle(el).textAlign), selector).toBe("right");
+  await check("a prayer of one section");
+  await page.goto("/weekday/shacharit/tachanun/falling-on-the-face");
+  await expect(page.locator("#text-tachanun-falling-on-the-face .reader-he p").first()).toBeVisible();
+  await expect(page.locator(".reader-credit")).toBeVisible();
+  expect(await page.locator("#text-tachanun-falling-on-the-face .reader-he p").first().evaluate(el => getComputedStyle(el).textAlign)).toBe("right");
+  await check("section text, breakdown and credit");
+  // Member prayer titles and summaries, and a seam's fine print.
+  await page.goto("/weekday/shacharit/closing");
+  await check("an open movement's prayers");
+  await page.goto("/weekday/shacharit/rabbis-kaddish");
+  await expect(page.locator("#section-rabbis-kaddish .reader-he p").first()).toBeVisible();
+  await check("an open Kaddish");
+  // Centered Hebrew stays centered: the header, the service title, seam labels, the footer.
+  for (const selector of ["header h1 [data-lang=he]", ".service-title [data-lang=he]", ".service-map>.seam .landmark-title [data-lang=he]", "main>footer [data-lang=he]"]) {
+    expect(await page.locator(selector).first().evaluate(el => getComputedStyle(el).textAlign), selector).toBe("center");
+  }
+  // Hebrew-only mode, on a map and on About.
+  await page.evaluate(() => localStorage.setItem("weekday-shacharit-language", "he"));
+  await page.goto("/shabbat/musaf/chazzans-musaf-repetition");
+  await openAllGroups(page.locator("#section-chazzans-musaf-repetition"));
+  await check("Hebrew-only mode, an open Shmoneh Esrei");
+  await page.goto("/about");
+  await check("About in Hebrew");
+  expect(await page.locator(".about-section p [data-lang=he]").first().evaluate(el => getComputedStyle(el).textAlign)).toBe("right");
+});
+
+test("Sefard English shows the Name as LORD, and the credit says so", async ({ page }) => {
+  const transliteration = /Adonoy/;
+  // Metsudah's English transliterates the Name; put it where Sefaria has it, inside the English text.
+  await mockSefaria(page, {
+    handle: async route => {
+      const url = route.request().url();
+      const body = url.includes("/api/v3/texts/") ? sefariaResponse(url) : undefined;
+      if (!body) return false;
+      const english = body.versions.find(v => v.language === "en")!;
+      if (english.versionTitle.toLowerCase().includes("metsudah")) english.text = english.text.map(t => `Blessed are You, Adonoy, our God. Adonoy’s kindness. ${t}`);
+      await route.fulfill({ contentType: "application/json", body: JSON.stringify(body) });
+      return true;
+    },
+  });
+  await page.addInitScript(() => localStorage.setItem("weekday-shacharit-nusach", "sefard"));
+  for (const path of ["/weekday/mincha/ashrei", "/weekday/shacharit/tachanun/falling-on-the-face", "/shabbat/maariv/barkhu-call-to-prayer"]) {
+    await page.goto(path);
+    const english = page.locator(".reader-en").first();
+    await expect(english).toContainText("Blessed are You, LORD, our God. LORD’s kindness.");
+    for (const text of await page.locator(".reader-en").allTextContents()) expect(text, path).not.toMatch(transliteration);
+    await expect(page.locator(".reader-credit [data-lang=en]")).toContainText("The English shows the Name as “LORD”.");
+    await expect(page.locator(".reader-credit [data-lang=he]")).toContainText("באנגלית השם מוצג כ־LORD.");
+  }
+  // Koren prints LORD itself: its credit has no note.
+  await openSettings(page);
+  await page.getByRole("button", { name: /Nusach Ashkenaz/ }).click();
+  await expect(page.locator(".reader-credit [data-lang=en]")).toContainText("Koren");
+  await expect(page.locator(".reader-credit [data-lang=en]")).not.toContainText("LORD");
+});

@@ -153,3 +153,8 @@ html[data-language=en] [data-language-choice=en],html[data-language=he] [data-la
 /* Open content that differs by nusach arrives in both versions; the saved nusach's shows. */
 .nusach-variant{display:contents}
 html[data-nusach=sefard] [data-nusach-only=ashkenaz],html:not([data-nusach=sefard]) [data-nusach-only=sefard]{display:none}
+/* Hebrew body text is flush right everywhere, set explicitly rather than left to `start` with dir=rtl:
+   prayer and section text, credits and notes, card titles and summaries, breakdowns, About, not found.
+   Centered Hebrew (the header, service and seam titles, boundaries, footers) stays centered. */
+.reader [data-lang=he],.details [data-lang=he],.landmark-details [data-lang=he],.members>.card>button [data-lang=he],.about-section [data-lang=he],.about .lead [data-lang=he],.not-found [data-lang=he]{text-align:right}
+.details .boundary [data-lang=he]{text-align:center}
