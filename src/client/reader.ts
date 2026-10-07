@@ -183,7 +183,7 @@ export function showCalendar(el: HTMLElement) {
     const intro = calendarIntro[kind];
     const haftarah = kind === "shabbat" && reading.haftarah;
     el.replaceChildren(
-      h("p", { "data-lang": "en", lang: "en" }, intro.en, " ", h("a", { href: reading.url }, reading.name.en), ` (${reading.ref})`, haftarah && [". Haftarah: ", h("a", { href: haftarah.url }, haftarah.ref)], "."),
+      h("p", { "data-lang": "en", lang: "en" }, intro.en, " ", h("a", { href: reading.url }, reading.name.en), " (", reading.ref, ")", haftarah && [". Haftarah: ", h("a", { href: haftarah.url }, haftarah.ref)], "."),
       h("p", { class: "he", "data-lang": "he", lang: "he", dir: "rtl" }, intro.he, " ", h("a", { href: reading.url }, reading.name.he), haftarah && [". הפטרה: ", h("a", { href: haftarah.url, dir: "ltr" }, haftarah.ref)], "."),
     );
   }).catch(() => {

@@ -18,6 +18,8 @@ type Navigation = "initial" | "push" | "replace" | "pop";
 
 export function initMap(main: HTMLElement) {
   const base = `/${main.dataset.day}/${main.dataset.service}`;
+  /** Ends the initial deep link's hold on its target (see holdInView). */
+  let stopHolding: (() => void) | undefined;
   /** Groups opened or closed by hand, per open prayer; forgotten when the prayer closes. */
   const groups = new Map<string, Record<string, boolean>>();
   /** The nusach each reader element was last filled for. */
@@ -153,9 +155,43 @@ export function initMap(main: HTMLElement) {
     // could land after the reader's next tap or key and take focus from it.
     if (navigation !== "pop" || initial) scrollTo?.scrollIntoView({ block, behavior: initial || reduce ? "auto" : "smooth" });
     focus?.focus({ preventScroll: true });
+    if (navigation === "initial" && scrollTo) holdInView(scrollTo, block);
+  }
+
+  /**
+   * A deep link's target near the end of the page cannot scroll fully into place until the text
+   * below it arrives. Keep it in place as the page grows, until the reader scrolls, taps, types or
+   * navigates (or ten seconds pass).
+   */
+  function holdInView(target: HTMLElement, block: ScrollLogicalPosition) {
+    let expected: number | undefined, height = document.documentElement.scrollHeight;
+    const hold = () => {
+      // The scroll just made (perhaps a smooth one, still running) stands until the page changes size.
+      if (document.documentElement.scrollHeight === height) return;
+      height = document.documentElement.scrollHeight;
+      if (!target.isConnected) return stop();
+      target.scrollIntoView({ block, behavior: "instant" });
+      expected = scrollY;
+    };
+    const observer = new ResizeObserver(hold);
+    const onScroll = () => { if (expected !== undefined && Math.abs(scrollY - expected) > 1) stop(); };
+    const interactions = ["wheel", "touchstart", "pointerdown", "keydown", "popstate"];
+    const timer = setTimeout(() => stop(), 10000);
+    function stop() {
+      observer.disconnect();
+      clearTimeout(timer);
+      removeEventListener("scroll", onScroll);
+      for (const type of interactions) removeEventListener(type, stop, true);
+      stopHolding = undefined;
+    }
+    stopHolding = stop;
+    observer.observe(main);
+    addEventListener("scroll", onScroll, { passive: true });
+    for (const type of interactions) addEventListener(type, stop, { capture: true, passive: true });
   }
 
   function navigate(url: string, state: NavState, replace = false) {
+    stopHolding?.();
     history[replace ? "replaceState" : "pushState"](state, "", url);
     sync();
     settle(replace ? "replace" : "push");

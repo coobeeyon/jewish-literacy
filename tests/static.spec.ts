@@ -189,3 +189,14 @@ test("a cold load runs well under 30 KB of compressed script, and opening a pray
   await expect(page.locator("#section-pesukei-dzimra .reader-section")).toHaveCount(1);
   expect(scripts).toEqual([]);
 });
+
+test("a deep link near the end of the page still lands on its target once the text arrives", async ({ page }) => {
+  for (const [path, selector] of [["/weekday/maariv/mourners-kaddish", "#section-mourners-kaddish"], ["/shabbat/musaf/rabbis-kaddish", "#movement-closing"]] as const) {
+    await page.goto(path);
+    await expect(page.locator(`${selector} .reader-he p`).first()).toBeVisible();
+    await expect.poll(() => page.locator(selector).evaluate(el => Math.abs(el.getBoundingClientRect().top))).toBeLessThan(1);
+  }
+  // Once the reader scrolls, the page stays where they put it.
+  await page.mouse.wheel(0, -300);
+  await expect.poll(() => page.locator("#movement-closing").evaluate(el => Math.round(el.getBoundingClientRect().top))).toBeGreaterThan(100);
+});
