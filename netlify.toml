@@ -65,3 +65,8 @@ Cache-Control = "public, max-age=0, must-revalidate"
 for = "/about"
 [headers.values]
 Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+for = "/manifest.webmanifest"
+[headers.values]
+Content-Type = "application/manifest+json"
