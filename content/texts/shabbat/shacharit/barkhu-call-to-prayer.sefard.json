@@ -1,0 +1,20 @@
+{
+ "id": "shabbat/shacharit/barkhu-call-to-prayer:sefard",
+ "refs": {
+  "Shabbat Siddur Sefard Linear, The Morning Prayers, Yishtabach": {
+   "edition": "metsudah-sefard-shabbat",
+   "he": {
+    "81": "<b>בָּרְ֒כוּ אֶת יְהֹוָה הַמְּ֒בֹרָךְ:</b>",
+    "83": "<b>בָּרוּךְ יְהֹוָה הַמְּ֒בֹרָךְ</b>",
+    "84": "<b>לְעוֹלָם וָעֶד:</b>"
+   },
+   "en": {
+    "80": "<small>The Chazzan<i> says:</i></small>",
+    "81": "Bless Adonoy Who is blessed.",
+    "82": "<small>The Congregation responds and the Chazzan<i> repeats:</i></small>",
+    "83": "Blessed is Adonoy, Who is blessed",
+    "84": "forever and ever."
+   }
+  }
+ }
+}

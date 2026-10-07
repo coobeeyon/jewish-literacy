@@ -1,0 +1,55 @@
+{
+ "id": "weekday/mincha/half-kaddish:sefard",
+ "refs": {
+  "Weekday Siddur Sefard Linear, Mincha, Ashrei": {
+   "edition": "metsudah-sefard-weekday",
+   "he": {
+    "59": "יִתְגַּדַּל  וְיִתְקַדַּשׁ שְׁמֵהּ רַבָּא",
+    "60": "בְּעָלְ֒מָא דִּי בְרָא",
+    "61": "כִרְעוּתֵהּ",
+    "62": "וְיַמְלִיךְ מַלְכוּתֵהּ",
+    "63": "וְיַצְמַח פּוּרְקָנֵהּ",
+    "64": "וִיקָרֵב (קֵץ) מְשִׁיחֵהּ.",
+    "65": "בְּחַיֵּיכוֹן וּבְיוֹמֵיכוֹן",
+    "66": "וּבְחַיֵּי",
+    "67": " דְכָל בֵּית יִשְׂרָאֵל,",
+    "68": "בַּעֲגָלָא וּבִזְמַן קָרִיב",
+    "69": "וְאִמְרוּ אָמֵן:",
+    "70": "<b>יְהֵא שְׁמֵהּ רַבָּא מְבָרַךְ</b>",
+    "71": "<b>לְעָלַם וּלְעָלְ֒מֵי עָלְ֒מַיָּא</b>:",
+    "72": "יִתְבָּרַךְ וְיִשְׁתַּבַּח",
+    "73": "וְיִתְפָּאַר וְיִתְרוֹמַם וְיִתְנַשֵּׂא",
+    "74": "וְיִתְהַדָּר וְיִתְעַלֶּה וְיִתְהַלָּל",
+    "75": " שְׁמֵהּ דְקוּדְשָׁא, בְּרִיךְ הוּא",
+    "76": "  לְעֵֽלָּא (<small>בעשי\"ת</small> וּלְעֵֽלָּא מִכָּל)",
+    "77": " מִן כָּל בִּרְכָתָא וְשִׁירָתָא,",
+    "78": " תֻּשְׁבְּחָתָא וְנֶחֱמָתָא,",
+    "79": " דַּאֲמִירָן בְּעָלְ֒מָא, וְאִמְרוּ אָמֵן:"
+   },
+   "en": {
+    "58": "<small>The Chazzan recites the following half-Kaddish</small>",
+    "59": "Exalted and sanctified be His great Name",
+    "60": "in the world which He created",
+    "61": "according to His will",
+    "62": "and may He rule His kingdom",
+    "63": "bring forth His redemption",
+    "64": "and hasten the coming of His Mashiach.",
+    "65": "In your lifetime and in your days,",
+    "66": "and in the lifetime",
+    "67": "of the entire House of Israel,",
+    "68": "speedily and in the near future—",
+    "69": "and say Amein.",
+    "70": "May His great Name be blessed",
+    "71": "forever and for all eternity.",
+    "72": "Blessed and praised,",
+    "73": "glorified, and exalted and uplifted,",
+    "74": "honored and elevated and extolled",
+    "75": "be the Name of the Holy One, blessed is He;",
+    "76": "above (<i>Ten Days of Penitence:</i> far above)",
+    "77": "all the blessings and hymns,",
+    "78": "praises and consolations",
+    "79": "which we utter in the world—and say Amein."
+   }
+  }
+ }
+}

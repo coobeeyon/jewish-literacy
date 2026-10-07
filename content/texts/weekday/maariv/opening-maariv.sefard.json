@@ -1,0 +1,24 @@
+{
+ "id": "weekday/maariv/opening-maariv:sefard",
+ "refs": {
+  "Weekday Siddur Sefard Linear, Maariv, Berachos Preceding Shema": {
+   "edition": "metsudah-sefard-weekday",
+   "he": {
+    "5": "וְהוּא רַחוּם",
+    "6": "יְכַפֵּר עָוֹן וְלֹא־יַשְׁחִית",
+    "7": "וְהִרְבָּה לְהָשִׁיב אַפּוֹ",
+    "8": "וְלֹא־יָעִיר כָּל־חֲמָתוֹ:",
+    "9": "יְהֹוָה הוֹשִׁיעָה",
+    "10": "הַמֶּֽלֶךְ יַעֲנֵֽנוּ בְיוֹם־קָרְאֵֽנוּ:"
+   },
+   "en": {
+    "5": "And He, the Merciful One,",
+    "6": "atones iniquity; and does not destroy.",
+    "7": "He frequently withdraws His anger",
+    "8": "and does not arouse all His rage.",
+    "9": "Adonoy, deliver [us!]",
+    "10": "The King will answer us on the day we call."
+   }
+  }
+ }
+}

@@ -1,0 +1,54 @@
+{
+ "id": "shabbat/shacharit/half-kaddish:sefard",
+ "refs": {
+  "Shabbat Siddur Sefard Linear, The Morning Prayers, Yishtabach": {
+   "edition": "metsudah-sefard-shabbat",
+   "he": {
+    "57": "יִתְגַּדַּל וְיִתְקַדַּשׁ שְׁמֵהּ רַבָּא",
+    "58": "בְּעָלְ֒מָא דִּי בְרָא",
+    "59": "כִרְ֒עוּתֵהּ",
+    "60": "וְיַמְלִיךְ מַלְ֒כוּתֵהּ",
+    "61": "וְיַצְמַח פּוּרְקָנֵהּ",
+    "62": "וִיקָרֵב (קֵץ) מְשִׁיחֵהּ",
+    "63": "בְּחַיֵּיכוֹן וּבְ֒יוֹמֵיכוֹן",
+    "64": "וּבְ֒חַיֵּי",
+    "65": "דְכָל בֵּית יִשְׂרָאֵל,",
+    "66": "בַּעֲגָלָא וּבִזְ֒מַן קָרִיב",
+    "67": "וְאִמְ֒רוּ אָמֵן:",
+    "68": "יְהֵא שְׁמֵהּ רַבָּא מְבָרַךְ",
+    "69": "לְעָלַם וּלְ֒עָלְ֒מֵי עָלְ֒מַיָּא:",
+    "70": "יִתְבָּרַךְ וְיִשְׁתַּבַּח",
+    "71": "וְיִתְפָּאַר וְיִתְרוֹמַם וְיִתְנַשֵּׂא",
+    "72": "וְיִתְהַדָּר וְיִתְעַלֶּה וְיִתְהַלָּל",
+    "73": "שְׁמֵהּ דְקוּדְשָׁא, בְּרִיךְ הוּא",
+    "74": "לְעֵֽלָּא (<small>בעשי\"ת</small> וּלְ֒עֵֽלָּא מִכָּל)",
+    "75": "מִן כָּל בִּרְ֒כָתָא וְשִׁירָתָא,",
+    "76": "תֻּשְׁבְּחָתָא וְנֶחֱמָתָא,",
+    "77": "דַּאֲמִירָן בְּעָלְ֒מָא, וְאִמְ֒רוּ אָמֵן:"
+   },
+   "en": {
+    "57": "Exalted and sanctified be His great Name",
+    "58": "in the world which He created",
+    "59": "according to His will",
+    "60": "and may He rule His kingdom",
+    "61": "bring forth His redemption",
+    "62": "and hasten the coming of His Mashiach",
+    "63": "in your lifetime and in your days,",
+    "64": "and in the lifetime",
+    "65": "of the entire House of Israel,",
+    "66": "speedily and in the near future—",
+    "67": "and say Amein.",
+    "68": "May His great Name be blessed",
+    "69": "forever and for all eternity.",
+    "70": "Blessed and praised,",
+    "71": "glorified, and exalted and uplifted,",
+    "72": "honored and elevated and extolled",
+    "73": "be the Name of the Holy One, blessed is He;",
+    "74": "above (<i>Ten Days of Penitence:</i> far above)",
+    "75": "all the blessings and hymns,",
+    "76": "praises and consolations",
+    "77": "which we utter in the world—and say Amein."
+   }
+  }
+ }
+}

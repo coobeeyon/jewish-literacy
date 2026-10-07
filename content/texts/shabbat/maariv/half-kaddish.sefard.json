@@ -1,0 +1,55 @@
+{
+ "id": "shabbat/maariv/half-kaddish:sefard",
+ "refs": {
+  "Shabbat Siddur Sefard Linear, Maariv Service for Shabbos and Yom Tov, Borechu": {
+   "edition": "metsudah-sefard-shabbat",
+   "he": {
+    "259": "יִתְגַּדַּל וְיִתְקַדַּשׁ שְׁמֵהּ רַבָּא",
+    "260": "בְּעָלְ֒מָא דִּי בְרָא",
+    "261": "כִרְ֒עוּתֵהּ",
+    "262": "וְיַמְלִיךְ מַלְ֒כוּתֵהּ",
+    "263": "וְיַצְמַח פּוּרְקָנֵהּ",
+    "264": "וִיקָרֵב (קֵץ) מְשִׁיחֵהּ.",
+    "265": "בְּחַיֵּיכוֹן וּבְ֒יוֹמֵיכוֹן",
+    "266": "וּבְ֒חַיֵּי",
+    "267": "דְכָל בֵּית יִשְׂרָאֵל,",
+    "268": "בַּעֲגָלָא וּבִזְ֒מַן קָרִיב",
+    "269": "וְאִמְ֒רוּ אָמֵן",
+    "270": "יְהֵא שְׁמֵהּ רַבָּא מְבָרַךְ",
+    "271": "לְעָלַם וּלְ֒עָלְ֒מֵי עָלְ֒מַיָּא",
+    "272": "יִתְבָּרַךְ וְיִשְׁתַּבַּח",
+    "273": "וְיִתְפָּאַר וְיִתְרוֹמַם וְיִתְנַשֵּׂא",
+    "274": "וְיִתְהַדָּר וְיִתְעַלֶּה וְיִתְהַלָּל",
+    "275": "שְׁמֵהּ דְקוּדְשָׁא, בְּרִיךְ הוּא",
+    "276": "לְעֵֽלָּא (<small>בעשי\"ת</small> וּלְעֵֽלָּא מִכָּל)",
+    "277": "מִן כָּל בִּרְ֒כָתָא וְשִׁירָתָא,",
+    "278": "תֻּשְׁבְּחָתָא וְנֶחֱמָתָא,",
+    "279": "דַּאֲמִירָן בְּעָלְ֒מָא, וְאִמְ֒רוּ אָמֵן:"
+   },
+   "en": {
+    "258": "<small>The Chazzan recites the following half-Kaddish</small>",
+    "259": "Exalted and sanctified be His great Name",
+    "260": "in the world which He created",
+    "261": "according to His will",
+    "262": "and may He rule His kingdom",
+    "263": "bring forth His redemption",
+    "264": "and hasten the coming of His Mashiach.",
+    "265": "In your lifetime and in your days,",
+    "266": "and in the lifetime",
+    "267": "of the entire House of Israel,",
+    "268": "speedily and in the near future—",
+    "269": "and say Amein.",
+    "270": "May His great Name be blessed",
+    "271": "forever and for all eternity.",
+    "272": "Blessed and praised,",
+    "273": "glorified, and exalted and uplifted,",
+    "274": "honored and elevated and extolled",
+    "275": "be the Name of the Holy One, blessed is He;",
+    "276": "above (<i>Ten Days of Penitence:</i> far above)",
+    "277": "all the blessings and hymns,",
+    "278": "praises and consolations",
+    "279": "which we utter in the world—and say Amein."
+   }
+  }
+ }
+}

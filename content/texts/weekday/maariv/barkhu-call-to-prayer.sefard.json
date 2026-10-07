@@ -1,0 +1,20 @@
+{
+ "id": "weekday/maariv/barkhu-call-to-prayer:sefard",
+ "refs": {
+  "Weekday Siddur Sefard Linear, Maariv, Berachos Preceding Shema": {
+   "edition": "metsudah-sefard-weekday",
+   "he": {
+    "12": "בָּרְ֒כוּ  אֶת יְהֹוָה הַמְ֒בֹרָךְ:",
+    "14": "בָּרוּךְ  יְהֹוָה הַמְ֒בֹרָךְ",
+    "15": "לְעוֹלָם וָעֶד:"
+   },
+   "en": {
+    "11": "<small>The <i>Chazzan</i> says:</small>",
+    "12": "Bless Adonoy Who is blessed.",
+    "13": "<small>The congregation responds and the Chazzan repeats:</small>",
+    "14": "Blessed is Adonoy, Who is blessed",
+    "15": "forever and ever."
+   }
+  }
+ }
+}

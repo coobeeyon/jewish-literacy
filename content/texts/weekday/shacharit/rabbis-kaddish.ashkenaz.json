@@ -1,0 +1,26 @@
+{
+ "id": "weekday/shacharit/rabbis-kaddish:ashkenaz",
+ "refs": {
+  "The Koren Shalem Siddur; Ashkenaz, Weekdays, The Rabbis' Kaddish": {
+   "edition": "koren-ashkenaz",
+   "he": {
+    "2": "<i>אבל:</i> יִתְגַּדַּל וְיִתְקַדַּשׁ שְׁמֵהּ רַבָּא (<i>קהל:</i> אָמֵן)<br>בְּעָלְמָא דִּי בְרָא כִרְעוּתֵהּ<br>וְיַמְלִיךְ מַלְכוּתֵהּ<br>בְּחַיֵּיכוֹן וּבְיוֹמֵיכוֹן<br>וּבְחַיֵּי דְּכָל בֵּית יִשְׂרָאֵל<br>בַּעֲגָלָא וּבִזְמַן קָרִיב<br>וְאִמְרוּ אָמֵן. (<i>קהל:</i> אָמֵן)",
+    "3": "<i>קהל ואבל:</i> יְהֵא שְׁמֵהּ רַבָּא מְבָרַךְ לְעָלַם וּלְעָלְמֵי עָלְמַיָּא.",
+    "4": "<i>אבל:</i> יִתְבָּרַךְ וְיִשְׁתַּבַּח וְיִתְפָּאַר<br>וְיִתְרוֹמַם וְיִתְנַשֵּׂא וְיִתְהַדָּר וְיִתְעַלֶּה וְיִתְהַלָּל<br>שְׁמֵהּ דְּקֻדְשָׁא בְּרִיךְ הוּא (<i>קהל:</i> בְּרִיךְ הוּא)<br>לְעֵֽלָּא מִן כָּל בִּרְכָתָא<br> /<i>בעשרת ימי תשובה:</i> לְעֵֽלָּא לְעֵֽלָּא מִכָּל בִּרְכָתָא/<br>וְשִׁירָתָא, תֻּשְׁבְּחָתָא וְנֶחֱמָתָא<br>דַּאֲמִירָן בְּעָלְמָא, וְאִמְרוּ אָמֵן. (<i>קהל:</i> אָמֵן)",
+    "5": "עַל יִשְׂרָאֵל וְעַל רַבָּנָן, וְעַל תַּלְמִידֵיהוֹן וְעַל כָּל תַּלְמִידֵי תַלְמִידֵיהוֹן<br>וְעַל כָּל מָאן דְּעָסְקִין בְּאוֹרַיְתָא<br>דִּי בְּאַתְרָא (<i>בארץ ישראל:</i> קַדִּישָׁא) הָדֵין וְדִי בְּכָל אֲתַר וַאֲתַר<br>יְהֵא לְהוֹן וּלְכוֹן שְׁלָמָא רַבָּא, חִנָּא וְחִסְדָּא, וְרַחֲמֵי, וְחַיֵּי אֲרִיכֵי, וּמְזוֹנֵי רְוִיחֵי<br>וּפֻרְקָנָא מִן קֳדָם אֲבוּהוֹן דִּי בִשְׁמַיָּא, וְאִמְרוּ אָמֵן. (<i>קהל:</i> אָמֵן)",
+    "6": "יְהֵא שְׁלָמָא רַבָּא מִן שְׁמַיָּא<br>וְחַיִּים (טוֹבִים) עָלֵֽינוּ וְעַל כָּל יִשְׂרָאֵל, וְאִמְרוּ אָמֵן. (<i>קהל:</i> אָמֵן)",
+    "8": "עֹשֶׂה שָׁלוֹם/ <i>בעשרת ימי תשובה:</i> הַשָּׁלוֹם/ בִּמְרוֹמָיו<br>הוּא יַעֲשֶׂה שָׁלוֹם עָלֵֽינוּ וְעַל כָּל יִשְׂרָאֵל, וְאִמְרוּ (<i>קהל:</i> אָמֵן)."
+   },
+   "en": {
+    "1": "<i>The following prayer, said by mourners, requires the presence of a minyan. A transliteration can be found on page 1333.</i>",
+    "2": "<i>Mourner:</i> יִתְגַּדַּל Magnified and sanctified may His great name be,<br>in the world He created by His will.<br>May He establish His kingdom<br>in your lifetime<br>and in your days,<br>and in the lifetime<br>of all the house of Israel,<br>swiftly and soon – and say: Amen.",
+    "3": "<i>All:</i> May His great name be blessed for ever and all time.",
+    "4": "<i>Mourner:</i> Blessed and praised, glorified and exalted,<br>raised and honored, uplifted and lauded<br>be the name of the Holy One,<br>blessed be He,<br>beyond any blessing,<br>song, praise and consolation<br>uttered in the world –<br>and say: Amen.",
+    "5": "To Israel, to the teachers,<br>their disciples and their disciples’ disciples,<br>and to all who engage in the study of Torah,<br>in this (<i>in Israel add:</i> holy) place or elsewhere,<br>may there come to them and you great peace,<br>grace, kindness and compassion, long life, ample sustenance<br>and deliverance, from their Father in Heaven – and say: Amen.",
+    "6": "May there be great peace from heaven,<br>and (good) life for us and all Israel – and say: Amen.",
+    "7": "<i>Bow, take three steps back, as if taking leave of the Divine Presence, then bow, first left, then right, then center, while saying:</i>",
+    "8": "May He who makes peace in His high places,<br>in His compassion make peace for us and all Israel –<br>and say: Amen."
+   }
+  }
+ }
+}

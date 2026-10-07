@@ -1,0 +1,54 @@
+{
+ "id": "weekday/shacharit/half-kaddish:sefard",
+ "refs": {
+  "Weekday Siddur Sefard Linear, The Morning Prayers, Yishtabach": {
+   "edition": "metsudah-sefard-weekday",
+   "he": {
+    "56": "<b>יִתְגַּדַּל</b> וְיִתְקַדַּשׁ שְׁמֵהּ רַבָּא",
+    "57": "בְּעָלְ֒מָא דִּי בְרָא",
+    "58": "כִרְעוּתֵהּ",
+    "59": "וְיַמְלִיךְ מַלְכוּתֵהּ",
+    "60": "וְיַצְמַח פּוּרְקָנֵהּ",
+    "61": "וִיקָרֵב (קֵץ) מְשִׁיחֵהּ",
+    "62": "בְּחַיֵּיכוֹן וּבְיוֹמֵיכוֹן",
+    "63": "וּבְחַיֵּי",
+    "64": "דְכָל בֵּית יִשְׂרָאֵל,",
+    "65": "בַּעֲגָלָא וּבִזְמַן קָרִיב",
+    "66": "וְאִמְרוּ אָמֵן:",
+    "67": "<b>יְהֵא שְׁמֵהּ רַבָּא מְבָרַךְ</b>",
+    "68": "<b>לְעָלַם וּלְעָלְ֒מֵי עָלְ֒מַיָּא</b>:",
+    "69": "יִתְבָּרַךְ וְיִשְׁתַּבַּח",
+    "70": "וְיִתְפָּאַר וְיִתְרוֹמַם וְיִתְנַשֵּׂא",
+    "71": "וְיִתְהַדָּר וְיִתְעַלֶּה וְיִתְהַלָּל",
+    "72": "שְׁמֵהּ דְקוּדְשָׁא, בְּרִיךְ הוּא ",
+    "73": "לְעֵֽלָּא (<small>בעשי\"ת</small> וּלְ֒עֵֽלָּא מִכָּל) ",
+    "74": "מִן כָּל בִּרְכָתָא וְשִׁירָתָא,",
+    "75": "תֻּשְׁבְּחָתָא וְנֶחֱמָתָא,",
+    "76": "דַּאֲמִירָן בְּעָלְ֒מָא, וְאִמְרוּ אָמֵן,"
+   },
+   "en": {
+    "56": "Exalted and sanctified be His great Name",
+    "57": "in the world which He created",
+    "58": "according to His will",
+    "59": "and may He rule His kingdom",
+    "60": "bring forth His redemption",
+    "61": "and hasten the coming if His Messiah",
+    "62": "in your lifetime and in your days,",
+    "63": "and in the lifetime",
+    "64": "of the entire House of Israel,",
+    "65": "speedily and in the near future—",
+    "66": "and say Amein.",
+    "67": "May His great Name be blessed",
+    "68": "forever and for all eternity.",
+    "69": "Blessed and praised,",
+    "70": "glorified, and exalted and uplifted,",
+    "71": "honored and elevated and extolled",
+    "72": "be the Name of the Holy One, blessed is He;",
+    "73": "above (<i>Ten Days of Penitence:</i> far above)",
+    "74": "all the blessings and hymns,",
+    "75": "praises and consolations",
+    "76": "which we utter in the world—and say Amein."
+   }
+  }
+ }
+}

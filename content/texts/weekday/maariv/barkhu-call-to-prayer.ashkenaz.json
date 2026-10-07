@@ -1,0 +1,18 @@
+{
+ "id": "weekday/maariv/barkhu-call-to-prayer:ashkenaz",
+ "refs": {
+  "The Koren Shalem Siddur; Ashkenaz, Weekdays, Ma'ariv for Weekdays": {
+   "edition": "koren-ashkenaz",
+   "he": {
+    "5": "<i>ש\"ץ:</i> <b>בָּרְכוּ</b> אֶת יהוה הַמְבֹרָךְ.",
+    "6": "<i>קהל:</i> בָּרוּךְ יהוה הַמְבֹרָךְ לְעוֹלָם וָעֶד.",
+    "7": "<i>ש\"ץ:</i> בָּרוּךְ יהוה הַמְבֹרָךְ לְעוֹלָם וָעֶד."
+   },
+   "en": {
+    "5": "<i>Leader:</i> <small>BLESS</small> the <small>LORD</small>, the blessed One.",
+    "6": "<i>Congregation:</i> Bless the <small>LORD</small>, the blessed One, for ever and all time.",
+    "7": "<i>Leader:</i> Bless the <small>LORD</small>, the blessed One, for ever and all time."
+   }
+  }
+ }
+}

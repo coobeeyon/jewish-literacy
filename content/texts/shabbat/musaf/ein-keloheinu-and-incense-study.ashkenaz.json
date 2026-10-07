@@ -1,0 +1,40 @@
+{
+ "id": "shabbat/musaf/ein-keloheinu-and-incense-study:ashkenaz",
+ "refs": {
+  "The Koren Shalem Siddur; Ashkenaz, Shabbat, Musaf for Shabbat": {
+   "edition": "koren-ashkenaz",
+   "he": {
+    "100": "אֵין כֵּאלֹהֵֽינוּ, אֵין כַּאדוֹנֵֽינוּ, אֵין כְּמַלְכֵּֽנוּ, אֵין כְּמוֹשִׁיעֵֽנוּ.<br>מִי כֵאלֹהֵֽינוּ, מִי כַאדוֹנֵֽינוּ, מִי כְמַלְכֵּֽנוּ, מִי כְמוֹשִׁיעֵֽנוּ.<br>נוֹדֶה לֵאלֹהֵֽינוּ, נוֹדֶה לַאדוֹנֵֽינוּ, נוֹדֶה לְמַלְכֵּֽנוּ, נוֹדֶה לְמוֹשִׁיעֵֽנוּ.<br>בָּרוּךְ אֱלֹהֵֽינוּ, בָּרוּךְ אֲדוֹנֵֽינוּ, בָּרוּךְ מַלְכֵּֽנוּ, בָּרוּךְ מוֹשִׁיעֵֽנוּ.<br>אַתָּה הוּא אֱלֹהֵֽינוּ, אַתָּה הוּא אֲדוֹנֵֽינוּ,<br>אַתָּה הוּא מַלְכֵּֽנוּ, אַתָּה הוּא מוֹשִׁיעֵֽנוּ.",
+    "101": "אַתָּה הוּא שֶׁהִקְטִֽירוּ אֲבוֹתֵֽינוּ לְפָנֶֽיךָ אֶת קְטֹֽרֶת הַסַּמִּים.",
+    "102": "פִּטּוּם הַקְּטֹֽרֶת. הַצֳּרִי, וְהַצִּפֹּֽרֶן, וְהַחֶלְבְּנָה, וְהַלְּבוֹנָה מִשְׁקַל שִׁבְעִים שִׁבְעִים מָנֶה, מֹר, וּקְצִיעָה, שִׁבֹּֽלֶת נֵרְדְּ, וְכַרְכֹּם מִשְׁקַל שִׁשָּׁה עָשָׂר שִׁשָּׁה עָשָׂר מָנֶה, הַקֹּשְׁטְ שְׁנֵים עָשָׂר, קִלּוּפָה שְׁלֹשָׁה, וְקִנָּמוֹן תִּשְׁעָה, בֹּרִית כַּרְשִׁינָה תִּשְׁעָה קַבִּין, יֵין קַפְרִיסִין סְאִין תְּלָת וְקַבִּין תְּלָתָא, וְאִם אֵין לוֹ יֵין קַפְרִיסִין, מֵבִיא חֲמַר חִוַּרְיָן עַתִּיק. מֶֽלַח סְדוֹמִית רֹֽבַע, מַעֲלֶה עָשָׁן כָּל שֶׁהוּא. רַבִּי נָתָן הַבַּבְלִי אוֹמֵר: אַף כִּפַּת הַיַּרְדֵּן כָּל שֶׁהוּא, וְאִם נָתַן בָּהּ דְּבַשׁ פְּסָלָהּ, וְאִם חִסַּר אֶחָד מִכָּל סַמָּנֶֽיהָ, חַיָּב מִיתָה.",
+    "103": "רַבָּן שִׁמְעוֹן בֶּן גַּמְלִיאֵל אוֹמֵר: הַצֳּרִי אֵינוֹ אֶלָּא שְׂרָף הַנּוֹטֵף מֵעֲצֵי הַקְּטָף. בֹּרִית כַּרְשִׁינָה שֶׁשָּׁפִין בָּהּ אֶת הַצִּפֹּֽרֶן כְּדֵי שֶׁתְּהֵא נָאָה, יֵין קַפְרִיסִין שֶׁשּׁוֹרִין בּוֹ אֶת הַצִּפֹּֽרֶן כְּדֵי שֶׁתְּהֵא עַזָּה, וַהֲלֹא מֵי רַגְלַֽיִם יָפִין לָהּ, אֶלָּא שֶׁאֵין מַכְנִיסִין מֵי רַגְלַֽיִם בַּמִּקְדָּשׁ מִפְּנֵי הַכָּבוֹד.",
+    "104": "הַשִּׁיר שֶׁהַלְוִיִּם הָיוּ אוֹמְרִים בְּבֵית הַמִּקְדָּשׁ:",
+    "105": "בַּיּוֹם הָרִאשׁוֹן הָיוּ אוֹמְרִים, לַיהוה הָאָֽרֶץ וּמְלוֹאָהּ, תֵּבֵל וְיֹֽשְׁבֵי בָהּ׃",
+    "106": "בַּשֵּׁנִי הָיוּ אוֹמְרִים, גָּדוֹל יהוה וּמְהֻלָּל מְאֹד, בְּעִיר אֱלֹהֵֽינוּ הַר־קָדְשׁוֹ׃",
+    "107": "בַּשְּׁלִישִׁי הָיוּ אוֹמְרִים, אֱלֹהִים נִצָּב בַּעֲדַת־אֵל, בְּקֶֽרֶב אֱלֹהִים יִשְׁפֹּט׃",
+    "108": "בָּרְבִיעִי הָיוּ אוֹמְרִים, אֵל־נְקָמוֹת יהוה, אֵל נְקָמוֹת הוֹפִֽיעַ׃",
+    "109": "בַּחֲמִישִׁי הָיוּ אוֹמְרִים, הַרְנִֽינוּ לֵאלֹהִים עוּזֵּֽנוּ, הָרִֽיעוּ לֵאלֹהֵי יַעֲקֹב׃",
+    "110": "בַּשִּׁשִּׁי הָיוּ אוֹמְרִים, יהוה מָלָךְ גֵּאוּת לָבֵשׁ<br>לָבֵשׁ יהוה עֹז הִתְאַזָּר, אַף־תִּכּוֹן תֵּבֵל בַּל־תִּמּוֹט׃",
+    "111": "בַּשַּׁבָּת הָיוּ אוֹמְרִים, מִזְמוֹר שִׁיר לְיוֹם הַשַּׁבָּת׃<br>מִזְמוֹר שִׁיר לֶעָתִיד לָבוֹא, לְיוֹם שֶׁכֻּלּוֹ שַׁבָּת וּמְנוּחָה לְחַיֵּי הָעוֹלָמִים.",
+    "112": "תָּנָא דְבֵי אֵלִיָּֽהוּ: כָּל הַשּׁוֹנֶה הֲלָכוֹת בְּכָל יוֹם<br>מֻבְטָח לוֹ שֶׁהוּא בֶּן עוֹלָם הַבָּא, שֶׁנֶּאֱמַר<br>הֲלִיכוֹת עוֹלָם לוֹ׃ אַל תִּקְרֵי הֲלִיכוֹת אֶלָּא הֲלָכוֹת.",
+    "113": "אָמַר רַבִּי אֶלְעָזָר, אָמַר רַבִּי חֲנִינָא: תַּלְמִידֵי חֲכָמִים מַרְבִּים שָׁלוֹם בָּעוֹלָם, שֶׁנֶּאֱמַר, וְכָל־בָּנַֽיִךְ לִמּוּדֵי יהוה, וְרַב שְׁלוֹם בָּנָֽיִךְ׃ אַל תִּקְרֵי בָּנָֽיִךְ, אֶלָּא בּוֹנָֽיִךְ. שָׁלוֹם רָב לְאֹהֲבֵי תוֹרָתֶֽךָ, וְאֵין־לָֽמוֹ מִכְשׁוֹל׃ יְהִי־שָׁלוֹם בְּחֵילֵךְ, שַׁלְוָה בְּאַרְמְנוֹתָֽיִךְ׃ לְמַֽעַן אַחַי וְרֵעָי אֲדַבְּרָה־נָּא שָׁלוֹם בָּךְ׃ לְמַֽעַן בֵּית־יהוה אֱלֹהֵֽינוּ אֲבַקְשָׁה טוֹב לָךְ׃ ◂יהוה עֹז לְעַמּוֹ יִתֵּן, יהוה יְבָרֵךְ אֶת־עַמּוֹ בַשָּׁלוֹם׃"
+   },
+   "en": {
+    "100": "<b>אֵין כֵּאלֹהֵֽינו</b> There is none like our God, none like our <small>LORD</small>, none like our King, none like our Savior. Who is like our God? Like our <small>LORD</small>? Like our King? Like our Savior? We will thank our God, thank our <small>LORD</small>, thank our King, thank our Savior. Blessed is our God, blessed our <small>LORD</small>, blessed our King, blessed our Savior. You are our God, You are our <small>LORD</small>, You are our King, You are our Savior.",
+    "101": "You are He to whom our ancestors offered the fragrant incense.",
+    "102": "פִּטּוּם הַקְּטֹֽרֶת The incense mixture consisted of balsam, onycha, galbanum and frankincense, each weighing seventy manehs; myrrh, cassia, spikenard and saffron, each weighing sixteen manehs; twelve manehs of costus, three of aromatic bark; nine of cinnamon; nine kabs of Carsina lye; three seahs and three kabs of Cyprus wine. If Cyprus wine was not available, old white wine might be used. A quarter of a kab of Sodom salt, and a minute amount of a smoke-raising herb. Rabbi Nathan says: Also a minute amount of Jordan amber. If one added honey to the mixture, he rendered it unfit for sacred use. If he omitted any one of its ingredients, he is guilty of a capital offense.",
+    "103": "Rabban Shimon ben Gamliel says: “Balsam” refers to the sap that drips from the balsam tree. The Carsina lye was used for bleaching the onycha to improve it. The Cyprus wine was used to soak the onycha in it to make it pungent. Though urine is suitable for this purpose, it is not brought into the Temple out of respect.",
+    "104": "These were the psalms which the Levites used to recite in the Temple:",
+    "105": "On the first day of the week they used to say: “The earth is the <small>LORD</small>’s<br>and all it contains, the world and all who live in it.”",
+    "106": "On the second day they used to say: “Great is the <small>LORD</small> and<br>greatly to be praised in the city of God, on His holy mountain.”",
+    "107": "On the third day they used to say: “God stands in the divine assembly.<br>Among the judges He delivers judgment.”",
+    "108": "On the fourth day they used to say: “God of retribution, <small>LORD</small>,<br>God of retribution, appear.”",
+    "109": "On the fifth day they used to say: “Sing for joy to God, our strength.<br>Shout aloud to the God of Jacob.”",
+    "110": "On the sixth day they used to say: “The <small>LORD</small> reigns: He is robed in majesty;<br>the <small>LORD</small> is robed, girded with strength;<br>the world is firmly established; it cannot be moved.”",
+    "111": "On the Sabbath they used to say: “A psalm, a song for the Sabbath day” – [meaning] a psalm and song for the time to come,<br>for the day which will be entirely Sabbath and rest for life everlasting.",
+    "112": "It was taught in the Academy of Elijah: Whoever studies [Torah] laws every day<br>is assured that he will be destined for the World to Come, as it is said,<br>“The ways of the world are His” – read not, “ways” [<i>halikhot</i>] but “laws” [<i>halakhot</i>].",
+    "113": "Rabbi Elazar said in the name of Rabbi Ḥanina: The disciples of the sages increase peace in the world, as it is said, “And all your children shall be taught of the <small>LORD</small>, and great shall be the peace of your children [<i>banayikh</i>].” Read not <i>banayikh</i>, “your children,” but <i>bonayikh</i>, “your builders.” Those who love Your Torah have great peace; there is no stumbling block for them. May there be peace within your ramparts, prosperity in your palaces. For the sake of my brothers and friends, I shall say, “Peace be within you.” For the sake of the House of the <small>LORD</small> our God, I will seek your good. ▸May the <small>LORD</small> grant strength to His people; may the <small>LORD</small> bless His people with peace."
+   }
+  }
+ }
+}

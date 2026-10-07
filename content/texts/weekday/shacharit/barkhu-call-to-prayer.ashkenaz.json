@@ -1,0 +1,18 @@
+{
+ "id": "weekday/shacharit/barkhu-call-to-prayer:ashkenaz",
+ "refs": {
+  "The Koren Shalem Siddur; Ashkenaz, Weekdays, Blessings of the Shema": {
+   "edition": "koren-ashkenaz",
+   "he": {
+    "2": "<i>ש\"ץ:</i> בָּרְכוּ אֶת יהוה הַמְבֹרָךְ.",
+    "3": "<i>קהל:</i> בָּרוּךְ יהוה הַמְבֹרָךְ לְעוֹלָם וָעֶד.",
+    "4": "<i>ש\"ץ:</i> בָּרוּךְ יהוה הַמְבֹרָךְ לְעוֹלָם וָעֶד."
+   },
+   "en": {
+    "2": "<i>Leader:</i> <small>BLESS</small> the <small>LORD</small>, the blessed One.",
+    "3": "<i>Congregation:</i> Bless the <small>LORD</small>, the blessed One, for ever and all time.",
+    "4": "<i>Leader:</i> Bless the <small>LORD</small>, the blessed One, for ever and all time."
+   }
+  }
+ }
+}

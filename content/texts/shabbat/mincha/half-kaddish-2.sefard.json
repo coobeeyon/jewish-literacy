@@ -1,0 +1,55 @@
+{
+ "id": "shabbat/mincha/half-kaddish-2:sefard",
+ "refs": {
+  "Shabbat Siddur Sefard Linear, Mincha Service for Shabbos and Yom Tov, Uvah L'tzion": {
+   "edition": "metsudah-sefard-shabbat",
+   "he": {
+    "109": "יִתְגַּדַּל וְיִתְקַדַּשׁ שְׁמֵהּ רַבָּא",
+    "110": "בְּעָלְמָא דִּי בְרָא",
+    "111": "כִרְעוּתֵהּ",
+    "112": "וְיַמְלִיךְ מַלְכוּתֵהּ",
+    "113": "וְיַצְמַח פּוּרְקָנֵהּ",
+    "114": "וִיקָרֵב (קֵץ) מְשִׁיחֵהּ.",
+    "115": "בְּחַיֵּיכוֹן וּבְיוֹמֵיכוֹן",
+    "116": "וּבְחַיֵּי",
+    "117": "דְכָל בֵּית יִשְׂרָאֵל.",
+    "118": "בַּעֲגָלָא וּבִזְמַן קָרִיב",
+    "119": "וְאִמְרוּ אָמֵן:",
+    "120": "יְהֵא שְׁמֵהּ רַבָּא מְבָרַךְ",
+    "121": "לְעָלַם וּלְעָלְמֵי עָלְמַיָּא:",
+    "122": "יִתְבָּרַךְ וְיִשְׁתַּבַּח",
+    "123": "וְיִתְפָּאַר וְיִתְרוֹמַם וְיִתְנַשֵּׂא",
+    "124": "וְיִתְהַדָּר וְיִתְעַלֶּה וְיִתְהַלָּל",
+    "125": "שְׁמֵהּ דְקֻדְשָׁא. בְּרִיךְ הוּא",
+    "126": "לְעֵֽלָּא (<small>בעשי\"ת</small> וּלְעֵֽלָּא מִכָּל) ",
+    "127": "מִן כָּל בִּרְכָתָא וְשִׁירָתָא.",
+    "128": "תֻּשְׁבְּ֒חָתָא וְנֶחֱמָתָא.",
+    "129": "דַּאֲמִירָן בְּעָלְמָא. וְאִמְרוּ אָמֵן:"
+   },
+   "en": {
+    "108": "<small>The Chazzan recites the Half-Kaddish:</small>",
+    "109": "Exalted and sanctified be His great Name",
+    "110": "in the world which He created",
+    "111": "according to His will",
+    "112": "and may He rule His kingdom",
+    "113": "bring forth His redemption",
+    "114": "and hasten the coming of His Mashiach",
+    "115": "in your lifetime and in your days,",
+    "116": "and in the lifetime",
+    "117": "of the entire House of Israel,",
+    "118": "speedily and in the near future—",
+    "119": "and say Amein.",
+    "120": "May His great Name be blessed",
+    "121": "forever and for all eternity.",
+    "122": "Blessed and praised,",
+    "123": "glorified, and exalted and uplifted,",
+    "124": "honored and elevated and extolled",
+    "125": "be the Name of the Holy One, blessed is He;",
+    "126": "above (<i>Shabbos Shuva:</i> far above)",
+    "127": "all the blessings and hymns,",
+    "128": "praises and consolations",
+    "129": "which we utter in the world—and say Amein."
+   }
+  }
+ }
+}

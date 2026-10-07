@@ -1,0 +1,45 @@
+{
+ "id": "weekday/shacharit/raise-and-return-the-torah:ashkenaz",
+ "refs": {
+  "The Koren Shalem Siddur; Ashkenaz, Weekdays, Reading of the Torah": {
+   "edition": "koren-ashkenaz",
+   "he": {
+    "41": "וְזֹאת הַתּוֹרָה אֲשֶׁר־שָׂם מֹשֶׁה לִפְנֵי בְּנֵי יִשְׂרָאֵל׃<br>עַל־פִּי יהוה בְּיַד־מֹשֶׁה׃",
+    "43": "עֵץ־חַיִּים הִיא לַמַּחֲזִיקִים בָּהּ וְתֹמְכֶֽיהָ מְאֻשָּׁר׃<br>דְּרָכֶֽיהָ דַרְכֵי־נֹֽעַם וְכָל־נְתִיבֹתֶֽיהָ שָׁלוֹם׃<br>אֹֽרֶךְ יָמִים בִּימִינָהּ, בִּשְׂמאוֹלָהּ עֹֽשֶׁר וְכָבוֹד׃<br>יהוה חָפֵץ לְמַֽעַן צִדְקוֹ יַגְדִּיל תּוֹרָה וְיַאְדִּיר׃",
+    "45": "יְהִי רָצוֹן מִלִּפְנֵי אָבִֽינוּ שֶׁבַּשָּׁמַֽיִם, לְכוֹנֵן אֶת בֵּית חַיֵּֽינוּ<br>וּלְהָשִׁיב אֶת שְׁכִינָתוֹ בְּתוֹכֵֽנוּ<br>בִּמְהֵרָה בְיָמֵֽינוּ, וְנֹאמַר אָמֵן.",
+    "46": "יְהִי רָצוֹן מִלִּפְנֵי אָבִֽינוּ שֶׁבַּשָּׁמַֽיִם, לְרַחֵם עָלֵֽינוּ וְעַל פְּלֵיטָתֵֽנוּ<br>וְלִמְנֹֽעַ מַשְׁחִית וּמַגֵּפָה מֵעָלֵֽינוּ<br>וּמֵעַל כָּל עַמּוֹ בֵּית יִשְׂרָאֵל, וְנֹאמַר אָמֵן.",
+    "47": "יְהִי רָצוֹן מִלִּפְנֵי אָבִֽינוּ שֶׁבַּשָּׁמַֽיִם, לְקַיֵּם בָּֽנוּ חַכְמֵי יִשְׂרָאֵל<br>הֵם וּנְשֵׁיהֶם וּבְנֵיהֶם וּבְנוֹתֵיהֶם<br>וְתַלְמִידֵיהֶם וְתַלְמִידֵי תַלְמִידֵיהֶם<br>בְּכָל מְקוֹמוֹת מוֹשְׁבוֹתֵיהֶם, וְנֹאמַר אָמֵן.",
+    "48": "יְהִי רָצוֹן מִלִּפְנֵי אָבִֽינוּ שֶׁבַּשָּׁמַֽיִם<br>שֶׁנִּשְׁמַע וְנִתְבַּשֵּׂר בְּשׂוֹרוֹת טוֹבוֹת, יְשׁוּעוֹת וְנֶחָמוֹת<br>וִיקַבֵּץ נִדָּחֵֽינוּ מֵאַרְבַּע כַּנְפוֹת הָאָֽרֶץ, וְנֹאמַר אָמֵן.",
+    "50": "אַחֵֽינוּ כָּל בֵּית יִשְׂרָאֵל, הַנְּתוּנִים בְּצָרָה וּבְשִׁבְיָה, הָעוֹמְדִים בֵּין בַּיָּם וּבֵין בַּיַּבָּשָׁה, הַמָּקוֹם יְרַחֵם עֲלֵיהֶם וְיוֹצִיאֵם מִצָּרָה לִרְוָחָה, וּמֵאֲפֵלָה לְאוֹרָה, וּמִשִּׁעְבּוּד לִגְאֻלָּה, הַשְׁתָּא בַּעֲגָלָא וּבִזְמַן קָרִיב, וְנֹאמַר אָמֵן.",
+    "52": "<b>הכנסת ספר תורה</b>",
+    "54": "יְהַלְלוּ אֶת־שֵׁם יהוה, כִּי נִשְׂגָּב־שְׁמוֹ, לְבַדּוֹ",
+    "56": "הוֹדוֹ עַל־אֶֽרֶץ וְשָׁמָֽיִם׃<br>וַיָּֽרֶם קֶֽרֶן לְעַמּוֹ<br>תְּהִלָּה לְכָל־חֲסִידָיו<br>לִבְנֵי יִשְׂרָאֵל עַם קְרֹבוֹ, הַלְלוּיָהּ׃",
+    "58": "לְדָוִד מִזְמוֹר, לַיהוה הָאָֽרֶץ וּמְלוֹאָהּ, תֵּבֵל וְיֹֽשְׁבֵי בָהּ׃ כִּי־הוּא עַל־יַמִּים יְסָדָהּ, וְעַל־נְהָרוֹת יְכוֹנְנֶֽהָ׃ מִי־יַעֲלֶה בְהַר־יהוה, וּמִי־יָקוּם בִּמְקוֹם קָדְשׁוֹ׃ נְקִי כַפַּֽיִם וּבַר־לֵבָב, אֲשֶׁר לֹא־נָשָׂא לַשָּׁוְא נַפְשִׁי וְלֹא נִשְׁבַּע לְמִרְמָה׃ יִשָּׂא בְרָכָה מֵאֵת יהוה, וּצְדָקָה מֵאֱלֹהֵי יִשְׁעוֹ׃ זֶה דּוֹר דֹּרְשָׁו, מְבַקְשֵׁי פָנֶֽיךָ, יַעֲקֹב, סֶֽלָה׃ שְׂאוּ שְׁעָרִים רָאשֵׁיכֶם, וְהִנָּשְׂאוּ פִּתְחֵי עוֹלָם, וְיָבוֹא מֶֽלֶךְ הַכָּבוֹד׃ מִי זֶה מֶֽלֶךְ הַכָּבוֹד, יהוה עִזּוּז וְגִבּוֹר, יהוה גִּבּוֹר מִלְחָמָה׃ שְׂאוּ שְׁעָרִים רָאשֵׁיכֶם, וּשְׂאוּ פִּתְחֵי עוֹלָם, וְיָבֹא מֶֽלֶךְ הַכָּבוֹד׃ מִי הוּא זֶה מֶֽלֶךְ הַכָּבוֹד, יהוה צְבָאוֹת הוּא מֶֽלֶךְ הַכָּבוֹד, סֶֽלָה׃",
+    "60": "וּבְנֻחֹה יֹאמַר, שׁוּבָה יהוה רִבֲבוֹת אַלְפֵי יִשְׂרָאֵל׃ קוּמָה יהוה לִמְנוּחָתֶֽךָ, אַתָּה וַאֲרוֹן עֻזֶּֽךָ׃ כֹּהֲנֶֽיךָ יִלְבְּשׁוּ־צֶֽדֶק, וַחֲסִידֶֽיךָ יְרַנֵּֽנוּ׃ בַּעֲבוּר דָּוִד עַבְדֶּֽךָ אַל־תָּשֵׁב פְּנֵי מְשִׁיחֶֽךָ׃ כִּי לֶֽקַח טוֹב נָתַֽתִּי לָכֶם, תּוֹרָתִי אַל־תַּעֲזֹֽבוּ׃ עֵץ־חַיִּים הִיא לַמַּחֲזִיקִים בָּהּ, וְתֹמְכֶֽיהָ מְאֻשָּׁר׃ דְּרָכֶֽיהָ דַרְכֵי־נֹֽעַם וְכָל־נְתִיבֹתֶֽיהָ שָׁלוֹם׃ ◂הֲשִׁיבֵֽנוּ יהוה אֵלֶֽיךָ וְנָשֽׁוּבָ, חַדֵּשׁ יָמֵֽינוּ כְּקֶֽדֶם׃"
+   },
+   "en": {
+    "40": "<i>The Torah scroll is lifted and the congregation says:</i>",
+    "41": "וְזֹאת הַתּוֹרָה This is the Torah that Moses placed before the children of Israel,<br>at the <small>LORD</small>’s commandment, by the hand of Moses.",
+    "42": "<i>Some add:</i>",
+    "43": "It is a tree of life to those who grasp it, and those who uphold it are happy.<br>Its ways are ways of pleasantness, and all its paths are peace.<br>Long life is at its right hand; at its left, riches and honor.<br>It pleased the <small>LORD</small> for the sake of [Israel’s] righteousness, to make the Torah great and glorious.",
+    "44": "<i>On those Mondays and Thursdays when Taḥanun is said, the Leader says the following while the Torah scroll is being bound:</i>",
+    "45": "יְהִי רָצוֹן May it be the will of our Father in heaven to establish (the Temple), home of our life,<br>and to restore His Presence to our midst,<br>swiftly in our days – and let us say: Amen.",
+    "46": "יְהִי רָצוֹן May it be the will of our Father in heaven to have compassion on us and our remnant,<br>and to keep destruction and plague away from us<br>and from all His people the house of Israel – and let us say: Amen.",
+    "47": "יְהִי רָצוֹן May it be the will of our Father in heaven to preserve among us the sages of Israel:<br>them, their wives, their sons and daughters,<br>their disciples and their disciples’ disciples,<br>in all their dwelling places – and let us say: Amen.",
+    "48": "יְהִי רָצוֹן May it be the will of our Father in heaven that we may hear and be given good tidings of salvation and consolation,<br>and that our dispersed be gathered from the four quarters of the earth – and let us say: Amen.",
+    "49": "<i>All:</i>",
+    "50": "אַחֵֽינוּ As for our brothers of the whole house of Israel who are in distress or captivity, on sea or land, may the All-Present have compassion on them and lead them from distress to relief, from darkness to light, and from oppression to freedom, now, swiftly and soon – and let us say: Amen.",
+    "51": "<i>In some congregations, during the week before a yahrzeit, “God, full of mercy” for a relative is said (page 800).</i>",
+    "52": "<small><b>RETURNING THE TORAH TO THE ARK</b></small>",
+    "53": "<i>The Ark is opened. The Leader takes the Torah scroll and says:</i>",
+    "54": "יְהַלְלוּ Let them praise the name of the <small>LORD</small>, for His name alone is sublime.",
+    "55": "<i>The congregation responds:</i>",
+    "56": "הוֹדוֹ His majesty is above earth and heaven.<br>He has raised the horn of His people,<br>for the glory of all His devoted ones,<br>the children of Israel, the people close to Him. Halleluya!",
+    "57": "<i>As the Torah scroll is returned to the Ark, say:</i>",
+    "58": "לְדָוִד מִזְמוֹר A psalm of David. The earth is the <small>LORD</small>’s and all it contains, the world and all who live in it. For He founded it on the seas and established it on the streams. Who may climb the mountain of the <small>LORD</small>? Who may stand in His holy place? He who has clean hands and a pure heart, who has not taken My name in vain, or sworn deceitfully. He shall receive blessing from the <small>LORD</small>, and just reward from God, his salvation. This is a generation of those who seek Him, the descendants of Jacob who seek Your presence, Selah! Lift up your heads, O gates; be uplifted, eternal doors, so that the King of glory may enter. Who is the King of glory? It is the <small>LORD</small>, strong and mighty, the <small>LORD</small> mighty in battle. Lift up your heads, O gates; lift them up, eternal doors, so that the King of glory may enter. Who is He, the King of glory? The <small>LORD</small> of hosts, He is the King of glory, Selah!",
+    "59": "<i>As the Torah scroll is placed into the Ark, say:</i>",
+    "60": "וּבְנֻחֹה יֹאמַר When the Ark came to rest, Moses would say: “Return, O <small>LORD</small>, to the myriad thousands of Israel.” Advance, <small>LORD</small>, to Your resting place, You and Your mighty Ark. Your priests are clothed in righteousness, and Your devoted ones sing in joy. For the sake of Your servant David, do not reject Your anointed one. For I give you good instruction; do not forsake My Torah. It is a tree of life to those who grasp it, and those who uphold it are happy. Its ways are ways of pleasantness, and all its paths are peace.▸Turn us back, O <small>LORD</small>, to You, and we will return. Renew our days as of old."
+   }
+  }
+ }
+}

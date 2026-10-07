@@ -1,0 +1,25 @@
+{
+ "id": "weekday/mincha/full-kaddish-titkabel:ashkenaz",
+ "refs": {
+  "The Koren Shalem Siddur; Ashkenaz, Weekdays, Minha for Weekdays": {
+   "edition": "koren-ashkenaz",
+   "he": {
+    "112": "<i>ש\"ץ:</i> יִתְגַּדַּל וְיִתְקַדַּשׁ שְׁמֵהּ רַבָּא (אָמֵן)<br>בְּעָלְמָא דִּי בְרָא כִרְעוּתֵהּ<br>וְיַמְלִיךְ מַלְכוּתֵהּ<br>בְּחַיֵּיכוֹן וּבְיוֹמֵיכוֹן וּבְחַיֵּי דְּכָל בֵּית יִשְׂרָאֵל<br>בַּעֲגָלָא וּבִזְמַן קָרִיב, וְאִמְרוּ אָמֵן. (<i>קהל:</i> אָמֵן)",
+    "113": "<i>קהל וש\"ץ:</i> יְהֵא שְׁמֵהּ רַבָּא מְבָרַךְ לְעָלַם וּלְעָלְמֵי עָלְמַיָּא.",
+    "114": "<i>ש\"ץ:</i> יִתְבָּרַךְ וְיִשְׁתַּבַּח וְיִתְפָּאַר וְיִתְרוֹמַם וְיִתְנַשֵּׂא<br>וְיִתְהַדָּר וְיִתְעַלֶּה וְיִתְהַלָּל<br>שְׁמֵהּ דְּקֻדְשָׁא בְּרִיךְ הוּא (<i>קהל:</i> בְּרִיךְ הוּא)<br>לְעֵֽלָּא מִן כָּל בִּרְכָתָא /<i>בעשרת ימי תשובה:</i> לְעֵֽלָּא לְעֵֽלָּא מִכָּל בִּרְכָתָא/<br>וְשִׁירָתָא, תֻּשְׁבְּחָתָא וְנֶחֱמָתָא<br>דַּאֲמִירָן בְּעָלְמָא, וְאִמְרוּ אָמֵן. (<i>קהל:</i> אָמֵן)",
+    "115": "תִּתְקַבַּל צְלוֹתְהוֹן וּבָעוּתְהוֹן דְּכָל יִשְׂרָאֵל<br>קֳדָם אֲבוּהוֹן דִּי בִשְׁמַיָּא, וְאִמְרוּ אָמֵן. (<i>קהל:</i> אָמֵן)",
+    "116": "יְהֵא שְׁלָמָא רַבָּא מִן שְׁמַיָּא<br>וְחַיִּים, עָלֵֽינוּ וְעַל כָּל יִשְׂרָאֵל<br>וְאִמְרוּ אָמֵן. (<i>קהל:</i> אָמֵן)",
+    "118": "עֹשֶׂה שָׁלוֹם/<i>בעשרת ימי תשובה:</i> הַשָּׁלוֹם/ בִּמְרוֹמָיו<br>הוּא יַעֲשֶׂה שָׁלוֹם עָלֵֽינוּ וְעַל כָּל יִשְׂרָאֵל, וְאִמְרוּ (<i>קהל:</i> אָמֵן)."
+   },
+   "en": {
+    "112": "<i>Leader:</i> יִתְגַּדַּל Magnified and sanctified may His great name be,<br>in the world He created by His will.<br>May He establish His kingdom &gt;in your lifetime and in your days, and in the lifetime of all the house of Israel,<br>swiftly and soon – and say: Amen.",
+    "113": "<i>All:</i> May His great name be blessed for ever and all time.",
+    "114": "<i>Leader:</i> Blessed and praised, glorified and exalted,<br>raised and honored, uplifted and lauded be the name of the Holy One, blessed be He,<br>beyond any blessing,<br>song, praise and consolation uttered in the world – and say: Amen.",
+    "115": "May the prayers and pleas of all Israel<br>be accepted by their Father in heaven –<br>and say: Amen.",
+    "116": "May there be great peace from heaven,<br>and life for us and all Israel –<br>and say: Amen.",
+    "117": "<i>Bow, take three steps back, as if taking leave of the Divine Presence, then bow, first left, then right, then center, while saying:</i>",
+    "118": "May He who makes peace in His high places,<br>make peace for us and all Israel –<br>and say: Amen."
+   }
+  }
+ }
+}

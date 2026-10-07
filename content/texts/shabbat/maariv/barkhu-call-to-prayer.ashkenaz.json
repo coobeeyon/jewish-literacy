@@ -1,0 +1,18 @@
+{
+ "id": "shabbat/maariv/barkhu-call-to-prayer:ashkenaz",
+ "refs": {
+  "The Koren Shalem Siddur; Ashkenaz, Shabbat, Ma'ariv for Shabbat and Yom Tov": {
+   "edition": "koren-ashkenaz",
+   "he": {
+    "3": "<i>ש\"ץ:</i> בָּרְכוּ אֶת יהוה הַמְבֹרָךְ.",
+    "4": "<i>קהל:</i> בָּרוּךְ יהוה הַמְבֹרָךְ לְעוֹלָם וָעֶד.",
+    "5": " <i>ש\"ץ:</i> בָּרוּךְ יהוה הַמְבֹרָךְ לְעוֹלָם וָעֶד."
+   },
+   "en": {
+    "3": "<i>Leader:</i> <small>BLESS</small> the <small>LORD</small>, the blessed One.",
+    "4": "<i>Congregation:</i> Bless the <small>LORD</small>, the blessed One, for ever and all time.",
+    "5": "<i>Leader:</i> Bless the <small>LORD</small>, the blessed One, for ever and all time."
+   }
+  }
+ }
+}

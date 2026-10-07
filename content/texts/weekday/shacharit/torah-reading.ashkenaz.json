@@ -1,0 +1,58 @@
+{
+ "id": "weekday/shacharit/torah-reading:ashkenaz",
+ "refs": {
+  "The Koren Shalem Siddur; Ashkenaz, Weekdays, Reading of the Torah": {
+   "edition": "koren-ashkenaz",
+   "he": {
+    "3": "אֵל אֶֽרֶךְ אַפַּֽיִם וְרַב חֶֽסֶד וֶאֱמֶת<br>אַל בְּאַפְּךָ תּוֹכִיחֵֽנוּ.<br>חֽוּסָה יהוה עַל עַמֶּֽךָ<br>וְהוֹשִׁיעֵֽנוּ מִכָּל רָע.<br>חָטָֽאנוּ לְךָ אָדוֹן<br>סְלַח נָא כְּרֹב רַחֲמֶֽיךָ אֵל.",
+    "4": "אֵל אֶֽרֶךְ אַפַּֽיִם וּמָלֵא רַחֲמִים<br>אַל תַּסְתֵּר פָּנֶֽיךָ מִמֶּֽנּוּ.<br>חֽוּסָה יהוה עַל שְׁאֵרִית יִשְׂרָאֵל עַמֶּֽךָ<br>וְהַצִּילֵֽנוּ מִכָּל רָע.<br>חָטָֽאנוּ לְךָ אָדוֹן<br>סְלַח נָא כְּרֹב רַחֲמֶֽיךָ אֵל.",
+    "6": "וַיְהִי בִּנְסֹֽעַ הָאָרֹן וַיֹּֽאמֶר מֹשֶׁה, קוּמָה יהוה וְיָפֻֽצוּ אֹיְבֶֽיךָ וְיָנֻֽסוּ מְשַׂנְאֶֽיךָ מִפָּנֶֽיךָ׃ כִּי מִצִּיּוֹן תֵּצֵא תוֹרָה וּדְבַר־יהוה מִירוּשָׁלִָֽם׃ בָּרוּךְ שֶׁנָּתַן תּוֹרָה לְעַמּוֹ יִשְׂרָאֵל בִּקְדֻשָּׁתוֹ.",
+    "7": "<small>בְּרִיךְ שְׁמֵהּ דְּמָרֵא עָלְמָא, בְּרִיךְ כִּתְרָךְ וְאַתְרָךְ. יְהֵא רְעוּתָךְ עִם עַמָּךְ יִשְׂרָאֵל לְעָלַם, וּפֻרְקַן יְמִינָךְ אַחֲזִי לְעַמָּךְ בְּבֵית מַקְדְּשָׁךְ, וּלְאַמְטוֹיֵי לַֽנָא מִטּוּב נְהוֹרָךְ, וּלְקַבֵּל צְלוֹתַֽנָא בְּרַחֲמִין. יְהֵא רַעֲוָא קֳדָמָךְ דְּתוֹרִיךְ לַן חַיִּין בְּטִיבוּ, וְלֶהֱוֵי אֲנָא פְקִידָא בְּגוֹ צַדִּיקַיָּא, לְמִרְחַם עֲלַי וּלְמִנְטַר יָתִי וְיָת כָּל דִּי לִי וְדִי לְעַמָּךְ יִשְׂרָאֵל. אַנְתְּ הוּא זָן לְכֹֽלָּא וּמְפַרְנֵס לְכֹֽלָּא, אַנְתְּ הוּא שַׁלִּיט עַל כֹּֽלָּא, אַנְתְּ הוּא דְּשַׁלִּיט עַל מַלְכַיָּא, וּמַלְכוּתָא דִּילָךְ הִיא. אֲנָא עַבְדָּא דְקֻדְשָׁא בְּרִיךְ הוּא, דְּסָגֵֽדְנָא קַמֵּהּ וּמִקַּמֵּי דִּיקָר אוֹרַיְתֵהּ בְּכָל עִדָּן וְעִדָּן. לָא עַל אֱנָשׁ רְחִֽיצְנָא וְלָא עַל בַּר אֱלָהִין סְמִֽיכְנָא, אֶלָּא בֵּאלָהָא דִשְׁמַיָּא, דְּהוּא אֱלָהָא קְשׁוֹט, וְאוֹרַיְתֵהּ קְשׁוֹט, וּנְבִיאֽוֹהִי קְשׁוֹט, וּמַסְגֵּא לְמֶעְבַּד טָבְוָן וּקְשׁוֹט. ◂בֵּהּ אֲנָא רְחִיץ, וְלִשְׁמֵהּ קַדִּישָׁא יַקִּירָא אֲנָא אֵמַר תֻּשְׁבְּחָן. יְהֵא רַעֲוָא קֳדָמָךְ דְּתִפְתַּח לִבַּאי בְּאוֹרַיְתָא, וְתַשְׁלִים מִשְׁאֲלִין דְּלִבַּאי וְלִבָּא דְכָל עַמָּךְ יִשְׂרָאֵל לְטָב וּלְחַיִּין וְלִשְׁלָם.</small>",
+    "9": "גַּדְּלוּ לַיהוה אִתִּי וּנְרוֹמְמָה שְׁמוֹ יַחְדָּו׃",
+    "11": "לְךָ יהוה הַגְּדֻלָּה וְהַגְּבוּרָה וְהַתִּפְאֶֽרֶת וְהַנֵּֽצַח וְהַהוֹד, כִּי־כֹל בַּשָּׁמַֽיִם וּבָאָֽרֶץ, לְךָ יהוה הַמַּמְלָכָה וְהַמִּתְנַשֵּׂא לְכֹל לְרֹאשׁ׃",
+    "12": "רוֹמְמוּ יהוה אֱלֹהֵֽינוּ וְהִשְׁתַּחֲווּ לַהֲדֹם רַגְלָיו, קָדוֹשׁ הוּא׃ רוֹמְמוּ יהוה אֱלֹהֵֽינוּ וְהִשְׁתַּחֲווּ לְהַר קָדְשׁוֹ, כִּי־קָדוֹשׁ יהוה אֱלֹהֵֽינוּ׃",
+    "13": "אַב הָרַחֲמִים הוּא יְרַחֵם עַם עֲמוּסִים, וְיִזְכֹּר בְּרִית אֵיתָנִים, וְיַצִּיל נַפְשׁוֹתֵֽינוּ מִן הַשָּׁעוֹת הָרָעוֹת, וְיִגְעַר בְּיֵֽצֶר הָרָע מִן הַנְּשׂוּאִים, וְיָחֹן אוֹתָֽנוּ לִפְלֵיטַת עוֹלָמִים, וִימַלֵּא מִשְׁאֲלוֹתֵֽינוּ בְּמִדָּה טוֹבָה יְשׁוּעָה וְרַחֲמִים.",
+    "15": "וְתִגָּלֶה וְתֵרָאֶה מַלְכוּתוֹ עָלֵֽינוּ בִּזְמַן קָרוֹב, וְיָחֹן פְּלֵיטָתֵֽנוּ וּפְלֵיטַת עַמּוֹ בֵּית יִשְׂרָאֵל לְחֵן וּלְחֶֽסֶד וּלְרַחֲמִים וּלְרָצוֹן וְנֹאמַר אָמֵן. הַכֹּל הָבוּ גֹֽדֶל לֵאלֹהֵֽינוּ וּתְנוּ כָבוֹד לַתּוֹרָה. *כֹּהֵן קְרַב, יַעֲמֹד (<i>פלוני בֶּן פלוני</i>) הַכֹּהֵן.",
+    "18": "בָּרוּךְ שֶׁנָּתַן תּוֹרָה לְעַמּוֹ יִשְׂרָאֵל בִּקְדֻשָּׁתוֹ.",
+    "20": "וְאַתֶּם הַדְּבֵקִים בַּיהוה אֱלֹהֵיכֶם חַיִּים כֻּלְּכֶם הַיּוֹם:",
+    "22": "בָּרְכוּ אֶת יהוה הַמְבֹרָךְ.",
+    "23": "בָּרוּךְ יהוה הַמְבֹרָךְ לְעוֹלָם וָעֶד.",
+    "24": "בָּרוּךְ יהוה הַמְבֹרָךְ לְעוֹלָם וָעֶד.",
+    "25": "בָּרוּךְ אַתָּה יהוה, אֱלֹהֵֽינוּ מֶֽלֶךְ הָעוֹלָם<br>אֲשֶׁר בָּֽחַר בָּֽנוּ מִכָּל הָעַמִּים וְנָֽתַן לָֽנוּ אֶת תּוֹרָתוֹ.<br>בָּרוּךְ אַתָּה יהוה, נוֹתֵן הַתּוֹרָה.",
+    "27": "בָּרוּךְ אַתָּה יהוה אֱלֹהֵֽינוּ מֶֽלֶךְ הָעוֹלָם<br>אֲשֶׁר נָֽתַן לָֽנוּ תּוֹרַת אֱמֶת וְחַיֵּי עוֹלָם נָטַע בְּתוֹכֵֽנוּ.<br>בָּרוּךְ אַתָּה יהוה, נוֹתֵן הַתּוֹרָה.",
+    "29": "בָּרוּךְ אַתָּה יהוה אֱלֹהֵֽינוּ מֶֽלֶךְ הָעוֹלָם הַגּוֹמֵל לְחַיָּבִים טוֹבוֹת<br>שֶׁגְּמָלַֽנִי כָּל טוֹב.",
+    "31": "אָמֵן. מִי שֶׁגְּמָלְךָ כָּל טוֹב הוּא יִגְמָלְךָ כָּל טוֹב, סֶֽלָה.",
+    "34": "בָּרוּךְ שֶׁפְּטָרַֽנִי מֵעָנְשׁוֹ שֶׁלָּזֶה."
+   },
+   "en": {
+    "3": "God, slow to anger, abounding in loving-kindness and truth,<br>do not rebuke us in Your anger.<br>Have pity on Your people, Lord,<br>and save us from all evil.<br>We have sinned against You, Lord.<br>Please forgive in accordance with Your great compassion, God.",
+    "4": "God, slow to anger, full of compassion,<br>do not hide Your face from us.<br>Have pity on the remnant of Israel Your people, Lord,<br>and deliver us from all evil.<br>We have sinned against You, Lord.<br>Please forgive in accordance with Your great compassion, God.",
+    "5": "<i>The Ark is opened and the congregation stands. All say:</i>",
+    "6": "וַיְהִי בִּנְסֹֽעַ Whenever the Ark set out, Moses would say, “Arise, <small>LORD</small>, and may Your enemies be scattered. May those who hate You flee before You.” For the Torah shall come forth from Zion, and the word of the <small>LORD</small> from Jerusalem. Blessed is He who in His holiness gave the Torah to His people Israel.",
+    "7": "<small>Blessed is the name of the Master of the Universe. Blessed is Your crown and Your place. May Your favor always be with Your people Israel. Show Your people the salvation of  Your right hand in Your Temple. Grant us the gift of Your good light, and accept our prayers in mercy. May it be Your will to prolong our life in goodness. May I be counted among the righteous, so that You will have compassion on me and protect me and all that is mine and all that is Your people Israel’s. You feed all; You sustain all; You rule over all; You rule over kings, for sovereignty is Yours. I am a servant of the Holy One, blessed be He, before whom and before whose glorious Torah I bow at all times. Not in man do I trust, nor on any angel do I rely, but on the God of heaven who is the God of truth, whose Torah is truth, whose prophets speak truth, and who abounds in acts of love and truth. ▸In Him I trust, and to His holy and glorious name I offer praises. May it be Your will to open my heart to the Torah, and to fulfill the wishes of my heart and of the hearts of all Your people Israel for good, for life, and for peace.</small>",
+    "8": "<i>The Leader takes the Torah scroll in his right arm, bows toward the Ark and says:</i>",
+    "9": "Magnify the <small>LORD</small> with me, and let us exalt His name together.",
+    "10": "<i>The Ark is closed. The Leader carries the Torah scroll to the bima and the congregation says:</i>",
+    "11": "לְךָ Yours, <small>LORD</small>, are the greatness and the power, the glory and the majesty and splendor, for everything in heaven and earth is Yours. Yours, <small>LORD</small>, is the kingdom; You are exalted as Head over all.",
+    "12": "רוֹמְמוּ Exalt the <small>LORD</small> our God and bow to His footstool; He is holy. Exalt the <small>LORD</small> our God, and bow at His holy mountain, for holy is the <small>LORD</small> our God.",
+    "13": "אַב הָרַחֲמִים May the Father of compassion have compassion on the people borne by Him. May He remember the covenant with the mighty [patriarchs], and deliver us from evil times. May He reproach the evil instinct in the people carried by Him, and graciously grant that we be an everlasting remnant. May He fulfill in good measure our requests for salvation and compassion.",
+    "14": "<i>The Torah scroll is placed on the bima and the Gabbai calls a Kohen to the Torah. See laws 383–397.</i>",
+    "15": "May His kingship over us be soon revealed and made manifest. May He be gracious to our surviving remnant, the remnant of His people the house of Israel in grace, loving-kindness, compassion and favor, and let us say: Amen. Let us all render greatness to our God and give honor to the Torah. *Let the Kohen come forward. Arise (<i>name</i> son of <i>father’s name</i>), the Kohen.",
+    "18": "Blessed is He who, in His holiness, gave the Torah to His people Israel.",
+    "19": "<i>Congregation followed by the Gabbai:</i>",
+    "20": "You who cling to the <small>LORD</small> your God are all alive today.",
+    "22": "<small><i>Oleh: </i></small>Bless the <small>LORD</small>, the blessed One.",
+    "23": "<small><i>Cong: </i></small>Bless the <small>LORD</small>, the blessed One, for ever and all time.",
+    "24": "<small><i>Oleh: </i></small><small><i>Oleh: </i></small>Bless the <small>LORD</small>, the blessed One, for ever and all time.",
+    "25": "Blessed are You, <small>LORD</small> our God, King of the Universe,<br>who has chosen us from all peoples and has given us His Torah. Blessed are You, <small>LORD</small>, Giver of the Torah.",
+    "26": "<i>After the reading, the oleh says:</i>",
+    "27": "<small><i>Oleh:</i></small>Blessed are You, <small>LORD</small> our God, King of the Universe, who has given us the Torah of truth, planting everlasting life in our midst. Blessed are You, <small>LORD</small>, Giver of the Torah.",
+    "29": "Blessed are You, <small>LORD</small> our God, King of the Universe, who bestows good on the unworthy,<br>who has bestowed on me much good.",
+    "30": "<i>The congregation responds:</i>",
+    "31": "Amen. May He who bestowed much good on you continue to bestow on you much good, Selah.",
+    "33": "<i>After a Bar Mitzva boy has finished the Torah blessing, his father says aloud:</i>",
+    "34": "Blessed is He who has released me from the responsibility for this child."
+   }
+  }
+ }
+}

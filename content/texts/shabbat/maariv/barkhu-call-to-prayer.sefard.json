@@ -1,0 +1,20 @@
+{
+ "id": "shabbat/maariv/barkhu-call-to-prayer:sefard",
+ "refs": {
+  "Shabbat Siddur Sefard Linear, Maariv Service for Shabbos and Yom Tov, Borechu": {
+   "edition": "metsudah-sefard-shabbat",
+   "he": {
+    "6": "<b>בָּרְ֒כוּ אֶת יְהֹוָה הַמְ֒בֹרָךְ:</b>",
+    "8": "<b>בָּרוּךְ יְהֹוָה הַמְ֒בֹרָךְ</b>",
+    "9": "<b>לְעוֹלָם וָעֶד:</b>"
+   },
+   "en": {
+    "5": "<small>The Chazzan <i>says:</i></small>",
+    "6": "Bless Adonoy Who is blessed.",
+    "7": "<small>The congregation responds and the Chazzan repeats:</small>",
+    "8": "Blessed is Adonoy, Who is blessed",
+    "9": "forever and ever."
+   }
+  }
+ }
+}

@@ -1,0 +1,33 @@
+{
+ "id": "shabbat/mincha/tzidkatcha:sefard",
+ "refs": {
+  "Shabbat Siddur Sefard Linear, Mincha Service for Shabbos and Yom Tov, Amidah": {
+   "edition": "metsudah-sefard-shabbat",
+   "he": {
+    "350": "צִדְקָתְ֒ךָ",
+    "351": "כְּהַֽרְרֵי־אֵל",
+    "352": "מִשְׁפָּטֶֽיךָ תְּהוֹם רַבָּה.",
+    "353": "אָדָם וּבְהֵמָה תּוֹשִֽׁיעַ יְהֹוָה:",
+    "354": "וְצִדְקָתְ֒ךָ אֱלֹהִים",
+    "355": "עַד־מָרוֹם",
+    "356": "אֲשֶׁר־עָשִֽׂיתָ גְדֹלוֹת.",
+    "357": "אֱלֹהִים מִי כָמֽוֹךָ:",
+    "358": "צִדְקָתְ֒ךָ צֶֽדֶק לְעוֹלָם.",
+    "359": "וְתוֹרָתְ֒ךָ אֱמֶת:"
+   },
+   "en": {
+    "349": "<small>The following paragraph is omitted on occasions when the Tachanun prayer would be omitted on weekdays:</small>",
+    "350": "Your righteousness",
+    "351": "is like the mighty mountains,",
+    "352": "Your judgments like the great deep;",
+    "353": "man and beast, You deliver, Adonoy.",
+    "354": "And Your righteousness, God,",
+    "355": "reaches the high heavens,",
+    "356": "for You do great things;",
+    "357": "God, who is like You?",
+    "358": "Your righteousness is everlasting",
+    "359": "and Your Torah is truth."
+   }
+  }
+ }
+}

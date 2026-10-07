@@ -1,0 +1,18 @@
+{
+ "id": "weekday/maariv/half-kaddish:ashkenaz",
+ "refs": {
+  "The Koren Shalem Siddur; Ashkenaz, Weekdays, Ma'ariv for Weekdays": {
+   "edition": "koren-ashkenaz",
+   "he": {
+    "33": "<i>ש\"ץ:</i> יִתְגַּדַּל וְיִתְקַדַּשׁ שְׁמֵהּ רַבָּא (<i>קהל:</i> אָמֵן)<br>בְּעָלְמָא דִּי בְרָא כִרְעוּתֵהּ<br>וְיַמְלִיךְ מַלְכוּתֵהּ<br>בְּחַיֵּיכוֹן וּבְיוֹמֵיכוֹן וּבְחַיֵּי דְּכָל בֵּית יִשְׂרָאֵל<br>בַּעֲגָלָא וּבִזְמַן קָרִיב, וְאִמְרוּ אָמֵן. (<i>קהל:</i> אָמֵן)",
+    "34": "<i>קהל וש\"ץ:</i> יְהֵא שְׁמֵהּ רַבָּא מְבָרַךְ לְעָלַם וּלְעָלְמֵי עָלְמַיָּא.",
+    "35": "<i>ש\"ץ:</i> יִתְבָּרַךְ וְיִשְׁתַּבַּח וְיִתְפָּאַר וְיִתְרוֹמַם וְיִתְנַשֵּׂא<br>וְיִתְהַדָּר וְיִתְעַלֶּה וְיִתְהַלָּל<br>שְׁמֵהּ דְּקֻדְשָׁא בְּרִיךְ הוּא (<i>קהל:</i> בְּרִיךְ הוּא)<br>לְעֵֽלָּא מִן כָּל בִּרְכָתָא /<i>בעשרת ימי תשובה:</i> לְעֵֽלָּא לְעֵֽלָּא מִכָּל בִּרְכָתָא/<br>וְשִׁירָתָא, תֻּשְׁבְּחָתָא וְנֶחֱמָתָא<br>דַּאֲמִירָן בְּעָלְמָא, וְאִמְרוּ אָמֵן. (<i>קהל:</i> אָמֵן)"
+   },
+   "en": {
+    "33": "<i>Leader:</i> יִתְגַּדַּל Magnified and sanctified may His great name be,<br>in the world He created by His will.<br>May He establish His kingdom &gt;in your lifetime and in your days, and in the lifetime of all the house of Israel,<br>swiftly and soon – and say: Amen.",
+    "34": "<i>All:</i> May His great name be blessed for ever and all time.",
+    "35": "<i>Leader:</i> Blessed and praised, glorified and exalted,<br>raised and honored, uplifted and lauded<br>be the name of the Holy One, blessed be He,<br>beyond any blessing,<br>song, praise and consolation<br>uttered in the world – and say: Amen."
+   }
+  }
+ }
+}

@@ -1,0 +1,55 @@
+{
+ "id": "shabbat/musaf/half-kaddish:sefard",
+ "refs": {
+  "Shabbat Siddur Sefard Linear, Musaf Service, Ashrei": {
+   "edition": "metsudah-sefard-shabbat",
+   "he": {
+    "149": "יִתְגַּדַּל וְיִתְקַדַּשׁ שְׁמֵהּ רַבָּא",
+    "150": "בְּעָלְמָא דִּי בְרָא",
+    "151": "כִרְעוּתֵהּ",
+    "152": "וְיַמְלִיךְ מַלְכוּתֵהּ",
+    "153": "וְיַצְמַח פּוּרְ֒קָנֵהּ",
+    "154": "וִיקָרֵב (קֵץ) מְשִׁיחֵהּ.",
+    "155": "בְּחַיֵּיכוֹן וּבְיוֹמֵיכוֹן",
+    "156": "וּבְחַיֵּי",
+    "157": "דְכָל בֵּית יִשְׂרָאֵל.",
+    "158": "בַּעֲגָלָא וּבִזְמַן קָרִיב.",
+    "159": "וְאִמְרוּ אָמֵן:",
+    "160": "יְהֵא שְׁמֵהּ רַבָּא מְבָרַךְ",
+    "161": "לְעָלַם וּלְעָלְמֵי עָלְמַיָּא:",
+    "162": "יִתְבָּרַךְ וְיִשְׁתַּבַּח",
+    "163": "וְיִתְפָּאַר וְיִתְרוֹמַם וְיִתְנַשֵּׂא",
+    "164": "וְיִתְהַדָּר וְיִתְעַלֶּה וְיִתְהַלָּל",
+    "165": "שְׁמֵהּ דְקֻדְשָׁא בְּרִיךְ הוּא",
+    "166": "לְעֵֽלָּא (<small>בעשי\"ת</small> וּלְעֵֽלָּא מִכָּל) ",
+    "167": "מִן כָּל בִּרְכָתָא וְשִׁירָתָא.",
+    "168": "תֻּשְׁבְּ֒חָתָא וְנֶחֱמָתָא.",
+    "169": "דַּאֲמִירָן בְּעָלְמָא. וְאִמְרוּ אָמֵן:"
+   },
+   "en": {
+    "148": "<small>The Chazzan recites the Half-Kaddish:</small>",
+    "149": "Exalted and sanctified be His great Name",
+    "150": "in the world which He created",
+    "151": "according to His will,",
+    "152": "and may He rule His kingdom",
+    "153": "bring forth His redemption",
+    "154": "and hasten the coming of His Mashiach.",
+    "155": "in your lifetime and in your days,",
+    "156": "and in the lifetime",
+    "157": "of the entire House of Israel,",
+    "158": "speedily and in the near future—",
+    "159": "and say Amein.",
+    "160": "May His great Name be blessed",
+    "161": "forever and for all eternity.",
+    "162": "Blessed and praised,",
+    "163": "glorified, and exalted and uplifted,",
+    "164": "honored and elevated and extolled",
+    "165": "be the Name of the Holy One, blessed is He;",
+    "166": "above (<i>Shabbos Shuva:</i> far above)",
+    "167": "all the blessings and hymns,",
+    "168": "praises and consolations",
+    "169": "which we utter in the world—and say Amein."
+   }
+  }
+ }
+}

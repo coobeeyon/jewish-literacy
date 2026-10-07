@@ -1,0 +1,55 @@
+{
+ "id": "weekday/maariv/half-kaddish:sefard",
+ "refs": {
+  "Weekday Siddur Sefard Linear, Maariv, Berachos Following Shema": {
+   "edition": "metsudah-sefard-weekday",
+   "he": {
+    "161": "יִתְגַּדַּל  וְיִתְקַדַּשׁ שְׁמֵהּ רַבָּא",
+    "162": "בְּעָלְ֒מָא דִּי בְרָא",
+    "163": "כִרְעוּתֵהּ",
+    "164": "וְיַמְלִיךְ מַלְכוּתֵהּ",
+    "165": "וְיַצְמַח פּוּרְקָנֵהּ",
+    "166": "וִיקָרֵב (קֵץ) מְשִׁיחֵהּ.",
+    "167": "בְּחַיֵּיכוֹן וּבְיוֹמֵיכוֹן",
+    "168": "וּבְחַיֵּי",
+    "169": " דְכָל בֵּית יִשְׂרָאֵל,",
+    "170": "בַּעֲגָלָא וּבִזְמַן קָרִיב",
+    "171": "וְאִמְרוּ אָמֵן",
+    "172": "<b>יְהֵא שְׁמֵהּ רַבָּא מְבָרַךְ</b>",
+    "173": "<b>לְעָלַם וּלְעָלְ֒מֵי עָלְ֒מַיָּא</b>",
+    "174": "יִתְבָּרַךְ וְיִשְׁתַּבַּח",
+    "175": "וְיִתְפָּאַר וְיִתְרוֹמַם וְיִתְנַשֵּׂא",
+    "176": "וְיִתְהַדָּר וְיִתְעַלֶּה וְיִתְהַלָּל",
+    "177": " שְׁמֵהּ דְקוּדְשָׁא, בְּרִיךְ הוּא",
+    "178": "  לְעֵֽלָּא (<small>בעשי\"ת</small> וּלְעֵֽלָּא מִכָּל)",
+    "179": " מִן כָּל בִּרְכָתָא וְשִׁירָתָא,",
+    "180": " תֻּשְׁבְּחָתָא וְנֶחֱמָתָא,",
+    "181": " דַּאֲמִירָן בְּעָלְ֒מָא, וְאִמְרוּ אָמֵן:"
+   },
+   "en": {
+    "160": "<small>The Chazzan recites the following half-Kaddish</small>",
+    "161": "Exalted and sanctified be His great Name",
+    "162": "in the world which He created",
+    "163": "according to His will",
+    "164": "and may He rule His kingdom",
+    "165": "bring forth His redemption",
+    "166": "and hasten the coming of His Mashiach.",
+    "167": "In your lifetime and in your days,",
+    "168": "and in the lifetime",
+    "169": "of the entire House of Israel,",
+    "170": "speedily and in the near future—",
+    "171": "and say Amein.",
+    "172": "May His great Name be blessed",
+    "173": "forever and for all eternity.",
+    "174": "Blessed and praised,",
+    "175": "glorified, and exalted and uplifted,",
+    "176": "honored and elevated and extolled",
+    "177": "be the Name of the Holy One, blessed is He;",
+    "178": "above (<i>Ten Days of Penitence:</i> far above)",
+    "179": "all the blessings and hymns,",
+    "180": "praises and consolations",
+    "181": "which we utter in the world—and say Amein."
+   }
+  }
+ }
+}

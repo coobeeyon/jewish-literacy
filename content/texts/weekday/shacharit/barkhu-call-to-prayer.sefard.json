@@ -1,0 +1,20 @@
+{
+ "id": "weekday/shacharit/barkhu-call-to-prayer:sefard",
+ "refs": {
+  "Weekday Siddur Sefard Linear, The Morning Prayers, The Blessings of Shema": {
+   "edition": "metsudah-sefard-weekday",
+   "he": {
+    "4": "<b>בָּרְ֒כוּ אֶת יְהֹוָה הַמְּ֒בֹרָךְ:</b>",
+    "6": "<b>בָּרוּךְ</b> יְהֹוָה הַמְּ֒בֹרָךְ",
+    "7": "לְעוֹלָם וָעֶד:"
+   },
+   "en": {
+    "3": "<small><i>The Chazzan says:</i></small>",
+    "4": "<b>Bless Adonoy Who is blessed.</b>",
+    "5": "<small><i>The Congregation responds and the Chazzan repeats:</i></small>",
+    "6": "Blessed is Adonoy, Who is blessed",
+    "7": "forever and ever."
+   }
+  }
+ }
+}

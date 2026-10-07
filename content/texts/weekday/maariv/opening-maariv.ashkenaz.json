@@ -1,0 +1,15 @@
+{
+ "id": "weekday/maariv/opening-maariv:ashkenaz",
+ "refs": {
+  "The Koren Shalem Siddur; Ashkenaz, Weekdays, Ma'ariv for Weekdays": {
+   "edition": "koren-ashkenaz",
+   "he": {
+    "2": "וְהוּא רַחוּם, יְכַפֵּר עָוֹן וְלֹא־יַשְׁחִית<br>וְהִרְבָּה לְהָשִׁיב אַפּוֹ, וְלֹא־יָעִיר כָּל־חֲמָתוֹ׃<br>יהוה הוֹשִֽׁיעָה, הַמֶּֽלֶךְ יַעֲנֵֽנוּ בְיוֹם־קָרְאֵֽנוּ׃"
+   },
+   "en": {
+    "1": "<i>On Motza’ei Shabbat some have the custom to sing Psalm 67 and Psalm 144 before the Ma’ariv Service ( page 692).</i>",
+    "2": "וְהוּא רַחוּם He is compassionate. He forgives iniquity and does not destroy.<br>Repeatedly He suppresses His anger, not rousing His full wrath. <small>LORD</small>, save! May the King, answer us on the day we call."
+   }
+  }
+ }
+}
