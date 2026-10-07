@@ -1,0 +1,5 @@
+---
+// "/" opens Weekday Shacharit. server.mjs and Netlify redirect it; this page is the fallback.
+import { redirectPage } from "../redirects";
+---
+<Fragment set:html={redirectPage("/weekday/shacharit")} />

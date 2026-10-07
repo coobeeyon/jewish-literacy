@@ -1,23 +1,45 @@
+# Every view is a prebuilt page in dist/ (e.g. /weekday/shacharit is weekday/shacharit/index.html).
+# Keep the redirects in step with src/redirects.ts and server.mjs. Netlify compresses on its own.
 [build]
 command = "npm run build"
 publish = "dist"
 
 [[redirects]]
+from = "/"
+to = "/weekday/shacharit"
+status = 302
+force = true
+
+[[redirects]]
 from = "/roadmap.html"
 to = "/weekday/shacharit"
 status = 301
+force = true
 
 [[redirects]]
 from = "/weekday-shacharit.html"
 to = "/weekday/shacharit"
 status = 301
+force = true
 
 [[redirects]]
 from = "/about.html"
 to = "/about"
 status = 301
+force = true
 
+# Anything that is not a page or asset is not found (Netlify only applies this when no file matches).
 [[redirects]]
 from = "/*"
-to = "/index.html"
-status = 200
+to = "/404.html"
+status = 404
+
+[[headers]]
+for = "/_astro/*"
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+for = "/plans/*"
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"

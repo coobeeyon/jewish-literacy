@@ -1,0 +1,17 @@
+---
+// One prebuilt page per view of every map, each with its movement, prayer and section open.
+import Page from "../layouts/Page.astro";
+import { mapRoutes, type MapRoute } from "../routes";
+import { renderMapPage } from "../view/map";
+
+export function getStaticPaths() {
+  return mapRoutes().map(route => ({ params: { route: [route.map.day, route.map.id, route.section, route.part].filter(Boolean).join("/") }, props: { route } }));
+}
+
+const { route } = Astro.props as { route: MapRoute };
+const page = renderMapPage(route);
+---
+<Page title={page.title}>
+  <Fragment set:html={page.main} />
+  <Fragment set:html={page.templates} />
+</Page>

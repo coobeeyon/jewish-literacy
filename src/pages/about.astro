@@ -1,0 +1,6 @@
+---
+import Page from "../layouts/Page.astro";
+import { renderToString } from "preact-render-to-string";
+import { About } from "../view/pages";
+---
+<Page title="About Jewish Literacy"><Fragment set:html={renderToString(About())} /></Page>

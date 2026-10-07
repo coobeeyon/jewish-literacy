@@ -1,0 +1,6 @@
+---
+import Page from "../layouts/Page.astro";
+import { renderToString } from "preact-render-to-string";
+import { NotFound } from "../view/pages";
+---
+<Page title="Page not found — Jewish Literacy Project"><Fragment set:html={renderToString(NotFound())} /></Page>
