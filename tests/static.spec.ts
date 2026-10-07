@@ -203,11 +203,11 @@ async function scriptBytes(page: Page, path: string) {
 
 // The goal is well under 30 KB of compressed script for a cold load; the budget here is 20 KB for the
 // page script, so a framework (or a data file bundled into the script) creeping back in fails the
-// build. A page that opens on a calendar box also loads the small script that writes its verdict
-// before the first paint (src/notes-script.ts): 25 KB in all.
+// build. A page that opens on a calendar box also carries, inline, the small script that writes its
+// verdict before the first paint (src/notes-script.ts): 25 KB in all.
 test("a cold load runs well under 30 KB of compressed script, and opening a prayer adds none", async ({ page }) => {
   test.skip(test.info().project.name !== "phone-390", "sizes do not depend on the viewport");
-  for (const [path, files, budget] of [["/weekday/shacharit", 1, 20], ["/weekday/shacharit/pesukei-dzimra/hodu", 1, 20], ["/weekday/shacharit/tachanun/falling-on-the-face", 2, 25]] as const) {
+  for (const [path, files, budget] of [["/weekday/shacharit", 1, 20], ["/weekday/shacharit/pesukei-dzimra/hodu", 1, 20], ["/weekday/shacharit/tachanun/falling-on-the-face", 1, 25]] as const) {
     const size = await scriptBytes(page, path);
     expect(size.files, path).toBe(files);
     expect(size.gzip, path).toBeLessThan(budget * 1024);

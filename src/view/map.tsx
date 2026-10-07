@@ -88,8 +88,8 @@ function registerTemplate(view: View, id: string, content: (view: View) => Compo
  * A calendar box: a date-dependent rule, stated in full, then the verdict for the date being prayed
  * with its reason ("Mon 12 Oct (1 Cheshvan): **not said** — it’s Rosh Chodesh."), written in by the
  * browser (src/today.ts). At the top of the opened item, before its sections. A page that arrives
- * with a box open has it complete and loads the small script that writes the verdict before the
- * first paint (src/notes-script.ts), so nothing moves. The templates a box opens from carry it
+ * with a box open has it complete and runs, right after the map, the small script that writes the
+ * verdict (src/notes-script.ts), so nothing moves. The templates a box opens from carry it
  * empty, and the browser builds it (src/client/date.ts), so every page stays light.
  */
 function CalendarBox(id: string, open = true): VNode {

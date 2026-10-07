@@ -45,8 +45,8 @@ Each such item opens with a calendar box, a yellow rectangle headed "Depends on 
 stated in full, then the verdict for the date with its reason ("Mon 12 Oct (1 Cheshvan): **not said** —
 it’s Rosh Chodesh."). Boxes cover Tachanun (with its Monday–Thursday additions), the weekday Torah
 reading, the psalms after Shacharit, the Omer, Tzidkatcha, and the Kaddish after Tachanun and after
-Tzidkatcha. A page that opens on a box loads a small script (`src/notes-script.ts`) that writes the
-verdict before the first paint. The date is today, or one dialled in on the date line, which puts it in the URL
+Tzidkatcha. A page that opens on a box carries a small script (`src/notes-script.ts`), right after the map,
+that writes the verdict before the first paint. The date is today, or one dialled in on the date line, which puts it in the URL
 (`?date=2026-10-21`) so a link reproduces it; the lines then name that date ("12 Oct:"). Hallel, Musaf
 and other additions are named in the day's line only: the maps do not yet show them.
 Shacharit and Mincha read that day; Maariv reads its evening, which belongs to the next Hebrew day;

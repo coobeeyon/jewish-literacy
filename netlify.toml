@@ -44,11 +44,6 @@ for = "/_astro/*"
 Cache-Control = "public, max-age=31536000, immutable"
 
 [[headers]]
-for = "/notes/*"
-[headers.values]
-Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
 for = "/texts/*"
 [headers.values]
 Cache-Control = "public, max-age=31536000, immutable"
