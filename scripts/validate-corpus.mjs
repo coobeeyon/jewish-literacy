@@ -96,3 +96,11 @@ for (const service of corpus.services) {
 }
 if (services.size !== 7) fail(`Expected 7 services, got ${services.size}`);
 console.log(`Corpus validation passed: ${withText} of ${prayerNodes} prayer cards have pinned Sefaria text`);
+
+// The date notes' calendar (src/calendar.generated.json, from npm run calendar) must reach well past
+// this build: a build in its last 60 days fails, so the site is never deployed with a table about to
+// run out. README.md records its last day.
+const calendar = JSON.parse(readFileSync(resolve(here, "../src/calendar.generated.json"), "utf8"));
+const daysLeft = Math.floor((Date.parse(`${calendar.to}T00:00:00Z`) - Date.now()) / 864e5);
+if (daysLeft < 60) fail(`The calendar table ends ${calendar.to}: run npm run calendar (it covers about two years from its start) and rebuild`);
+if (daysLeft < 180) console.warn(`Warning: the calendar table ends ${calendar.to}, in ${daysLeft} days; run npm run calendar soon`);

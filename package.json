@@ -8,6 +8,7 @@
     "pin-sefaria": "node scripts/pin-sefaria.mjs",
     "verify-sefaria": "node scripts/verify-sefaria.mjs",
     "snapshot-texts": "node scripts/snapshot-texts.mjs",
+    "calendar": "node scripts/calendar.mjs",
     "dev": "astro dev",
     "build": "node scripts/validate-corpus.mjs && tsc --noEmit && astro build && node scripts/compress-dist.mjs",
     "test": "npm run extract && npm run build && playwright test",
@@ -21,6 +22,7 @@
     "preact-render-to-string": "^6.8.0"
   },
   "devDependencies": {
+    "@hebcal/core": "^6.14.0",
     "@playwright/test": "^1.55.1",
     "@types/node": "^22.20.5",
     "cheerio": "^1.1.2",
