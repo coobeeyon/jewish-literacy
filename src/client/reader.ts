@@ -48,8 +48,20 @@ const loadPlan = (url: string) => cached(plans, url, () => getJson(url) as Promi
 const loadSection = (section: TextSection, edition: Edition) =>
   cached(segments, section.url, () => getJson(section.url, 15000).then(data => validateSection(data, section, edition)));
 
+/**
+ * The reader's fonts, loaded before any text shows, so text never appears in a stand-in font and
+ * re-flows when they land (pages that open on text preload them; see Page.astro). Gives up after
+ * three seconds and shows the text anyway.
+ */
+let fonts: Promise<unknown> | undefined;
+const readerFonts = () => fonts ??= Promise.race([
+  Promise.all([document.fonts.load('700 1em "Noto Serif Hebrew"', "אa"), document.fonts.load('1em "Source Serif 4"', "a")]),
+  new Promise(resolve => setTimeout(resolve, 3000)),
+]).catch(() => undefined);
+
 function loadPart(part: TextPart, editions: Plan["editions"]): Promise<RenderedPart> {
-  return Promise.all(part.sections.map(section => loadSection(section, editions[section.edition]))).then(all => {
+  const texts = Promise.all(part.sections.map(section => loadSection(section, editions[section.edition])));
+  return Promise.all([texts, readerFonts()]).then(([all]) => {
     const out: RenderedPart = { heading: part.heading, en: [], he: [] };
     part.sections.forEach((section, i) => renderSection(section, all[i], out));
     if (!out.he.some(p => !p.rubric)) throw new Error("No prayer text");

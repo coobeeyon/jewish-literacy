@@ -9,7 +9,7 @@
 import type { ComponentChildren, VNode } from "preact";
 import { renderToString } from "preact-render-to-string";
 import { displayTitle, HEICHA, heichaAloud, layoutFor, type Movement } from "../movements";
-import { planUrl } from "../plans";
+import { planSource, planUrl } from "../plans";
 import { corpus, routeFor, services, type MapRoute } from "../routes";
 import { textNusach } from "../sefaria";
 import type { AstNode, ContentNode, DayType, Localized, Nusach, ServiceId, ServiceMap } from "../types";
@@ -411,7 +411,8 @@ function MovementItem(view: View, movement: Movement): VNode {
 function ServiceView(view: View): VNode {
   const { map } = view.place;
   const layout = layoutFor(map);
-  return <main data-day={map.day} data-service={map.id}><header><h1>{LocalizedText({ en: "Jewish Literacy Project", he: "מיזם האוריינות היהודית" })}</h1><a className="about-link" href="/about">{LocalizedText({ en: "About Jewish Literacy", he: "על מיזם האוריינות היהודית" })}</a>{Controls(map.day, map.id)}<h2 id="service-heading" className="service-title" tabIndex={-1}>{LocalizedText(map.title)}</h2><div className="communal-key">{PeopleIcon()}{LocalizedText({ en: "Requires a minyan (prayer quorum)", he: "נדרש מניין (ציבור לתפילה)" })}</div></header>
+  // A view with something open has just arrived: its prayer text keeps a screen's room while it loads (styles.css).
+  return <main data-day={map.day} data-service={map.id} data-arriving={view.place.open.size ? "" : undefined}><header><h1>{LocalizedText({ en: "Jewish Literacy Project", he: "מיזם האוריינות היהודית" })}</h1><a className="about-link" href="/about">{LocalizedText({ en: "About Jewish Literacy", he: "על מיזם האוריינות היהודית" })}</a>{Controls(map.day, map.id)}<h2 id="service-heading" className="service-title" tabIndex={-1}>{LocalizedText(map.title)}</h2><div className="communal-key">{PeopleIcon()}{LocalizedText({ en: "Requires a minyan (prayer quorum)", he: "נדרש מניין (ציבור לתפילה)" })}</div></header>
     <ol className="service-map">{layout.items.map(item => item.kind === "seam"
       ? Landmark(view, item.node)
       : item.movement.single
@@ -435,7 +436,11 @@ function placeFor(route: MapRoute): Place {
 const checked = new Set<ServiceMap>();
 
 /** A map page in its route's state: the <main> markup and the templates that follow it. */
-export function renderMapPage(route: MapRoute): { title: string; main: string; templates: string; path: string } {
+/**
+ * A map page: `reading` is set where prayer text shows as soon as the page arrives (an open prayer
+ * shown whole, or an open section), with the open prayer's reading plan where there is one.
+ */
+export function renderMapPage(route: MapRoute): { title: string; main: string; templates: string; path: string; landing?: string; reading?: Reading } {
   const render = (nusach: Nusach, place: Place) => {
     const templates = new Map<string, string>();
     return { main: html(ServiceView({ place, nusach, fixed: false, templates })), templates };
@@ -451,7 +456,41 @@ export function renderMapPage(route: MapRoute): { title: string; main: string; t
   // Every view of a map opens and closes from the same templates (those of the map, closed).
   const closed = mapTemplates().get(route.map);
   if (closed && closed !== templates) throw new Error(`${routeFor(route.map, route.section, route.part, route.sub)}: its templates differ from its map's`);
-  return { title: `${route.map.title.en} — Jewish Literacy Project`, main: page.main, templates, path: routeFor(route.map, route.section, route.part, route.sub) };
+  return {
+    title: `${route.map.title.en} — Jewish Literacy Project`, main: page.main, templates, path: routeFor(route.map, route.section, route.part, route.sub),
+    landing: landingFor(route),
+    reading: readingFor(route, page.main),
+  };
+}
+
+/** What a page that opens on prayer text can ask for early: the open prayer's plan and its Sefaria texts (Ashkenaz, the default). */
+type Reading = { plan?: string; texts: string[] };
+
+function readingFor(route: MapRoute, main: string): Reading | undefined {
+  const whole = /<section [^>]*\bdata-prayer[\s=>]/.test(main);
+  const open = [...main.matchAll(/class="section-text"(?![^>]*\bhidden)[^>]*data-part="(\d+)"/g)].map(m => Number(m[1]));
+  if (!whole && !open.length) return undefined;
+  const node = route.section ? layoutFor(route.map).resolve(route.section)?.node : undefined;
+  if (!node?.text) return { texts: [] };
+  const source = planSource(node.text.ashkenaz);
+  const parts = open.length ? open.map(i => source.parts[i]) : source.parts;
+  return { plan: planUrl(node.text.ashkenaz), texts: [...new Set(parts.flatMap(part => part?.sections.map(section => section.url) || []))] };
+}
+
+/**
+ * Where a deep link lands (at the top of the screen), so a small script right after the map can
+ * put it there before the first paint: a section's entry; a movement; or a prayer, by its movement
+ * when it is a member of one. settle("initial") in src/client/map.ts lands on the same element
+ * once the page script runs; tests/switch.spec.ts checks the two agree.
+ */
+function landingFor(route: MapRoute): string | undefined {
+  if (!route.section) return undefined;
+  const target = layoutFor(route.map).resolve(route.section)!;
+  const heicha = route.part === HEICHA && !target.node;
+  const section = heicha ? route.sub : route.part;
+  if (section) return `#${heicha ? "movement" : "section"}-${route.section} .toc-toggle[data-section="${section}"]`;
+  if (target.node && target.movement && !target.movement.single) return `#movement-${target.movement.id}`;
+  return target.node ? `#section-${target.node.id}` : `#movement-${target.movement!.id}`;
 }
 
 const attr = (value: string) => value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");

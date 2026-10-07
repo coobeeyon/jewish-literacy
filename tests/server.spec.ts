@@ -104,6 +104,28 @@ test.describe("server.mjs", () => {
     agent.destroy();
   });
 
+  test("every page links the site icon set, served with its type and cached for good", async ({ request }) => {
+    const types: Record<string, string> = { ".svg": "image/svg+xml", ".png": "image/png" };
+    for (const path of ["/weekday/maariv", "/weekday/shacharit/tachanun/falling-on-the-face", "/about", "/nope"]) {
+      const html = await (await request.get(path)).text();
+      const icons = [...html.matchAll(/<link rel="(icon|apple-touch-icon)" href="([^"]+)"/g)].map(m => m[2]);
+      expect(icons, path).toHaveLength(4);
+      expect(html, path).toContain('<link rel="manifest" href="/manifest.webmanifest">');
+      for (const icon of icons) {
+        const response = await request.get(icon);
+        expect(response.status(), icon).toBe(200);
+        expect(response.headers()["content-type"], icon).toBe(types[icon.slice(icon.lastIndexOf("."))]);
+        expect(response.headers()["cache-control"], icon).toBe("public, max-age=31536000, immutable");
+      }
+    }
+    const manifest = await request.get("/manifest.webmanifest");
+    expect(manifest.headers()["content-type"]).toBe("application/manifest+json");
+    expect(manifest.headers()["cache-control"]).toBe("no-cache");
+    const { name, short_name, theme_color, icons } = await manifest.json();
+    expect([name, short_name, theme_color]).toEqual(["Jewish Literacy Project", "Jewish Literacy", "#f7fafc"]);
+    for (const icon of icons) expect((await request.get(icon.src)).status(), icon.src).toBe(200);
+  });
+
   test("old URLs redirect, and unknown paths are a real 404 with the not-found page", async ({ request }) => {
     for (const [from, to, status] of [["/roadmap.html", "/weekday/shacharit", 301], ["/weekday-shacharit.html", "/weekday/shacharit", 301], ["/about.html", "/about", 301], ["/", "/weekday/shacharit", 302]] as const) {
       const response = await request.get(from, { maxRedirects: 0 });

@@ -221,3 +221,55 @@ test("a deep link near the end of the page still lands on its target once the te
   await page.mouse.wheel(0, -300);
   await expect.poll(() => page.locator("#movement-closing").evaluate(el => Math.round(el.getBoundingClientRect().top))).toBeGreaterThan(100);
 });
+
+test("a first load paints with the page alone: styles inlined, fonts preloaded only where text shows", async ({ page, request }) => {
+  test.skip(test.info().project.name !== "phone-390", "markup does not depend on the viewport");
+  const map = await (await request.get("/weekday/maariv")).text();
+  expect(map).not.toMatch(/<link[^>]+rel="stylesheet"/);
+  expect(map).toContain("<style>");
+  expect(map).not.toContain('rel="preload"');
+  for (const path of ["/weekday/shacharit/tachanun/falling-on-the-face", "/weekday/mincha/ashrei"]) {
+    const section = await (await request.get(path)).text();
+    const fonts = [...section.matchAll(/<link rel="preload" href="([^"]+)" as="font"/g)].map(m => m[1]);
+    expect(fonts, path).toHaveLength(3);
+    // The very files the styles use, so nothing loads twice.
+    for (const font of fonts) expect(section).toContain(`url(${font})`);
+    // And the open prayer's reading plan, as the reader will ask for it.
+    const plan = section.match(/<link rel="preload" href="(\/plans\/[^"]+)" as="fetch"/)![1];
+    expect(section).toContain(`&quot;ashkenaz&quot;:&quot;${plan}&quot;`);
+  }
+  await page.goto("/weekday/maariv");
+  await expect(page.locator("#service-heading")).toBeVisible();
+});
+
+// A deep link lands on its target before the page script arrives (a small inline script does it),
+// and the page script keeps it exactly there: no jump once it runs.
+test("deep links land before the script runs, where the script would put them", async ({ page }) => {
+  for (const path of ["/weekday/shacharit/tachanun/falling-on-the-face", "/weekday/mincha/amidah/heicha-kedushah/healing-refaeinu", "/weekday/mincha/chazzans-repetition", "/weekday/shacharit/closing", "/weekday/mincha/ashrei", "/shabbat/musaf/rabbis-kaddish", "/weekday/maariv/barkhu-call-to-prayer"]) {
+    await page.route("**/_astro/*.js", route => route.abort());
+    await page.goto(path);
+    const before = await page.evaluate(() => scrollY);
+    await page.unroute("**/_astro/*.js");
+    await page.goto(path);
+    await page.waitForLoadState("networkidle");
+    await expect(page.locator('[aria-busy="true"]')).toHaveCount(0);
+    await page.waitForTimeout(200);
+    const after = await page.evaluate(() => scrollY);
+    expect(before, path).toBeGreaterThan(0);
+    expect(Math.abs(after - before), path).toBeLessThanOrEqual(2);
+  }
+});
+
+test("a deep link's text arrives without shifting the page", async ({ page }) => {
+  await page.route("https://www.sefaria.org/api/v3/texts/**", async route => { await new Promise(r => setTimeout(r, 400)); await route.fallback(); });
+  await page.addInitScript(() => {
+    (window as unknown as { shift: number }).shift = 0;
+    new PerformanceObserver(list => { for (const entry of list.getEntries() as Array<PerformanceEntry & { value: number; hadRecentInput: boolean }>) if (!entry.hadRecentInput) (window as unknown as { shift: number }).shift += entry.value; }).observe({ type: "layout-shift", buffered: true });
+  });
+  for (const path of ["/weekday/shacharit/tachanun/falling-on-the-face", "/weekday/mincha/ashrei"]) {
+    await page.goto(path);
+    await expect(page.locator(".reader-text").first()).toBeVisible();
+    await page.waitForTimeout(300);
+    expect(await page.evaluate(() => (window as unknown as { shift: number }).shift), path).toBeLessThan(0.02);
+  }
+});

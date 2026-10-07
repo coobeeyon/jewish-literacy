@@ -9,7 +9,8 @@
     "verify-sefaria": "node scripts/verify-sefaria.mjs",
     "dev": "astro dev",
     "build": "node scripts/validate-corpus.mjs && tsc --noEmit && astro build && node scripts/compress-dist.mjs",
-    "test": "npm run extract && npm run build && playwright test"
+    "test": "npm run extract && npm run build && playwright test",
+    "perf": "node scripts/perf.mjs"
   },
   "dependencies": {
     "@fontsource/noto-serif-hebrew": "^5.2.8",

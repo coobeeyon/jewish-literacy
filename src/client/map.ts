@@ -198,9 +198,10 @@ export function initMap(main: HTMLElement, arrival: Navigation = "initial"): Map
     }
     // At once, not on a later frame: the page is already in its new state, and a deferred focus
     // could land after the reader's next tap or key and take focus from it.
-    if (navigation !== "pop" || initial) scrollTo?.scrollIntoView({ block, behavior: initial || reduce ? "auto" : "smooth" });
+    if (navigation !== "pop" || initial) scrollTo?.scrollIntoView({ block, behavior: initial || reduce ? "instant" : "smooth" });
     focus?.focus({ preventScroll: true });
     if (navigation === "initial" && scrollTo) holdInView(scrollTo, block);
+    else if (navigation === "initial") delete main.dataset.arriving;
   }
 
   /**
@@ -228,6 +229,8 @@ export function initMap(main: HTMLElement, arrival: Navigation = "initial"): Map
       removeEventListener("scroll", onScroll);
       for (const type of interactions) removeEventListener(type, stop, true);
       stopHolding = undefined;
+      // The page has settled or the reader has taken over: later openings get no reserved room.
+      delete main.dataset.arriving;
     }
     stopHolding = stop;
     observer.observe(main);

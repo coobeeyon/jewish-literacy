@@ -194,3 +194,7 @@ html[data-switch=back]{--switch-shift:-32px}
 html[data-switch-in] .service-title,html[data-switch-in] .service-map{animation:var(--switch-time) ease-out both jl-switch-in}
 @keyframes jl-switch-out{to{opacity:0;transform:translateX(calc(-1 * var(--switch-shift)))}}
 @keyframes jl-switch-in{0%,25%{opacity:0;transform:translateX(var(--switch-shift))}}
+
+/* A deep link that opens on prayer text keeps a screen's room for it while it loads, so nothing
+   below jumps down when it arrives (main[data-arriving] until the reader first taps, scrolls or types). */
+main[data-arriving] .section-text:not([hidden]):not(:has(.reader-text, .reader-failure)),main[data-arriving] section[data-prayer]:not(:has(.reader-text, .reader-failure)){min-height:100vh}

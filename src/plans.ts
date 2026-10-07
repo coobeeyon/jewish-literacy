@@ -27,4 +27,7 @@ function file(id: string) {
 
 export const planUrl = (id: string) => `/plans/${file(id).name}`;
 
+/** A prayer's reading plan itself (which Sefaria requests each of its parts makes). */
+export const planSource = (id: string): TextSource => file(id) && sources[id];
+
 export const allPlans = () => Object.keys(sources).map(id => file(id));

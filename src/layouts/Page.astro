@@ -1,6 +1,9 @@
 ---
 // Every page: the fonts and styles, the saved display preferences applied before first paint,
-// and the one small browser script (src/client/main.ts). The inline script runs before first paint:
+// and the one small browser script (src/client/main.ts). Styles are inlined (astro.config.mjs). A page
+// that shows prayer text as it arrives preloads the reader's fonts (so the text never re-flows when
+// they land), its reading plan and its Sefaria texts, so the text does not wait on the script. The inline script runs before
+// first paint:
 // language and nusach become attributes on <html>, and CSS does the rest. Its keys and defaults
 // match src/client/preferences.ts.
 import "@fontsource/noto-serif-hebrew/700.css";
@@ -8,9 +11,17 @@ import "@fontsource/source-serif-4/400.css";
 import "@fontsource/source-serif-4/400-italic.css";
 import "@fontsource/source-serif-4/700.css";
 import "../styles.css";
+import hebrew from "@fontsource/noto-serif-hebrew/files/noto-serif-hebrew-hebrew-700-normal.woff2?url";
+import hebrewLatin from "@fontsource/noto-serif-hebrew/files/noto-serif-hebrew-latin-700-normal.woff2?url";
+import english from "@fontsource/source-serif-4/files/source-serif-4-latin-400-normal.woff2?url";
+// The site icon (src/icons): content-hashed URLs, so browsers keep them for good and a new design still shows.
+import iconSvg from "../icons/alef.svg?no-inline";
+import icon32 from "../icons/favicon-32.png?no-inline";
+import icon16 from "../icons/favicon-16.png?no-inline";
+import appleIcon from "../icons/apple-touch-icon.png?no-inline";
 
-interface Props { title: string }
-const { title } = Astro.props;
+interface Props { title: string; reading?: { plan?: string; texts: string[] } }
+const { title, reading } = Astro.props;
 ---
 <!doctype html>
 <html lang="en">
@@ -20,6 +31,15 @@ const { title } = Astro.props;
     <meta name="theme-color" content="#f7fafc" />
     <title>{title}</title>
     <script is:inline>(function(){var r=document.documentElement,l,n;try{l=localStorage.getItem("weekday-shacharit-language");n=localStorage.getItem("weekday-shacharit-nusach")}catch(e){}l=l==="en"||l==="he"?l:"both";r.setAttribute("data-language",l);r.setAttribute("data-nusach",n==="sefard"?"sefard":"ashkenaz");r.lang=l==="he"?"he":"en";r.dir="ltr"})()</script>
+    {reading && <link rel="preconnect" href="https://www.sefaria.org" crossorigin />}
+    {reading?.plan && <link rel="preload" href={reading.plan} as="fetch" type="application/json" crossorigin />}
+    {reading?.texts.map(href => <link rel="preload" href={href} as="fetch" crossorigin />)}
+    {reading && [hebrew, hebrewLatin, english].map(href => <link rel="preload" href={href} as="font" type="font/woff2" crossorigin />)}
+    <link rel="icon" href={iconSvg} type="image/svg+xml" />
+    <link rel="icon" href={icon32} type="image/png" sizes="32x32" />
+    <link rel="icon" href={icon16} type="image/png" sizes="16x16" />
+    <link rel="apple-touch-icon" href={appleIcon} />
+    <link rel="manifest" href="/manifest.webmanifest" />
     <script>import "../client/main";</script>
   </head>
   <body>

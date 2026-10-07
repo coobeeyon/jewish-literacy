@@ -6,7 +6,8 @@
 //   - a cold first load of /weekday/shacharit (empty cache).
 // Times run from the tap (or reload) until the new map's heading is in the page and painted (and,
 // where the switch animates, until the animation is done).
-//   node scripts/switch-timing.mjs <checkout with a built dist> [<another> …]
+//   node scripts/switch-timing.mjs <checkout with a built dist, or a site's base URL> [<another> …]
+// COLD=<path> sets the cold-load path (default /weekday/shacharit), e.g. a link with a trailing slash.
 import { chromium } from "@playwright/test";
 import { serve, settle } from "./proof-lib.mjs";
 
@@ -15,6 +16,7 @@ if (!checkouts.length) throw new Error("usage: node scripts/switch-timing.mjs <c
 const RUNS = Number(process.env.RUNS || 5);
 // Chromium offers Brotli to 127.0.0.1 but not to a plain-http address elsewhere; ACCEPT=gzip
 // measures what a phone gets over plain http.
+const coldPath = process.env.COLD || "/weekday/shacharit";
 const headers = process.env.ACCEPT ? { "Accept-Encoding": process.env.ACCEPT } : {};
 const slow = { offline: false, latency: 300, downloadThroughput: 1.5e6 / 8, uploadThroughput: 0.75e6 / 8 };
 const browser = await chromium.launch();
@@ -83,9 +85,10 @@ const scenarios = {
     await context.close();
     return `${ms} (${transferSize < encodedBodySize ? "304" : "200"}, ${transferSize} B)`;
   },
-  "cold first load of /weekday/shacharit": async base => {
+  [`cold first load of ${coldPath}`]: async base => {
     const { context, page } = await phone();
-    const ms = await timeTo(page, "weekday", "shacharit", () => page.goto(`${base}/weekday/shacharit`, { waitUntil: "commit" }));
+    const [, day, service] = coldPath.split("/");
+    const ms = await timeTo(page, day, service, () => page.goto(`${base}${coldPath}`, { waitUntil: "commit" }));
     const { transferSize } = await page.evaluate(() => performance.getEntriesByType("navigation")[0].toJSON());
     await context.close();
     return `${ms} (page ${transferSize} B)`;
@@ -94,7 +97,7 @@ const scenarios = {
 
 const median = values => { const sorted = [...values].sort((a, b) => parseInt(a) - parseInt(b)); return sorted[Math.floor(sorted.length / 2)]; };
 for (const dir of checkouts) {
-  const site = await serve(dir);
+  const site = /^https?:/.test(dir) ? { base: dir.replace(/\/$/, ""), stop() {} } : await serve(dir);
   console.log(`\n${dir}`);
   for (const [name, run] of Object.entries(scenarios)) {
     const times = [];

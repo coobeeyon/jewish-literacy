@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- The site icon: a bold white alef on the site's ink navy, in a rounded square. Edit here, then
+       run `node scripts/icons.mjs` to redraw the PNG sizes beside it. The letter is an outline
+       (DejaVu Sans Bold's alef, U+05D0), not text, so it looks the same everywhere. -->
+  <rect width="64" height="64" rx="14" fill="#17324d"/>
+  <path fill="#fff" transform="translate(32 32) scale(0.0357 -0.0357) translate(-745.5 -560)" d="M1019 435L1319 0L947 0L597 504Q542 440 542 296L542 0L214 0L214 221Q214 313 230.5 387Q247 461 269.5 506Q292 551 330.5 589Q369 627 397.5 645.5Q426 664 470 686L172 1120L543 1120L893 616Q948 680 948 824L948 1120L1277 1120L1277 899Q1277 832 1268.5 775Q1260 718 1247 677Q1234 636 1212 600Q1190 564 1170.5 541.5Q1151 519 1121 497Q1091 475 1070.5 463Q1050 451 1019 435Z"/>
+</svg>

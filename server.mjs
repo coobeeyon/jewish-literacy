@@ -16,7 +16,7 @@ const redirects = new Map([
   ["/about.html", [301, "/about"]],
   ["/", [302, "/weekday/shacharit"]],
 ]);
-const mime = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".woff": "font/woff", ".woff2": "font/woff2", ".json": "application/json", ".svg": "image/svg+xml" };
+const mime = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".woff": "font/woff", ".woff2": "font/woff2", ".json": "application/json", ".svg": "image/svg+xml", ".png": "image/png", ".webmanifest": "application/manifest+json" };
 // scripts/compress-dist.mjs writes these beside each text asset at build time.
 const compressible = new Set([".js", ".css", ".html", ".json", ".svg"]);
 const encodings = [["br", ".br"], ["gzip", ".gz"]];
@@ -68,9 +68,9 @@ const server = createServer((request, response) => {
   if (redirect) { response.writeHead(redirect[0], { Location: redirect[1] }); response.end(); return; }
   const { file, status } = resolve(url.pathname);
   const type = extname(file);
-  // Pages are revalidated every time (an unchanged page costs only a 304); everything else has a
-  // content hash in its name.
-  const headers = { "Content-Type": mime[type] || "application/octet-stream", "Cache-Control": type === ".html" ? "no-cache" : "public, max-age=31536000, immutable" };
+  // Pages (and the manifest) are revalidated every time (an unchanged one costs only a 304);
+  // everything else has a content hash in its name.
+  const headers = { "Content-Type": mime[type] || "application/octet-stream", "Cache-Control": type === ".html" || type === ".webmanifest" ? "no-cache" : "public, max-age=31536000, immutable" };
   let body = file;
   if (compressible.has(type)) {
     headers.Vary = "Accept-Encoding";
