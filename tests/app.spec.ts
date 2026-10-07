@@ -418,7 +418,7 @@ test("Torah cards show the week's reading from the site's own calendar, with lin
   await mockSefaria(page, unexpected);
   await page.clock.setFixedTime(new Date("2026-10-07T12:00:00"));
   await watchLoading(page);
-  const reading = (lang: "en" | "he") => page.locator(`.reader-calendar:visible [data-reading] [data-lang=${lang}]`);
+  const reading = (lang: "en" | "he") => page.locator(`.reader-calendar:visible .calendar-reading [data-lang=${lang}]`);
   // Shabbat morning: this Shabbat's portion and haftarah (10 October 2026, Bereshit; Shabbat before Rosh Chodesh).
   await page.goto("/shabbat/shacharit/torah-service");
   await expect(reading("en")).toHaveText(["Bereshit", "Genesis 1:1–6:8", "Haftarah: I Samuel 20:18–42"]);
@@ -515,7 +515,8 @@ test("seams are slim double-bordered bubbles with the minyan mark, title only", 
 
 test("caveats and conditions stay off the top level and appear when opened", async ({ page }) => {
   await page.goto("/weekday/shacharit");
-  const caveats = ["community practice", "Without Tachanun", "Not said on", "Today:", "community order varies", "Monday and Thursday"];
+  // (The map's date labels, "Today: said", are meant for the top level; the rules behind them are not.)
+  const caveats = ["community practice", "Without Tachanun", "Not said on", "community order varies", "Monday and Thursday mornings"];
   for (const caveat of caveats) await expect(page.locator(".service-map").getByText(caveat)).toHaveCount(0);
   // Top-level movements carry a title and at most one short line per language.
   for (const blurb of await page.locator(".service-map>.movement>button .blurb [data-lang=en]").all()) {
@@ -526,8 +527,8 @@ test("caveats and conditions stay off the top level and appear when opened", asy
   await expect(page).toHaveURL(/\/weekday\/shacharit\/torah$/);
   await expect(page.locator("#movement-torah").getByText("Monday and Thursday · three aliyot")).toBeVisible();
   await page.locator("#section-half-kaddish-2 .landmark-toggle").click();
-  await expect(page.locator("#section-half-kaddish-2 .seam-note")).toContainText("Without Tachanun it follows the leader’s repetition");
-  await expect(page.locator("#section-half-kaddish-2 .seam-note [data-note-status]")).toContainText("Today:");
+  await expect(page.locator("#section-half-kaddish-2 .seam-note")).toContainText("without it, straight after the repetition");
+  await expect(page.locator("#section-half-kaddish-2 .seam-note .note-status")).toContainText("Today:");
 });
 
 test("a movement opens into its prayers, each of which opens into its text", async ({ page }) => {

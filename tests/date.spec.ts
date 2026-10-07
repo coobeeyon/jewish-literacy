@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
 import { HDate, HebrewCalendar, flags } from "@hebcal/core";
 import { noteRules } from "../src/notes";
-import { noteStatus, noteTimes, type CalendarTable } from "../src/today";
+import { daySummary, noteStatus, noteTimes, type CalendarTable } from "../src/today";
 import { mockSefaria } from "./sefaria-mock";
 
 // The date notes (src/today.ts, src/client/date.ts) and their calendar (scripts/calendar.mjs).
@@ -10,38 +10,63 @@ const table = JSON.parse(readFileSync(new URL("../src/calendar.generated.json", 
 
 test.beforeEach(async ({ page }) => { await mockSefaria(page); });
 
-const status = (page: Page, note: string) => page.locator(`[data-note="${note}"]:visible [data-note-status] [data-lang=en]`).first();
-const statusHe = (page: Page, note: string) => page.locator(`[data-note="${note}"]:visible [data-note-status] [data-lang=he]`).first();
+/** Put each set of lines in turn into `el` (one span per line, as the page script does) and return those that do not fit one line each, or overflow the room kept. */
+const misfits = (el: Element, all: string[][]) => {
+  const out: string[] = [];
+  // The room is kept by the element, or (for the day's line) by the date line that holds it.
+  const holder = parseFloat(getComputedStyle(el).minHeight) ? el : el.parentElement!;
+  const room = parseFloat(getComputedStyle(holder).minHeight);
+  for (const lines of all) {
+    el.replaceChildren(...lines.map((text, i) => {
+      const span = document.createElement("span");
+      const he = /[א-ת]/.test(text.replace(/[^א-תA-Za-z]/g, "").slice(0, 1));
+      span.dataset.lang = he ? "he" : "en";
+      if (he) span.className = "he";
+      span.textContent = text;
+      return span;
+    }));
+    const spans = [...el.children].filter(span => (span as HTMLElement).checkVisibility());
+    const line = parseFloat(getComputedStyle(el).lineHeight);
+    // Each line one line high and no wider than the box; the whole exactly the room kept.
+    const box = el.getBoundingClientRect(), held = holder.getBoundingClientRect();
+    if (spans.some(span => span.getClientRects().length !== 1 || span.getBoundingClientRect().width > box.width + 0.5) || Math.abs(held.height - room) > 0.5 || line <= 0) out.push(lines.join(" | "));
+  }
+  return out;
+};
+
+
+const status = (page: Page, note: string) => page.locator(`[data-note="${note}"]:visible .note-status [data-lang=en]`).first();
+const statusHe = (page: Page, note: string) => page.locator(`[data-note="${note}"]:visible .note-status [data-lang=he]`).first();
 /** Fix the browser's clock at noon local time on a civil date, so "today" is that date. */
 const todayIs = (page: Page, iso: string) => page.clock.setFixedTime(new Date(`${iso}T12:00:00`));
 
 test.describe("statuses for fixed dates", () => {
   const cases: Array<[string, string, string, string]> = [
     // [path with ?date=, note, English status, what it checks]; today is Wednesday 7 October 2026.
-    ["/weekday/shacharit/tachanun?date=2026-10-12", "tachanun-shacharit", "12 Oct: none—Rosh Chodesh", "Rosh Chodesh (1 Cheshvan)"],
+    ["/weekday/shacharit/tachanun?date=2026-10-12", "tachanun-shacharit", "Not on 12 Oct—Rosh Chodesh", "Rosh Chodesh (1 Cheshvan)"],
     ["/weekday/shacharit/half-kaddish-2?date=2026-10-12", "kaddish-after-tachanun", "12 Oct: after Hallel, as Full Kaddish", "Rosh Chodesh: Hallel, then Full Kaddish"],
     ["/weekday/shacharit/torah-reading?date=2026-10-12", "torah-weekday", "12 Oct: Rosh Chodesh, 4 aliyot", "Rosh Chodesh reading"],
     ["/weekday/shacharit/aleinu-and-closing-psalms?date=2026-10-12", "daily-psalms", "12 Oct: Psalms 48 and 104", "Monday's psalm and Rosh Chodesh's"],
-    ["/weekday/mincha/tachanun?date=2026-11-09", "tachanun-mincha", "9 Nov: none—Erev Rosh Chodesh", "the afternoon before Rosh Chodesh Kislev"],
+    ["/weekday/mincha/tachanun?date=2026-11-09", "tachanun-mincha", "Not on 9 Nov—Erev Rosh Chodesh", "the afternoon before Rosh Chodesh Kislev"],
     ["/weekday/shacharit/tachanun?date=2026-11-09", "tachanun-shacharit", "9 Nov: said, the long form", "that morning, an ordinary Monday"],
     ["/weekday/shacharit/torah-reading?date=2026-10-19", "torah-weekday", "19 Oct: Torah reading, 3 aliyot", "an ordinary Monday"],
     ["/weekday/shacharit/torah-reading?date=2026-10-20", "torah-weekday", "20 Oct: no reading", "an ordinary Tuesday"],
     ["/weekday/shacharit/torah-reading?date=2026-12-20", "torah-weekday", "20 Dec: fast day, 3 aliyot", "the fast of 10 Tevet"],
     ["/weekday/shacharit/tachanun?date=2026-12-20", "tachanun-shacharit", "20 Dec: said", "Tachanun on a fast day"],
     ["/weekday/shacharit/half-kaddish-2?date=2026-12-07", "kaddish-after-tachanun", "7 Dec: after Hallel", "Chanukah: Hallel, then Half Kaddish"],
-    ["/weekday/shacharit/half-kaddish-2?date=2027-01-23", "kaddish-after-tachanun", "23 Jan: it’s Shabbat", "Tu BiShvat on Shabbat"],
+    ["/weekday/shacharit/half-kaddish-2?date=2027-01-23", "kaddish-after-tachanun", "Not on 23 Jan—Shabbat", "Tu BiShvat on Shabbat"],
     ["/weekday/shacharit/half-kaddish-2?date=2027-05-25", "kaddish-after-tachanun", "25 May: after the repetition", "Lag BaOmer: no Tachanun, no Hallel"],
     ["/weekday/shacharit/torah-reading?date=2026-12-10", "torah-weekday", "10 Dec: 2 scrolls, 4 aliyot", "Rosh Chodesh Tevet in Chanukah"],
-    ["/weekday/mincha/tachanun?date=2026-10-16", "tachanun-mincha", "16 Oct: none—Erev Shabbat", "Friday afternoon"],
-    ["/weekday/mincha/tachanun?date=2027-08-11", "tachanun-mincha", "11 Aug: none—Erev Tisha B’Av", "the afternoon before Tisha B'Av"],
-    ["/weekday/shacharit/tachanun?date=2027-06-16", "tachanun-shacharit", "16 Jun: customs vary", "after Shavuot, before 13 Sivan"],
-    ["/weekday/shacharit/tachanun?date=2027-05-12", "tachanun-shacharit", "12 May: customs vary", "Yom HaAtzmaut"],
+    ["/weekday/mincha/tachanun?date=2026-10-16", "tachanun-mincha", "Not on 16 Oct—Erev Shabbat", "Friday afternoon"],
+    ["/weekday/mincha/tachanun?date=2027-08-11", "tachanun-mincha", "Not on 11 Aug—Erev Tisha B’Av", "the afternoon before Tisha B'Av"],
+    ["/weekday/shacharit/tachanun?date=2027-06-16", "tachanun-shacharit", "16 Jun: often omitted to 12 Sivan", "after Shavuot, before 13 Sivan"],
+    ["/weekday/shacharit/tachanun?date=2027-05-12", "tachanun-shacharit", "12 May: often omitted", "Yom HaAtzmaut"],
     ["/weekday/maariv/concluding-prayers?date=2027-05-14", "omer", "14 May, eve: Omer day 23", "a day in the Omer"],
     ["/weekday/maariv/concluding-prayers?date=2027-04-21", "omer", "21 Apr, eve: no Omer count", "the first Seder night: no count yet"],
     ["/weekday/maariv/concluding-prayers?date=2027-04-22", "omer", "22 Apr, eve: Omer day 1", "the second night of Pesach"],
     ["/weekday/maariv/concluding-prayers?date=2027-06-09", "omer", "9 Jun, eve: Omer day 49", "the night before Shavuot"],
     ["/shabbat/mincha/tzidkatcha?date=2026-10-17", "tzidkatcha", "17 Oct: said", "an ordinary Shabbat"],
-    ["/shabbat/mincha/tzidkatcha?date=2026-10-10", "tzidkatcha", "10 Oct: none—Erev Rosh Chodesh", "a Shabbat before Rosh Chodesh (this week's)"],
+    ["/shabbat/mincha/tzidkatcha?date=2026-10-10", "tzidkatcha", "Not on 10 Oct—Erev Rosh Chodesh", "a Shabbat before Rosh Chodesh (this week's)"],
     ["/shabbat/mincha/full-kaddish?date=2026-10-08", "kaddish-after-tzidkatcha", "10 Oct: after the repetition", "Thursday's date reads the coming Shabbat"],
     ["/shabbat/mincha/full-kaddish?date=2026-10-15", "kaddish-after-tzidkatcha", "17 Oct: after Tzidkatcha", "next week's Shabbat"],
   ];
@@ -58,8 +83,8 @@ test.describe("statuses for fixed dates", () => {
     // A Monday that is Rosh Chodesh.
     await todayIs(page, "2026-10-12");
     await page.goto("/weekday/shacharit/tachanun");
-    await expect(status(page, "tachanun-shacharit")).toHaveText("Today: none—Rosh Chodesh");
-    await expect(statusHe(page, "tachanun-shacharit")).toHaveText("היום: אינו נאמר — ראש חודש");
+    await expect(status(page, "tachanun-shacharit")).toHaveText("Not today—Rosh Chodesh");
+    await expect(statusHe(page, "tachanun-shacharit")).toHaveText("לא היום — ראש חודש");
     await page.goto("/weekday/shacharit/torah-reading");
     await expect(status(page, "torah-weekday")).toHaveText("Today: Rosh Chodesh, 4 aliyot");
     // Maariv: the evening of the Thursday before belongs to Friday, a day of the Omer.
@@ -68,16 +93,16 @@ test.describe("statuses for fixed dates", () => {
     await expect(status(page, "omer")).toHaveText("Tonight: Omer day 22");
     await todayIs(page, "2026-10-10");
     await page.goto("/shabbat/mincha/tzidkatcha");
-    await expect(status(page, "tzidkatcha")).toHaveText("Today: none—Erev Rosh Chodesh");
-    await expect(statusHe(page, "tzidkatcha")).toHaveText("היום: אינה נאמרת — ערב ראש חודש");
+    await expect(status(page, "tzidkatcha")).toHaveText("Not today—Erev Rosh Chodesh");
+    await expect(statusHe(page, "tzidkatcha")).toHaveText("לא היום — ערב ראש חודש");
   });
 
   test("a weekday map on Shabbat or a festival says so", async ({ page }) => {
     await todayIs(page, "2026-10-07");
     await page.goto("/weekday/shacharit/tachanun?date=2026-10-10");
-    await expect(status(page, "tachanun-shacharit")).toHaveText("10 Oct: it’s Shabbat");
+    await expect(status(page, "tachanun-shacharit")).toHaveText("Not on 10 Oct—Shabbat");
     await page.goto("/weekday/shacharit/tachanun?date=2027-04-22");
-    await expect(status(page, "tachanun-shacharit")).toHaveText("22 Apr: it’s a festival");
+    await expect(status(page, "tachanun-shacharit")).toHaveText("Not on 22 Apr—a festival");
   });
 });
 
@@ -94,13 +119,13 @@ test.describe("the date line", () => {
     for (let i = 0; i < 5; i++) await line.getByRole("button", { name: "Next day" }).click();
     await expect(page).toHaveURL(/\/weekday\/shacharit\/tachanun\?date=2026-10-12$/);
     await expect(line.locator("[data-date-text] [data-lang=en]")).toHaveText("Mon 12 Oct · 1 Cheshvan 5787");
-    await expect(status(page, "tachanun-shacharit")).toHaveText("12 Oct: none—Rosh Chodesh");
+    await expect(status(page, "tachanun-shacharit")).toHaveText("Not on 12 Oct—Rosh Chodesh");
     await line.getByRole("button", { name: "Previous day" }).click();
     await expect(page).toHaveURL(/\?date=2026-10-11$/);
     await expect(line.locator("[data-date-text] [data-lang=en]")).toHaveText("Sun 11 Oct · 30 Tishrei 5787");
-    await expect(status(page, "tachanun-shacharit")).toHaveText("11 Oct: none—Rosh Chodesh");
+    await expect(status(page, "tachanun-shacharit")).toHaveText("Not on 11 Oct—Rosh Chodesh");
     await line.getByRole("button", { name: "Previous day" }).click();
-    await expect(status(page, "tachanun-shacharit")).toHaveText("10 Oct: it’s Shabbat");
+    await expect(status(page, "tachanun-shacharit")).toHaveText("Not on 10 Oct—Shabbat");
     // Back to today: the URL is clean again.
     await line.locator("[data-date-today]").click();
     await expect(page).toHaveURL(/\/weekday\/shacharit\/tachanun$/);
@@ -122,13 +147,13 @@ test.describe("the date line", () => {
     await page.goto("/weekday/shacharit?date=2026-10-12");
     await page.locator("#section-tachanun>button").click();
     await expect(page).toHaveURL(/\/weekday\/shacharit\/tachanun\?date=2026-10-12$/);
-    await expect(status(page, "tachanun-shacharit")).toHaveText("12 Oct: none—Rosh Chodesh");
+    await expect(status(page, "tachanun-shacharit")).toHaveText("Not on 12 Oct—Rosh Chodesh");
     // A note opened from a template is worded at once.
     await page.locator('[data-service-choice="mincha"]').click();
     await expect(page).toHaveURL(/\/weekday\/mincha\?date=2026-10-12$/);
     await page.locator("#section-tachanun>button").click();
     await expect(page).toHaveURL(/\/weekday\/mincha\/tachanun\?date=2026-10-12$/);
-    await expect(status(page, "tachanun-mincha")).toHaveText("12 Oct: none—Rosh Chodesh");
+    await expect(status(page, "tachanun-mincha")).toHaveText("Not on 12 Oct—Rosh Chodesh");
     // A new date replaces this entry's; the entries before keep theirs.
     await page.locator(".date-line").getByRole("button", { name: "Next day" }).click();
     await expect(page).toHaveURL(/\/weekday\/mincha\/tachanun\?date=2026-10-13$/);
@@ -145,7 +170,7 @@ test.describe("the date line", () => {
     await todayIs(page, "2026-10-07");
     await page.goto("/weekday/shacharit/tachanun?date=2030-01-01");
     await expect(status(page, "tachanun-shacharit")).toHaveText("1 Jan: not in the calendar");
-    await expect(page.locator('[data-note="tachanun-shacharit"]:visible .note-rule [data-lang=en]').first()).toContainText("Not said on Shabbat and festivals");
+    await expect(page.locator('[data-note="tachanun-shacharit"]:visible .note-rule [data-lang=en]').first()).toContainText("Not said on Shabbat, festivals");
     await expect(page.locator(".date-line [data-date-text] [data-lang=en]")).toHaveText("Tue 1 Jan · not in the calendar");
     await expect(page.locator(".date-line [data-date-today]")).toBeVisible();
     for (const bad of ["2026-02-30", "tomorrow", "2026-1-5"]) {
@@ -170,7 +195,7 @@ test.describe("no layout shift", () => {
       await page.addInitScript(l => localStorage.setItem("weekday-shacharit-language", l), language);
       // Hold the page script back a moment, so the page paints before it fills anything in.
       await page.route("**/_astro/*.js", async route => { await new Promise(r => setTimeout(r, 300)); await route.fallback(); });
-      for (const path of ["/weekday/shacharit/tachanun?date=2026-12-10", "/weekday/shacharit/half-kaddish-2?date=2026-11-23", "/shabbat/mincha/full-kaddish?date=2026-11-07", "/weekday/maariv/concluding-prayers?date=2027-05-14", "/shabbat/shacharit/torah-service", "/weekday/shacharit/torah-reading?date=2026-12-10", "/shabbat/mincha/torah-service", "/weekday/shacharit"]) {
+      for (const path of ["/weekday/shacharit/tachanun?date=2026-12-10", "/weekday/shacharit/half-kaddish-2?date=2026-11-23", "/shabbat/mincha/full-kaddish?date=2026-11-07", "/weekday/maariv/concluding-prayers?date=2027-05-14", "/weekday/shacharit/torah?date=2026-10-12", "/shabbat/mincha/tzidkatcha?date=2026-10-10", "/weekday/shacharit/tachanun?date=2026-10-12", "/shabbat/shacharit/torah-service", "/weekday/shacharit/torah-reading?date=2026-12-10", "/shabbat/mincha/torah-service", "/weekday/shacharit"]) {
         await page.goto(path);
         await expect(page.locator(".date-line [data-date-text]")).toBeVisible();
         await page.waitForTimeout(200);
@@ -179,34 +204,12 @@ test.describe("no layout shift", () => {
     });
   }
 
-  /** Put each set of lines in turn into `el` (one span per line, as the page script does) and return those that do not fit one line each, or overflow the room kept. */
-  const misfits = (el: Element, all: string[][]) => {
-    const out: string[] = [];
-    const room = parseFloat(getComputedStyle(el).minHeight);
-    for (const lines of all) {
-      el.replaceChildren(...lines.map((text, i) => {
-        const span = document.createElement("span");
-        const he = /[א-ת]/.test(text.replace(/[^א-תA-Za-z]/g, "").slice(0, 1));
-        span.dataset.lang = he ? "he" : "en";
-        if (he) span.className = "he";
-        span.textContent = text;
-        return span;
-      }));
-      const spans = [...el.children].filter(span => (span as HTMLElement).checkVisibility());
-      const line = parseFloat(getComputedStyle(el).lineHeight);
-      // Each line one line high and no wider than the box; the whole exactly the room kept.
-      const box = el.getBoundingClientRect();
-      if (spans.some(span => span.getClientRects().length !== 1 || span.getBoundingClientRect().width > box.width + 0.5) || Math.abs(box.height - room) > 0.5 || line <= 0) out.push(lines.join(" | "));
-    }
-    return out;
-  };
-
   test("every status there can be is one line in each language at the narrowest width, in exactly the room kept", async ({ page }) => {
     test.skip(test.info().project.name !== "phone-320", "the narrowest width");
     // Every distinct status each note can show over the whole table, worded for a date dialled in
     // (the date, the longest) and for today.
     const texts = new Map<string, Set<string>>();
-    const notes = Object.keys(noteTimes);
+    const notes = Object.keys(noteRules);
     for (let d = new Date(`${table.from}T12:00:00`); ; d.setDate(d.getDate() + 1)) {
       const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
       if (iso > table.to) break;
@@ -226,7 +229,7 @@ test.describe("no layout shift", () => {
         await page.goto(where[note]);
         await page.evaluate(l => { document.documentElement.dataset.language = l; }, language);
         const lines = [...texts.get(note)!].map(json => JSON.parse(json) as string[]);
-        const out = await page.locator(`[data-note="${note}"]:visible [data-note-status]`).first().evaluate(misfits, lines);
+        const out = await page.locator(`[data-note="${note}"]:visible .note-status`).first().evaluate(misfits, lines);
         expect.soft(out, `${note} (${language})`).toEqual([]);
       }
     }
@@ -242,8 +245,91 @@ test.describe("no layout shift", () => {
       for (const language of ["both", "en", "he"] as const) {
         await page.goto(path);
         await page.evaluate(l => { document.documentElement.dataset.language = l; }, language);
-        const out = await page.locator(".reader-calendar:visible [data-reading]").first().evaluate(misfits, lines);
+        const out = await page.locator(".reader-calendar:visible .calendar-reading").first().evaluate(misfits, lines);
         expect.soft(out, `${path} (${language})`).toEqual([]);
+      }
+    }
+  });
+});
+
+test.describe("the day line and the map", () => {
+  const summary = (page: Page, lang: "en" | "he" = "en") => page.locator(`.day-summary [data-lang=${lang}]`);
+  /** Each marked item on the map: its id (or mark), on/off, and its label. */
+  const marks = (page: Page) => page.locator("main [data-mark]:not(.chips>li)").evaluateAll(els => Object.fromEntries(els.map(e => [e.id, [e.getAttribute("data-today") || "", e.querySelector(".today-mark [data-lang=en]")?.textContent || ""]])));
+  const days: Array<[string, string, string, Record<string, [string, string]>]> = [
+    ["an ordinary Tuesday", "/weekday/shacharit?date=2026-10-13", "Tuesday: an ordinary weekday",
+      { "section-tachanun": ["", "13 Oct: said"], "section-half-kaddish-2": ["", "13 Oct: after Tachanun"], "movement-torah": ["off", "13 Oct: no reading"] }],
+    ["a Monday", "/weekday/shacharit?date=2026-10-19", "Monday: Torah reading, longer Tachanun",
+      { "section-tachanun": ["", "19 Oct: said, the long form"], "section-half-kaddish-2": ["", "19 Oct: after Tachanun"], "movement-torah": ["on", "19 Oct: Torah reading, 3 aliyot"] }],
+    ["Rosh Chodesh", "/weekday/shacharit?date=2026-10-12", "Rosh Chodesh: Ya’aleh Veyavo, Hallel, Musaf",
+      { "section-tachanun": ["off", "Not on 12 Oct—Rosh Chodesh"], "section-half-kaddish-2": ["", "12 Oct: after Hallel, as Full Kaddish"], "movement-torah": ["on", "12 Oct: Rosh Chodesh, 4 aliyot"] }],
+    ["a fast day, morning", "/weekday/shacharit?date=2026-12-20", "Fast of 10 Tevet: Selichot, Avinu Malkeinu",
+      { "section-tachanun": ["", "20 Dec: said"], "section-half-kaddish-2": ["", "20 Dec: after Tachanun"], "movement-torah": ["on", "20 Dec: fast day, 3 aliyot"] }],
+    ["a fast day, afternoon", "/weekday/mincha?date=2026-12-20", "Fast of 10 Tevet: Torah reading, Aneinu",
+      { "section-tachanun": ["", "20 Dec: said"] }],
+    ["Chanukah", "/weekday/shacharit?date=2026-12-07", "Chanukah: Al HaNisim, Hallel, Torah reading",
+      { "section-tachanun": ["off", "Not on 7 Dec—Chanukah"], "section-half-kaddish-2": ["", "7 Dec: after Hallel"], "movement-torah": ["on", "7 Dec: Chanukah, 3 aliyot"] }],
+    ["an evening in the Omer", "/weekday/maariv?date=2027-05-13", "That evening: day 22 of the Omer",
+      { "section-concluding-prayers": ["on", "13 May, eve: Omer day 22"] }],
+    ["an evening outside the Omer", "/weekday/maariv?date=2026-10-13", "An ordinary weekday evening",
+      { "section-concluding-prayers": ["off", "13 Oct, eve: no Omer count"] }],
+    ["a Shabbat with no Tzidkatcha", "/shabbat/mincha?date=2026-10-10", "No Tzidkatcha: Erev Rosh Chodesh",
+      { "section-tzidkatcha": ["off", "Not on 10 Oct—Erev Rosh Chodesh"], "section-full-kaddish": ["", "10 Oct: after the repetition"] }],
+    ["an ordinary Shabbat afternoon", "/shabbat/mincha?date=2026-10-17", "Torah: the opening of Lech-Lecha",
+      { "section-tzidkatcha": ["", "17 Oct: said"], "section-full-kaddish": ["", "17 Oct: after Tzidkatcha"] }],
+  ];
+  for (const [what, path, line, marked] of days) {
+    test(`${what}: the day's line and what the map marks on and off`, async ({ page }) => {
+      await todayIs(page, "2026-10-07");
+      await page.goto(path);
+      await expect(summary(page)).toHaveText(line);
+      await expect(summary(page, "he")).not.toBeEmpty();
+      await expect.poll(() => marks(page)).toEqual(marked);
+      // Off is never color alone: dimmed with a dashed edge, and labelled.
+      for (const [id, [state]] of Object.entries(marked)) if (state === "off" && id !== "section-concluding-prayers") {
+        expect(await page.locator(`#${id}`).evaluate(el => [getComputedStyle(el).opacity, getComputedStyle(el).borderTopStyle])).toEqual(["0.55", "dashed"]);
+      }
+    });
+  }
+
+  test("today's own line, and the breakdown entries the date turns on or off", async ({ page }) => {
+    await todayIs(page, "2027-05-13");
+    await page.goto("/weekday/maariv/concluding-prayers");
+    await expect(summary(page)).toHaveText("Tonight: day 22 of the Omer");
+    await expect(page.locator('.chips>li[data-mark="omer"]:visible')).toHaveAttribute("data-today", "on");
+    await todayIs(page, "2026-10-19");
+    await page.goto("/weekday/shacharit/tachanun");
+    await expect(page.locator('.chips>li[data-mark="monday-thursday"]:visible')).toHaveAttribute("data-today", "on");
+    await page.goto("/weekday/shacharit/tachanun?date=2026-10-20");
+    await expect(page.locator('.chips>li[data-mark="monday-thursday"]:visible')).toHaveAttribute("data-today", "off");
+    // The line follows the date line.
+    await page.locator(".date-line").getByRole("button", { name: "Previous day" }).click();
+    await expect(summary(page)).toHaveText("Monday: Torah reading, longer Tachanun");
+  });
+
+  test("the day's line, and every label on the map, is one line in each language at the narrowest width", async ({ page }) => {
+    test.skip(test.info().project.name !== "phone-320", "the narrowest width");
+    const every = (fn: (iso: string) => string[]) => {
+      const out = new Set<string>();
+      for (let d = new Date(`${table.from}T12:00:00`); ; d.setDate(d.getDate() + 1)) {
+        const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+        if (iso > table.to) break;
+        out.add(JSON.stringify(fn(iso)));
+      }
+      return [...out].map(json => JSON.parse(json) as string[]);
+    };
+    const maps = [["weekday", "shacharit"], ["weekday", "mincha"], ["weekday", "maariv"], ["shabbat", "maariv"], ["shabbat", "shacharit"], ["shabbat", "musaf"], ["shabbat", "mincha"]];
+    for (const language of ["both", "en", "he"] as const) {
+      for (const [day, service] of maps) {
+        await page.goto(`/${day}/${service}`);
+        await page.evaluate(l => { document.documentElement.dataset.language = l; }, language);
+        const lines = every(iso => { const w = daySummary(table, day, service, iso, "2000-01-01"), t = daySummary(table, day, service, iso, iso); return [w.en, w.he, t.en, t.he]; }).flatMap(([a, b, c, d]) => [[a, b], [c, d]]);
+        expect.soft(await page.locator(".day-summary").evaluate(misfits, lines), `${day}/${service} (${language})`).toEqual([]);
+        for (const mark of await page.locator("main [data-mark]:not(.chips>li)").all()) {
+          const note = (await mark.getAttribute("data-mark"))!;
+          const labels = every(iso => { const w = noteStatus(table, note, iso, "2000-01-01"), t = noteStatus(table, note, iso, iso); return [w.en, w.he, t.en, t.he]; }).flatMap(([a, b, c, d]) => [[a, b], [c, d]]);
+          expect.soft(await mark.locator(".today-mark").evaluate(misfits, labels), `${day}/${service} ${note} (${language})`).toEqual([]);
+        }
       }
     }
   });
@@ -267,9 +353,11 @@ test.describe("the calendar table", () => {
   }
 
   test("every note has its rule and its reading of the calendar, and the content uses them all", () => {
-    expect(Object.keys(noteRules).sort()).toEqual(Object.keys(noteTimes).sort());
+    // Every note reads the calendar; one more reading marks a breakdown entry only (the Monday–Thursday additions).
+    expect([...Object.keys(noteRules), "monday-thursday"].sort()).toEqual(Object.keys(noteTimes).sort());
     const content = readFileSync(new URL("../content/roadmap.html", import.meta.url), "utf8");
-    expect([...new Set([...content.matchAll(/calendar-note note-([a-z-]+)/g)].map(m => m[1]))].sort()).toEqual(Object.keys(noteTimes).sort());
+    expect([...new Set([...content.matchAll(/calendar-note note-([a-z-]+)/g)].map(m => m[1]))].sort()).toEqual(Object.keys(noteRules).sort());
+    expect([...content.matchAll(/ mark-([a-z-]+)/g)].map(m => m[1]).sort()).toEqual(["monday-thursday", "omer"]);
   });
 
   test("covers its range, a day per character in every field", () => {

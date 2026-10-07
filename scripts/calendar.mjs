@@ -16,6 +16,7 @@
 //                                  D Rosh Chodesh in Chanukah, P Purim, F fast day, A Tisha B'Av,
 //                                  H Chol HaMoed, Y festival
 //   p  psalms after Shacharit:   bit 1 Psalm 104 (Rosh Chodesh), bit 2 Psalm 27 (Elul season)
+//   f  a public fast:            - none, G Gedaliah, T 10 Tevet, E Esther, Z 17 Tammuz, A Tisha B'Av
 // `months` gives each Hebrew month's first civil day, name and year (for the Hebrew date), with
 // `numerals` for days in Hebrew; `omer` the civil day on whose evening each year's count begins.
 import { writeFileSync } from "node:fs";
@@ -32,7 +33,7 @@ for (let d = civil(from); iso(d) <= to; d = new Date(d.getFullYear(), d.getMonth
 const before = new Date(civil(from).getTime() - 864e5), after = new Date(civil(to).getTime() + 864e5);
 
 const events = new Map();
-for (const ev of HebrewCalendar.calendar({ start: before, end: new Date(after.getTime() + 864e5), il: false })) {
+for (const ev of HebrewCalendar.calendar({ start: before, end: new Date(after.getTime() + 864e5), il: false, shabbatMevarchim: true })) {
   const key = iso(ev.getDate().greg());
   if (!events.has(key)) events.set(key, []);
   events.get(key).push(ev);
@@ -130,6 +131,16 @@ function reading(date) {
   return date.getDay() === 1 || date.getDay() === 4 ? "M" : "-";
 }
 
+/** A public fast: G Gedaliah, T 10 Tevet, E Esther, Z 17 Tammuz, A Tisha B'Av, or "-". */
+function fast(date) {
+  if (desc(date, /^Tzom Gedaliah$/)) return "G";
+  if (desc(date, /^Asara B'Tevet$/)) return "T";
+  if (desc(date, /^Ta'anit Esther$/)) return "E";
+  if (desc(date, /^Tzom Tammuz$/)) return "Z";
+  if (desc(date, /^Tish'a B'Av$/)) return "A";
+  return "-";
+}
+
 /** The psalms added after Shacharit's psalm of the day: 104 on Rosh Chodesh (SA OC 423:3); 27 from 1 Elul through Shemini Atzeret (MB 581:2, Koren). */
 function psalms(date) {
   const h = new HDate(date), month = h.getMonth(), day = h.getDate();
@@ -151,7 +162,7 @@ for (let year = new HDate(before).getFullYear(); year <= new HDate(after).getFul
 /**
  * Each Shabbat's Torah reading outside Israel (@hebcal/leyning): the weekly portion, or a festival's
  * reading when Shabbat is a festival day, as [date, English, Hebrew, Torah ref, haftarah ref,
- * 1 if a weekly portion]. The Torah cards show it (src/today.ts), with a link to it on Sefaria. From
+ * 1 if a weekly portion, special Shabbat in English and Hebrew or "", 1 if the new month is blessed]. The Torah cards show it (src/today.ts), with a link to it on Sefaria. From
  * the Shabbat before the range to some weeks after it, so "the next portion" is always known.
  */
 const plain = text => text.normalize("NFC").replace(/[\u0591-\u05C7]/g, m => m === "\u05BE" ? "־" : "").replace(/^פרשת /, "");
@@ -168,9 +179,12 @@ for (const ev of HebrewCalendar.calendar({ start: new Date(before.getTime() - 7 
   // A festival Shabbat's name, short enough for one line: "Rosh Hashana I", "Chol HaMoed Pesach".
   const en = reading.name.en.replace(/'/g, "’").replace(/ \(on Shabbat\)$/, "").replace(/^(\w+) Shabbat Chol ha-Moed$/, "Chol HaMoed $1");
   const he = plain(reading.name.he).replace(/ \(בשבת\)$/, "").replace(/^שבת חל המועד /, "חול המועד ");
-  shabbatot.push([date, en, he, firstRange(reading.summary), reading.haftara ? firstRange(reading.haftara) : "", parasha ? 1 : 0]);
+  // The special Shabbat it is, if any (Shabbat Zachor, Shabbat Shuva…), and whether the new month is blessed.
+  const special = (events.get(date) || []).find(e => e.getFlags() & flags.SPECIAL_SHABBAT);
+  const mevarchim = (events.get(date) || []).some(e => e.getFlags() & flags.SHABBAT_MEVARCHIM);
+  shabbatot.push([date, en, he, firstRange(reading.summary), reading.haftara ? firstRange(reading.haftara) : "", parasha ? 1 : 0, special ? special.render("en").replace(/'/g, "’") : "", special ? plain(special.render("he")) : "", mevarchim ? 1 : 0]);
 }
 
-const table = { from, to, months: monthList, shabbatot, numerals: Array.from({ length: 30 }, (_, i) => gematriya(i + 1)), omer, k: field(kind), t: field(tachanun), m: field(mincha), z: field(tzidkatcha), r: field(reading), p: field(psalms) };
+const table = { from, to, months: monthList, shabbatot, numerals: Array.from({ length: 30 }, (_, i) => gematriya(i + 1)), omer, k: field(kind), t: field(tachanun), m: field(mincha), z: field(tzidkatcha), r: field(reading), p: field(psalms), f: field(fast) };
 writeFileSync(new URL("../src/calendar.generated.json", import.meta.url), `${JSON.stringify(table)}\n`);
 console.log(`Calendar ${from} to ${to}: ${days.length} days, ${table.months.length} Hebrew months.`);

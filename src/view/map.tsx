@@ -92,7 +92,7 @@ function registerTemplate(view: View, id: string, content: (view: View) => Compo
 function CalendarNote(id: string): VNode {
   const rule = noteRules[id];
   if (!rule) throw new Error(`No rule for the date note ${id}`);
-  return <span className="calendar-note" data-note={id}><span className="note-rule">{LocalizedText(rule)}</span><span className="note-status" data-note-status="" /></span>;
+  return <span className="calendar-note" data-note={id}><span className="note-rule">{LocalizedText(rule)}</span><span className="note-status" /></span>;
 }
 
 const plainText = (node: AstNode): string => node.type === "text" ? node.value : node.children.map(plainText).join("");
@@ -163,6 +163,9 @@ function Ast(view: View, nodes: AstNode[]): VNode {
     if (node.attrs["data-lang"]) props["data-lang"] = node.attrs["data-lang"];
     if (node.attrs.lang) props.lang = node.attrs.lang;
     if (node.attrs.dir) props.dir = node.attrs.dir;
+    // A breakdown entry the date turns on or off (the Monday–Thursday additions, the Omer): marked by the browser.
+    const dateMark = classes.find(c => c.startsWith("mark-"))?.slice("mark-".length);
+    if (dateMark) props["data-mark"] = dateMark;
     const Tag = node.tag as "div";
     const children = node.children.map(render);
     if (sections && node.tag === "li") {
@@ -254,6 +257,20 @@ function AmidahDetails(view: View, node: ContentNode, part?: HeichaPart): VNode 
  */
 const DateLine = (): VNode => <div className="date-line" />;
 
+/**
+ * The items a date turns on or off at the top level (and two breakdown entries), by the date note
+ * that decides them (src/today.ts noteState). The browser marks them data-today="on" or "off" and
+ * writes the note's line into the label kept for it, so the map itself shows what applies today.
+ */
+const marks: Record<string, string> = {
+  "weekday/shacharit/tachanun": "tachanun-shacharit", "weekday/shacharit/half-kaddish-2": "kaddish-after-tachanun", "weekday/shacharit/torah": "torah-weekday",
+  "weekday/mincha/tachanun": "tachanun-mincha", "weekday/maariv/concluding-prayers": "omer",
+  "shabbat/mincha/tzidkatcha": "tzidkatcha", "shabbat/mincha/full-kaddish": "kaddish-after-tzidkatcha",
+};
+const markOf = (map: Pick<ServiceMap, "day" | "id">, id: string): string | undefined => marks[`${map.day}/${map.id}/${id}`];
+/** The label a marked item keeps for its line: one line in each language shown. */
+const MarkLabel = (mark: string | undefined) => mark && <span className="today-mark" />;
+
 const dayLabels: Record<DayType, Localized> = { weekday: { en: "Weekday", he: "חול" }, shabbat: { en: "Shabbat", he: "שבת" } };
 const serviceLabels: Record<ServiceId, Localized> = { shacharit: { en: "Shacharit", he: "שחרית" }, mincha: { en: "Mincha", he: "מנחה" }, maariv: { en: "Maariv", he: "ערבית" }, musaf: { en: "Musaf", he: "מוסף" } };
 
@@ -314,8 +331,9 @@ function Card(view: View, node: ContentNode, movement?: Movement, parent?: strin
   // A member prayer's summary leaves its button while the prayer is open; the browser puts it back from here.
   if (!movement && reader) registerTemplate(view, `summary-${node.id}`, v => Ast(v, node.summary));
   const className = movement ? `${movementClass(movement)} card` : ["card", "member", node.role, node.communal && "communal", node.classes.includes("conditional") && "conditional"].filter(Boolean).join(" ");
-  return <li id={`section-${node.id}`} className={`${className}${reader ? " reader-card" : ""}`} data-reader={readerData(node)}>
-    <button type="button" aria-expanded={open} aria-controls={detailId} data-route={node.id} data-parent={parent}>{node.communal && PeopleIcon()}{movement ? MovementHead(movement) : <span className="copy"><h3 className="item-title" tabIndex={-1}>{LocalizedText(displayTitle(node))}</h3>{summary && Ast(view, node.summary)}</span>}</button>
+  const mark = movement ? markOf(place.map, node.id) : undefined;
+  return <li id={`section-${node.id}`} className={`${className}${reader ? " reader-card" : ""}`} data-reader={readerData(node)} data-mark={mark}>
+    <button type="button" aria-expanded={open} aria-controls={detailId} data-route={node.id} data-parent={parent}>{node.communal && PeopleIcon()}{movement ? MovementHead(movement) : <span className="copy"><h3 className="item-title" tabIndex={-1}>{LocalizedText(displayTitle(node))}</h3>{summary && Ast(view, node.summary)}</span>}{MarkLabel(mark)}</button>
     {Region(view, detailId, "details", open, v => <>{movement && !reader && Ast(v, node.summary)}{reader ? ReaderDetails(v, node) : node.detailKind ? AmidahDetails(v, node) : Ast(v, node.details)}</>)}
   </li>;
 }
@@ -347,7 +365,7 @@ const readingIntro: Record<CalendarKind, Localized> = {
  */
 const TorahCalendar = (kind: CalendarKind) => <div className="reader-calendar" data-calendar={kind}>
   <p className="calendar-intro">{LocalizedText(readingIntro[kind])}</p>
-  <p className={`calendar-reading${kind === "shabbat" ? " with-haftarah" : ""}`} data-reading="" />
+  <p className={`calendar-reading${kind === "shabbat" ? " with-haftarah" : ""}`} />
 </div>;
 
 /**
@@ -406,9 +424,10 @@ function Landmark(view: View, node: ContentNode, parent?: string): VNode {
   const className = ["seam", node.communal && "kaddish communal", node.classes.includes("barkhu") && "barkhu"].filter(Boolean).join(" ");
   const note = landmarkNote(node);
   const detailId = `detail-${place.map.day}-${place.map.id}-${node.id}`;
-  return <li id={`section-${node.id}`} className={`${className} landmark-reader`} data-open={open ? "true" : undefined} data-reader={readerData(node)}>
+  const mark = markOf(place.map, node.id);
+  return <li id={`section-${node.id}`} className={`${className} landmark-reader`} data-open={open ? "true" : undefined} data-reader={readerData(node)} data-mark={mark}>
     {node.communal && PeopleIcon()}
-    <button type="button" className="landmark-toggle" aria-expanded={open} aria-controls={detailId} data-route={node.id} data-parent={parent}><span className="landmark-title" tabIndex={-1}>{LocalizedText(node.title)}</span></button>
+    <button type="button" className="landmark-toggle" aria-expanded={open} aria-controls={detailId} data-route={node.id} data-parent={parent}><span className="landmark-title" tabIndex={-1}>{LocalizedText(node.title)}</span>{MarkLabel(mark)}</button>
     {Region(view, detailId, "landmark-details", open, v => <>{note && <p className="seam-note">{note.type === "element" && Ast(v, note.children)}</p>}{PrayerReader(v, node)}</>)}
   </li>;
 }
@@ -463,8 +482,9 @@ function MovementItem(view: View, movement: Movement): VNode {
     registerTemplate(view, `blurb-${movement.id}`, () => Blurb(movement.blurb!));
     registerTemplate(view, `blurb-${movement.id}~heicha`, () => Blurb(heichaBlurb));
   }
-  return <li id={`movement-${movement.id}`} className={movementClass(movement)} data-open={open ? "true" : undefined} data-members={movement.members.map(m => m.id).join(" ")} data-heicha={movement.heicha ? "" : undefined}>
-    <button type="button" aria-expanded={open} aria-controls={detailId} data-route={movement.id}>{movement.communal && PeopleIcon()}{MovementHead(heicha ? { ...movement, blurb: heichaBlurb } : movement)}</button>
+  const mark = markOf(place.map, movement.id);
+  return <li id={`movement-${movement.id}`} className={movementClass(movement)} data-open={open ? "true" : undefined} data-members={movement.members.map(m => m.id).join(" ")} data-heicha={movement.heicha ? "" : undefined} data-mark={mark}>
+    <button type="button" aria-expanded={open} aria-controls={detailId} data-route={movement.id}>{movement.communal && PeopleIcon()}{MovementHead(heicha ? { ...movement, blurb: heichaBlurb } : movement)}{MarkLabel(mark)}</button>
     {heicha ? Region(view, detailId, "movement-body", open, shortened, "heicha") : Region(view, detailId, "movement-body", open, usual)}
   </li>;
 }

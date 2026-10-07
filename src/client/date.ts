@@ -5,7 +5,7 @@
 // the date and its Hebrew date, steps a day back or forward, opens the browser's date picker, and
 // returns to today.
 import table from "../calendar.generated.json";
-import { addDays, civilDate, covered, dateFromSearch, fillNotes, hebrewDate, localToday, readingFor, sefariaUrl, showRef, type CalendarTable, type ReadingKind } from "../today";
+import { addDays, civilDate, covered, dateFromSearch, fillNotes, fillSummary, hebrewDate, localToday, readingFor, sefariaUrl, showRef, type CalendarTable, type ReadingKind } from "../today";
 import { bi, h } from "./dom";
 
 const calendar = table as unknown as CalendarTable;
@@ -21,7 +21,7 @@ export function withDate(path: string): string {
 
 /** The week's Torah reading on each Torah card under `root`, for the date: the portion with a link to it on Sefaria, and on Shabbat morning the haftarah. */
 function showReadings(root: ParentNode, date: string) {
-  for (const el of root.querySelectorAll<HTMLElement>(".reader-calendar [data-reading]")) {
+  for (const el of root.querySelectorAll<HTMLElement>(".reader-calendar .calendar-reading")) {
     if (el.dataset.for === date) continue;
     el.dataset.for = date;
     const reading = readingFor(calendar, el.closest<HTMLElement>("[data-calendar]")!.dataset.calendar as ReadingKind, date);
@@ -46,6 +46,8 @@ export function showDate(root: ParentNode) {
   // The date line, once initDateLine has built it.
   const line = root.querySelector<HTMLElement>(".date-line");
   if (!line?.firstChild) return;
+  const main = line.closest("main")!;
+  fillSummary(calendar, line, main.dataset.day!, main.dataset.service!, date, today);
   const hebrew = hebrewDate(calendar, date);
   // The Hebrew year tells the year; the full date is in the picker and the title.
   const civil = civilDate(date);
@@ -75,12 +77,13 @@ export function initDateLine(main: HTMLElement) {
   const line = main.querySelector<HTMLElement>(".date-line");
   if (!line) return;
   const input = h("input", { type: "date", class: "date-input", "aria-label": "Date of the prayers", min: calendar.from, max: calendar.to }) as HTMLInputElement;
-  line.replaceChildren(
+  // The date's row, then the day's line (see daySummary in src/today.ts).
+  line.replaceChildren(h("div", { class: "date-row" },
     h("button", { type: "button", class: "date-step", "data-date-step": "-1", "aria-label": "Previous day" }, "‹"),
     h("span", { class: "date-pick" }, h("span", { class: "date-text", "data-date-text": "" }, h("span", { "data-lang": "en" }), h("span", { class: "he", "data-lang": "he" })), input),
     h("button", { type: "button", class: "date-step", "data-date-step": "1", "aria-label": "Next day" }, "›"),
     h("button", { type: "button", class: "date-today", "data-date-today": "", "data-off": "" }, bi({ en: "Today", he: "היום" })),
-  );
+  ), h("p", { class: "day-summary" }));
   line.addEventListener("click", event => {
     const button = (event.target as Element).closest<HTMLButtonElement>("button");
     if (button?.dataset.dateStep) {

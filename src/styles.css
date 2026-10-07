@@ -233,16 +233,48 @@ html[data-language=he] .calendar-note{text-align:right}
 
 /* The date line under the service heading (src/client/date.ts builds it, in an empty line whose height
    is kept, so nothing below moves); without a script it is hidden. */
-.date-line{display:flex;align-items:center;justify-content:center;gap:2px;width:min(440px,100%);height:34px;margin:6px auto 0;color:var(--muted);font-size:.74rem;font-weight:700;line-height:1.3}
+/* The date line: a row of fixed height for the date, and the day's line under it, in room kept for one
+   line in each language shown (src/client/date.ts builds both). */
+.date-line{width:min(440px,100%);min-height:calc(28px + 1.2em);margin:4px auto 0;color:var(--muted);font-size:.74rem;font-weight:700;line-height:1.3}
+html:not([data-language=en]):not([data-language=he]) .date-line{min-height:calc(28px + 2.4em)}
+.date-row{display:flex;align-items:center;justify-content:center;gap:2px;height:26px}
 html:not([data-js]) .date-line{display:none}
-.date-step{flex:none;width:28px;height:34px;padding:0;border:0;border-radius:9px;background:none;color:var(--ink);font:800 1.15rem/1 system-ui,sans-serif;cursor:pointer}
+.date-step{flex:none;width:28px;height:26px;padding:0;border:0;border-radius:9px;background:none;color:var(--ink);font:800 1.15rem/1 system-ui,sans-serif;cursor:pointer}
 .date-step:disabled{opacity:.3;cursor:default}
 .date-pick{position:relative;min-width:0;cursor:pointer;text-align:center}
 .date-text,.date-text>span{display:block}
 .date-text>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .date-text .he{margin-top:0}
+/* One row: the English date (which names the Hebrew date) or, in Hebrew, the Hebrew. */
+html:not([data-language=he]) .date-text [data-lang=he]{display:none}
 .date-input{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:0;opacity:0;cursor:pointer}
-.date-today{flex:none;height:30px;margin-inline-start:2px;padding:0 7px;border:1px solid #b8c5d0;border-radius:9px;background:#fff;color:var(--ink);font:750 .74rem system-ui,sans-serif;cursor:pointer}
+.date-today{flex:none;height:24px;margin-inline-start:2px;padding:0 7px;border:1px solid #b8c5d0;border-radius:9px;background:#fff;color:var(--ink);font:750 .74rem system-ui,sans-serif;cursor:pointer}
 .date-today[data-off]{display:none}
 .date-today .he{margin:0}
 html:not([data-language=he]) .date-today [data-lang=he]{display:none}
+
+/* The day in one line under the date line (src/today.ts daySummary): one line in each language shown,
+   in exactly the room kept for it. */
+.day-summary{margin:2px 0 0;color:var(--ink);font-size:1em;font-weight:400;line-height:1.2}
+main[data-day] .communal-key{margin-top:4px}
+.day-summary>span{display:block}
+.day-summary .he{margin-top:0}
+
+/* What the date turns on or off on the map: a label kept on each such item, one line (in Hebrew when
+   Hebrew alone is shown, otherwise in English, so the map's sizes hold), and, when off, the item dimmed
+   with a dashed edge; when on (only today), an outline. Nothing is hidden. */
+.today-mark{display:block;grid-column:1/-1;min-height:1.2em;color:var(--ink);font-size:.74rem;font-weight:400;line-height:1.2;text-align:start}
+html:not([data-language=he]) .today-mark [data-lang=he]{display:none}
+.today-mark>span{display:block}
+.today-mark .he{margin-top:0;text-align:right}
+html[data-language=he] .today-mark{text-align:right}
+html:not([data-js]) .today-mark{display:none}
+.landmark-toggle .today-mark{text-align:center}
+.landmark-toggle .today-mark .he{text-align:center}
+.movement>button>.today-mark,.card>button>.today-mark{grid-row:2}
+.movement.event>button>.today-mark{grid-row:3;margin-top:-10px}
+.service-map>li[data-today=off]:not([data-mark=omer]),.members>li[data-today=off],.chips>li[data-today=off]{opacity:.55;border-style:dashed}
+.service-map>li[data-today=on],.chips>li[data-today=on]{outline:3px solid var(--ink);outline-offset:2px}
+[data-today=on]>button .today-mark{font-weight:750}
+/* A marked seam has a fixed width, so its label's length never moves it. */
+.service-map>.seam[data-mark],.members>.seam[data-mark]{width:min(100%,330px);margin-inline:auto}
