@@ -31289,50 +31289,10 @@
          93,
          "t"
         ]
-       ]
-      },
-      {
-       "ref": "The Koren Shalem Siddur; Ashkenaz, Shabbat, Prayer for the Welfare of the Government",
-       "edition": "koren-ashkenaz",
-       "count": {
-        "he": 12,
-        "en": 12
-       },
-       "items": [
-        [
-         1,
-         1,
-         "r"
-        ],
-        [
-         2,
-         2,
-         "re"
-        ],
-        [
-         3,
-         3,
-         "t"
-        ],
-        [
-         7,
-         7,
-         "r"
-        ],
-        [
-         8,
-         8,
-         "re"
-        ],
-        [
-         9,
-         9,
-         "t"
-        ]
        ],
        "note": {
-        "en": "Here many congregations add prayers for particular needs of the time: for the community, for the government of the country, for those who are ill, and for other present concerns. Which prayers are said varies by community.",
-        "he": "כאן קהילות רבות מוסיפות תפילות לצורכי השעה: לשלום הקהילה, לשלום המלכות, לרפואת החולים ולעניינים נוספים של אותה עת. התפילות הנאמרות משתנות מקהילה לקהילה."
+        "en": "Here many congregations add prayers for the needs of the time. You might hear, for example, a prayer for the local government, a prayer for peace, a prayer for those who are ill, or a prayer for the community. Which prayers are said varies by community.",
+        "he": "כאן קהילות רבות מוסיפות תפילות לצורכי השעה. אפשר לשמוע למשל תפילה לשלום המלכות, תפילה לשלום, תפילה לרפואת החולים או תפילה לשלום הקהילה. התפילות הנאמרות משתנות מקהילה לקהילה."
        },
        "omits": true
       },
@@ -31983,26 +31943,12 @@
          79,
          "t"
         ]
-       ]
-      },
-      {
-       "ref": "Shabbat Siddur Sefard Linear, Reading of the Torah, Prayer for the Government",
-       "edition": "metsudah-sefard-shabbat",
-       "count": {
-        "he": 27,
-        "en": 27
-       },
-       "items": [
-        [
-         2,
-         27,
-         "t"
-        ]
        ],
        "note": {
-        "en": "Here many congregations add prayers for particular needs of the time: for the community, for the government of the country, for those who are ill, and for other present concerns. Which prayers are said varies by community.",
-        "he": "כאן קהילות רבות מוסיפות תפילות לצורכי השעה: לשלום הקהילה, לשלום המלכות, לרפואת החולים ולעניינים נוספים של אותה עת. התפילות הנאמרות משתנות מקהילה לקהילה."
-       }
+        "en": "Here many congregations add prayers for the needs of the time. You might hear, for example, a prayer for the local government, a prayer for peace, a prayer for those who are ill, or a prayer for the community. Which prayers are said varies by community.",
+        "he": "כאן קהילות רבות מוסיפות תפילות לצורכי השעה. אפשר לשמוע למשל תפילה לשלום המלכות, תפילה לשלום, תפילה לרפואת החולים או תפילה לשלום הקהילה. התפילות הנאמרות משתנות מקהילה לקהילה."
+       },
+       "omits": true
       },
       {
        "ref": "Shabbat Siddur Sefard Linear, Reading of the Torah, Av Horachamim",

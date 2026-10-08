@@ -655,11 +655,11 @@ test("the Torah reading is its own kind of block: an event with its stages, not 
   await expect(page.locator("#section-torah-service .reader-section")).toHaveCount(1);
 });
 
-// Mike, October 8, 2026 (lb-ict1): after the Shabbat morning Torah reading, the prayers for particular
-// present-day circumstances are left out, and a quiet note in their place says congregations add
-// prayers here. Nothing of them may show, in either language, in either nusach.
+// Mike, October 8, 2026 (lb-ict1): after the Shabbat morning Torah reading, the prayers for a particular
+// country's government and for other present-day circumstances are left out, and a quiet note in their
+// place says congregations add prayers here. Nothing of them may show, in either language, in either nusach.
 for (const nusach of ["ashkenaz", "sefard"] as const) {
-  test(`Shabbat morning communal prayers: the traditional prayers and a note, nothing tied to the modern state (${nusach})`, async ({ page }) => {
+  test(`Shabbat morning communal prayers: the traditional prayers and a note, no government or modern-state prayers (${nusach})`, async ({ page }) => {
     await page.addInitScript(nusach => localStorage.setItem("weekday-shacharit-nusach", nusach), nusach);
     await page.goto("/shabbat/shacharit/torah-service/communal-prayers-ashrei-return-torah-to-ark");
     const card = page.locator("#section-torah-service");
@@ -668,23 +668,25 @@ for (const nusach of ["ashkenaz", "sefard"] as const) {
     await expect(card.locator(".reader-credit [data-lang=en]")).toContainText(nusach === "sefard" ? "Nusach Sefard" : "Koren");
     const notes = section.locator("p.reader-note");
     await expect(notes).toHaveCount(2);
-    await expect(section.locator(".reader-en p.reader-note")).toHaveText("Here many congregations add prayers for particular needs of the time: for the community, for the government of the country, for those who are ill, and for other present concerns. Which prayers are said varies by community.");
-    await expect(section.locator(".reader-he p.reader-note")).toHaveText("כאן קהילות רבות מוסיפות תפילות לצורכי השעה: לשלום הקהילה, לשלום המלכות, לרפואת החולים ולעניינים נוספים של אותה עת. התפילות הנאמרות משתנות מקהילה לקהילה.");
+    await expect(section.locator(".reader-en p.reader-note")).toHaveText("Here many congregations add prayers for the needs of the time. You might hear, for example, a prayer for the local government, a prayer for peace, a prayer for those who are ill, or a prayer for the community. Which prayers are said varies by community.");
+    await expect(section.locator(".reader-he p.reader-note")).toHaveText("כאן קהילות רבות מוסיפות תפילות לצורכי השעה. אפשר לשמוע למשל תפילה לשלום המלכות, תפילה לשלום, תפילה לרפואת החולים או תפילה לשלום הקהילה. התפילות הנאמרות משתנות מקהילה לקהילה.");
     expect(await notes.first().evaluate(el => getComputedStyle(el).fontFamily)).toMatch(/system-ui/);
-    // The note sits where the left-out prayers were: after the prayer for the government, before Av HaRachamim.
+    // The note sits where the left-out prayers were: after the Mi Sheberach for the congregation, before Av HaRachamim.
     const unpointed = (el: Locator) => el.evaluate(el => (el.textContent || "").replace(/[\u0591-\u05C7]/g, ""));
-    const plain = await unpointed(section), hebrew = await unpointed(section.locator(".reader-he"));
+    const hebrew = await unpointed(section.locator(".reader-he"));
+    // The edition's text, without our note (which names kinds of prayers in general terms).
+    const plain = await section.evaluate(el => { const copy = el.cloneNode(true) as Element; copy.querySelectorAll(".reader-note").forEach(n => n.remove()); return (copy.textContent || "").replace(/[\u0591-\u05C7]/g, ""); });
     const at = (text: string) => { const i = hebrew.indexOf(text); expect(i, text).toBeGreaterThanOrEqual(0); return i; };
-    expect(at("יקום פרקן")).toBeLessThan(at("הנותן תשועה"));
-    expect(at("הנותן תשועה")).toBeLessThan(at("כאן קהילות רבות"));
+    expect(at("יקום פרקן")).toBeLessThan(at("מי שברך אבותינו"));
+    expect(at("מי שברך אבותינו")).toBeLessThan(at("כאן קהילות רבות"));
     expect(at("כאן קהילות רבות")).toBeLessThan(at("אב הרחמים"));
     for (const removed of [/state of israel/i, /defense forces/i, /\bmilitary\b/i, /\bsoldiers?\b/i, /\bcaptiv/i, /flowering of our redemption/i, /defenders of our holy land/i, /canadian forces/i,
+      /gives salvation to kings|grants deliverance to kings/i, /\bpresident\b/i, /prime minister/i, /united states/i, /\bamerican\b/i, /\bcanad/i, /welfare of the/i,
+      /הנותן תשועה/, /לשלום המלכות/, /סגן הנשיא|נשיא ארצות/, /ארצות הברית/, /קנדה/,
       /מדינת ישראל/, /צבא ה?הגנה/, /חיילי/, /אדיר במרום/, /לשבויים/, /צור ישראל וגואלו/, /ראשית צמיחת גאולתנו/, /מגיני ארץ קדשנו/]) expect(plain).not.toMatch(removed);
     const credit = card.locator(".reader-credit");
-    if (nusach === "ashkenaz") {
-      await expect(credit.locator("[data-lang=en]")).toContainText("Some prayers the edition prints here are omitted; a note marks the place.");
-      await expect(credit.locator("[data-lang=he]")).toContainText("כמה תפילות שהמהדורה מביאה כאן הושמטו");
-    } else await expect(credit).not.toContainText("omitted");
+    await expect(credit.locator("[data-lang=en]")).toContainText("Some prayers the edition prints here are omitted; a note marks the place.");
+    await expect(credit.locator("[data-lang=he]")).toContainText("כמה תפילות שהמהדורה מביאה כאן הושמטו");
   });
 }
 
