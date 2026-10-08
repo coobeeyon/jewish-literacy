@@ -44,7 +44,7 @@ export function partsOf(id: string): RenderedPart[] {
       };
       try { renderSection(section, texts, out); } catch (error) { throw new Error(`${id}, ${section.ref}: ${(error as Error).message} (run npm run snapshot-texts)`); }
     }
-    if (!out.he.some(p => !p.rubric)) throw new Error(`${id}: a part has no prayer text`);
+    if (!out.he.some(p => !p.rubric && !p.note)) throw new Error(`${id}: a part has no prayer text`);
     return out;
   });
   rendered.set(id, parts);

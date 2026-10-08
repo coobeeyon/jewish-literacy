@@ -145,7 +145,7 @@ async function build() {
           if (known && JSON.stringify({ he: known.he, en: known.en }) !== JSON.stringify(pins)) throw new Error(`${label}: edition metadata differs between refs`);
           out.editions[section.ed] = { id: section.ed, layout: edition.layout, cite: edition.cite, sourceLabel: edition.sourceLabel, he: pins.he, en: pins.en };
           const { items } = plan(section, texts.he, texts.en, edition.layout, label);
-          sections.push({ ref: data.ref, edition: section.ed, count: { he: texts.he.length, en: texts.en.length }, items });
+          sections.push({ ref: data.ref, edition: section.ed, count: { he: texts.he.length, en: texts.en.length }, items, ...(section.note ? { note: { en: section.note[0], he: section.note[1] } } : {}), ...(section.omits ? { omits: true } : {}) });
         }
         parts.push({ toc: part.toc, ...(part.h ? { heading: { en: part.h[0], he: part.h[1] } } : {}), sections });
       }

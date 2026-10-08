@@ -6,7 +6,7 @@ import type { Edition, Localized, Nusach, TextSection } from "./types";
 
 export type { Lang };
 export type Texts = Record<Lang, string[]>;
-export type Paragraph = { nodes: Inline[]; rubric: boolean };
+export type Paragraph = { nodes: Inline[]; rubric: boolean; note?: boolean };
 export type RenderedPart = { heading?: Localized; en: Paragraph[]; he: Paragraph[] };
 
 export function renderSection(section: TextSection, texts: Texts, out: RenderedPart) {
@@ -22,6 +22,8 @@ export function renderSection(section: TextSection, texts: Texts, out: RenderedP
       out[lang].push({ nodes: pieces.flatMap((piece, i) => i ? [" ", ...piece] : piece), rubric });
     }
   }
+  // Our own note, in each language's text, where the edition's prayers are left out.
+  if (section.note) for (const lang of ["en", "he"] as const) out[lang].push({ nodes: [section.note[lang]], rubric: false, note: true });
 }
 
 /** The id of a part's anchor inside an open card. */

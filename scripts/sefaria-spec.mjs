@@ -14,6 +14,8 @@
 //   until: first segment NOT included (same rules, searched after `from`)
 //   skip:  [[from, until], ...] ranges to leave out (same rules)
 //   dropHeading: start after the siddur's own heading line when `from` lands on one
+//   note:  [English, Hebrew] note shown after the section, in place of prayers left out
+//   omits: the section leaves out prayers the edition prints there; the credit line says so
 // Segments whose Hebrew is unpointed or empty are treated as rubrics (kept when short
 // stage directions) or editorial notes (dropped); see pin-sefaria.mjs.
 
@@ -132,6 +134,16 @@ const korenSkips = start => ({
   kohanim: [[start, "אלהינו ואלהי אבותינו ברכנו"], [start, "אלהינו ואלהי אבותינו ברכנו", "ברכת שלום"]],
 });
 
+// After the Shabbat morning Torah reading, congregations add prayers for the needs of the time. The
+// site shows the traditional ones (Yekum Purkan, the Mi Sheberach for the congregation, the prayer for
+// the government) and, in place of the rest, this note. Koren's prayers for particular present-day
+// circumstances (its Prayer for the Welfare of the Government segments 4-6 and 10-12, and its whole
+// "Prayer for the State of Israel" and "Prayer for Israel's Defense Forces") are left out, and the credit
+// line says prayers are omitted (`omits`). Mike, October 8, 2026 (lb-ict1).
+const occasionalPrayers = [
+  "Here many congregations add prayers for particular needs of the time: for the community, for the government of the country, for those who are ill, and for other present concerns. Which prayers are said varies by community.",
+  "כאן קהילות רבות מוסיפות תפילות לצורכי השעה: לשלום הקהילה, לשלום המלכות, לרפואת החולים ולעניינים נוספים של אותה עת. התפילות הנאמרות משתנות מקהילה לקהילה.",
+];
 
 export const cards = {
   // ───────────── Weekday Shacharit ─────────────
@@ -435,8 +447,10 @@ export const cards = {
       part("Seven aliyot from the weekly portion", s(KO, KS + "Reading of the Torah", { from: 39, until: 68 }), ["Seven aliyot — the blessings and prayers for those called up", "שבע עליות — ברכות העולים ותפילות מי שברך"]),
       part("Lift and roll · maftir · Haftarah and blessings", s(KO, KS + "Reading of the Torah", { from: 68, until: 91 })),
       part("Communal prayers · Ashrei · return Torah to ark", [
-        s(KO, KS + "Reading of the Torah", { from: 91 }), s(KO, KS + "Prayer for the Welfare of the Government"), s(KO, KS + "Prayer for the State of Israel"),
-        s(KO, KS + "Prayer for Israel's Defense Forces"), s(KO, KSMU, { until: 18, skip: [[13, 15]] }),
+        s(KO, KS + "Reading of the Torah", { from: 91 }),
+        // The government prayers only (American 1-3, Canadian 7-9); see occasionalPrayers.
+        s(KO, KS + "Prayer for the Welfare of the Government", { until: 10, skip: [[4, 7]], note: occasionalPrayers, omits: true }),
+        s(KO, KSMU, { until: 18, skip: [[13, 15]] }),
       ]),
     ],
     sefard: [
@@ -444,7 +458,8 @@ export const cards = {
       part("Seven aliyot from the weekly portion", [s(MS, SS + "Reading of the Torah, Berich Shemei", { from: 93 }), s(MS, SS + "Reading of the Torah, Birchas Hagomeil", { until: 16 })], ["Seven aliyot — the blessings for those called up", "שבע עליות — ברכות העולים"]),
       part("Lift and roll · maftir · Haftarah and blessings", [s(MS, SS + "Reading of the Torah, Birchas Hagomeil", { from: 16 }), s(MS, SS + "Reading of the Torah, Berachos for the Haftarah")]),
       part("Communal prayers · Ashrei · return Torah to ark", [
-        ...["Yekum Purkon", "Prayer for the Government", "Av Horachamim"].map(l => s(MS, SS + "Reading of the Torah, " + l)),
+        s(MS, SS + "Reading of the Torah, Yekum Purkon"), s(MS, SS + "Reading of the Torah, Prayer for the Government", { note: occasionalPrayers }),
+        s(MS, SS + "Reading of the Torah, Av Horachamim"),
         s(MS, SS + "Musaf Service, Ashrei", { until: 148 }),
       ]),
     ],

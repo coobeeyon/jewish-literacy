@@ -15,6 +15,7 @@
 .reader-text p+p{margin-top:.55em}
 .reader-text .rubric{color:#53697b;font:italic 600 .78rem/1.5 system-ui,sans-serif}
 .reader-he .rubric{font-style:normal}
+.reader-text p.reader-note{margin:.9em 0;padding:2px 0;padding-inline-start:11px;border-inline-start:3px solid #69a9c855;color:#53697b;font:600 .82rem/1.5 system-ui,sans-serif;white-space:normal}
 .reader-calendar{margin:0 0 16px;color:#274259;font:600 .86rem/1.55 system-ui,sans-serif}
 .reader-calendar p{margin:0}
 .reader-calendar p+p{margin-top:6px}

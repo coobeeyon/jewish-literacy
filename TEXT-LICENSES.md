@@ -29,3 +29,7 @@ link to the prayer on Sefaria. Where the text could not be shown, there is a "Re
 - **The Name in Metsudah's English.** Metsudah transliterates the Name in an old Ashkenazi
   pronunciation. The site shows "LORD" instead, as Koren prints it, and the credit line says so.
 - **Selection.** Only the passages each map shows are used, as listed in `scripts/sefaria-pins.json`.
+- **Prayers omitted.** After the Shabbat morning Torah reading, some prayers Koren prints for
+  particular present-day circumstances are left out. A short note in their place says that many
+  congregations add prayers here for the needs of the time, and the credit line says that prayers
+  are omitted. Koren's traditional prayers in that place, and all of Metsudah's, are kept.

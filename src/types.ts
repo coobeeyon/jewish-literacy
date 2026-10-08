@@ -69,6 +69,10 @@ export type TextSection = Readonly<{
   count: Readonly<{ he: number; en: number }>;
   /** Comma-separated "from-to kind" runs; kind t=both texts, h=Hebrew only, r/rh/re=rubric. */
   items: string;
+  /** A note of ours shown after the section, in place of prayers left out. */
+  note?: Localized;
+  /** The section leaves out prayers the edition prints there; the credit line says so. */
+  omits?: boolean;
 }>;
 
 export type TextPart = Readonly<{

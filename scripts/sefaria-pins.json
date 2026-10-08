@@ -31315,21 +31315,6 @@
          "t"
         ],
         [
-         4,
-         4,
-         "r"
-        ],
-        [
-         5,
-         5,
-         "re"
-        ],
-        [
-         6,
-         6,
-         "t"
-        ],
-        [
          7,
          7,
          "r"
@@ -31343,88 +31328,13 @@
          9,
          9,
          "t"
-        ],
-        [
-         10,
-         10,
-         "r"
-        ],
-        [
-         11,
-         11,
-         "re"
-        ],
-        [
-         12,
-         12,
-         "t"
         ]
-       ]
-      },
-      {
-       "ref": "The Koren Shalem Siddur; Ashkenaz, Shabbat, Prayer for the State of Israel",
-       "edition": "koren-ashkenaz",
-       "count": {
-        "he": 5,
-        "en": 5
+       ],
+       "note": {
+        "en": "Here many congregations add prayers for particular needs of the time: for the community, for the government of the country, for those who are ill, and for other present concerns. Which prayers are said varies by community.",
+        "he": "כאן קהילות רבות מוסיפות תפילות לצורכי השעה: לשלום הקהילה, לשלום המלכות, לרפואת החולים ולעניינים נוספים של אותה עת. התפילות הנאמרות משתנות מקהילה לקהילה."
        },
-       "items": [
-        [
-         1,
-         1,
-         "t"
-        ],
-        [
-         2,
-         2,
-         "t"
-        ],
-        [
-         3,
-         3,
-         "t"
-        ],
-        [
-         4,
-         4,
-         "t"
-        ],
-        [
-         5,
-         5,
-         "t"
-        ]
-       ]
-      },
-      {
-       "ref": "The Koren Shalem Siddur; Ashkenaz, Shabbat, Prayer for Israel's Defense Forces",
-       "edition": "koren-ashkenaz",
-       "count": {
-        "he": 5,
-        "en": 5
-       },
-       "items": [
-        [
-         1,
-         1,
-         "re"
-        ],
-        [
-         2,
-         2,
-         "t"
-        ],
-        [
-         3,
-         3,
-         "r"
-        ],
-        [
-         5,
-         5,
-         "t"
-        ]
-       ]
+       "omits": true
       },
       {
        "ref": "The Koren Shalem Siddur; Ashkenaz, Shabbat, Musaf for Shabbat",
@@ -32088,7 +31998,11 @@
          27,
          "t"
         ]
-       ]
+       ],
+       "note": {
+        "en": "Here many congregations add prayers for particular needs of the time: for the community, for the government of the country, for those who are ill, and for other present concerns. Which prayers are said varies by community.",
+        "he": "כאן קהילות רבות מוסיפות תפילות לצורכי השעה: לשלום הקהילה, לשלום המלכות, לרפואת החולים ולעניינים נוספים של אותה עת. התפילות הנאמרות משתנות מקהילה לקהילה."
+       }
       },
       {
        "ref": "Shabbat Siddur Sefard Linear, Reading of the Torah, Av Horachamim",
@@ -35480,43 +35394,6 @@
    ],
    "fallbackUrl": "https://www.sefaria.org/The_Koren_Shalem_Siddur%3B_Ashkenaz,_Shabbat,_Minha_for_Shabbat_and_Yom_Tov"
   },
-  "shabbat/mincha/half-kaddish-2:ashkenaz": {
-   "id": "shabbat/mincha/half-kaddish-2:ashkenaz",
-   "nusach": "ashkenaz",
-   "parts": [
-    {
-     "toc": [],
-     "sections": [
-      {
-       "ref": "The Koren Shalem Siddur; Ashkenaz, Shabbat, Minha for Shabbat and Yom Tov",
-       "edition": "koren-ashkenaz",
-       "count": {
-        "he": 140,
-        "en": 140
-       },
-       "items": [
-        [
-         14,
-         14,
-         "t"
-        ],
-        [
-         15,
-         15,
-         "t"
-        ],
-        [
-         16,
-         16,
-         "t"
-        ]
-       ]
-      }
-     ]
-    }
-   ],
-   "fallbackUrl": "https://www.sefaria.org/The_Koren_Shalem_Siddur%3B_Ashkenaz,_Shabbat,_Minha_for_Shabbat_and_Yom_Tov"
-  },
   "shabbat/mincha/half-kaddish:sefard": {
    "id": "shabbat/mincha/half-kaddish:sefard",
    "nusach": "sefard",
@@ -35558,6 +35435,43 @@
     }
    ],
    "fallbackUrl": "https://www.sefaria.org/Shabbat_Siddur_Sefard_Linear,_Mincha_Service_for_Shabbos_and_Yom_Tov,_Uvah_L'tzion"
+  },
+  "shabbat/mincha/half-kaddish-2:ashkenaz": {
+   "id": "shabbat/mincha/half-kaddish-2:ashkenaz",
+   "nusach": "ashkenaz",
+   "parts": [
+    {
+     "toc": [],
+     "sections": [
+      {
+       "ref": "The Koren Shalem Siddur; Ashkenaz, Shabbat, Minha for Shabbat and Yom Tov",
+       "edition": "koren-ashkenaz",
+       "count": {
+        "he": 140,
+        "en": 140
+       },
+       "items": [
+        [
+         14,
+         14,
+         "t"
+        ],
+        [
+         15,
+         15,
+         "t"
+        ],
+        [
+         16,
+         16,
+         "t"
+        ]
+       ]
+      }
+     ]
+    }
+   ],
+   "fallbackUrl": "https://www.sefaria.org/The_Koren_Shalem_Siddur%3B_Ashkenaz,_Shabbat,_Minha_for_Shabbat_and_Yom_Tov"
   },
   "shabbat/mincha/half-kaddish-2:sefard": {
    "id": "shabbat/mincha/half-kaddish-2:sefard",
